@@ -1,0 +1,13 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - img "MS Home Pros" [ref=e3]
+    - generic [ref=e4]: Estimator
+    - generic [ref=e5]: Built on 4,298 historical line items
+  - generic [ref=e7]:
+    - heading "Describe the job" [level=2] [ref=e8]
+    - generic [ref=e9]: Type everything you know — scope, rooms, square footage, finishes. The more detail, the better the seed. You'll edit every line next.
+    - textbox "e.g. Gut and remodel a 300 sqft kitchen in Oxford. Demo existing, new framing, drywall, 70 linear feet of custom cabinets, quartz countertops, LVT flooring, repaint, new electrical and plumbing fixtures, tile backsplash." [ref=e10]
+    - generic [ref=e11]:
+      - text: Upload plans / scope docs / photos (optional)
+      - button "Upload plans / scope docs / photos (optional)" [ref=e12]
+    - button "Build Estimate →" [ref=e14] [cursor=pointer]
