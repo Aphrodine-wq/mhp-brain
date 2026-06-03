@@ -1,0 +1,755 @@
+{
+ "subs": [
+  {
+   "name": "Home Depot",
+   "trade": "Supplier (Big Box)",
+   "phone": "",
+   "jobs": 18,
+   "source": "job history"
+  },
+  {
+   "name": "DSC",
+   "trade": "Subcontractor (initials \u2014 verify full name)",
+   "phone": "",
+   "jobs": 12,
+   "source": "job history"
+  },
+  {
+   "name": "Sherwin Williams",
+   "trade": "Supplier (Paint)",
+   "phone": "",
+   "jobs": 7,
+   "source": "job history"
+  },
+  {
+   "name": "Springer South",
+   "trade": "Subcontractor",
+   "phone": "",
+   "jobs": 3,
+   "source": "job history"
+  },
+  {
+   "name": "Alcorn Builders",
+   "trade": "Subcontractor",
+   "phone": "",
+   "jobs": 2,
+   "source": "job history"
+  },
+  {
+   "name": "Bankfirst",
+   "trade": "Financing",
+   "phone": "",
+   "jobs": 2,
+   "source": "job history"
+  },
+  {
+   "name": "JP Corp",
+   "trade": "Subcontractor",
+   "phone": "",
+   "jobs": 2,
+   "source": "job history"
+  },
+  {
+   "name": "Lowes",
+   "trade": "Supplier (Big Box)",
+   "phone": "",
+   "jobs": 2,
+   "source": "job history"
+  },
+  {
+   "name": "Renasant Bank",
+   "trade": "Financing",
+   "phone": "",
+   "jobs": 1,
+   "source": "job history"
+  },
+  {
+   "name": "Tony Kirk",
+   "trade": "Sheetrock",
+   "phone": "",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Tony Rooney",
+   "trade": "Boat Docks and Decks",
+   "phone": "662-423-8359",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Jimmy Bowen",
+   "trade": "",
+   "phone": "731-610-0989",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Tristan Jones",
+   "trade": "andyman jobs from landscaping to roof repair or carpentry wo",
+   "phone": "7314122930",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Chris whitley",
+   "trade": "Concrete Stainer",
+   "phone": "731-610-5065",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Jeff Ledford",
+   "trade": "Plumbing/electric",
+   "phone": "662-284-5406",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Harold Norton/Luke",
+   "trade": "Plumber",
+   "phone": "662-284-8014",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Jason Poole/Draincare",
+   "trade": "Plumber",
+   "phone": "662-664-1866",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Chris Clark",
+   "trade": "Plumber",
+   "phone": "662-603-1352",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Zack Hickman",
+   "trade": "Plumber",
+   "phone": "731-439-2338",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Cameron Harper",
+   "trade": "Electrical",
+   "phone": "662-416-5300",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Tim Letson",
+   "trade": "Electrical",
+   "phone": "662-665-1278",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Richard Wiggington",
+   "trade": "HVAC",
+   "phone": "662-416-8276",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Scotty McCay",
+   "trade": "HVAC",
+   "phone": "662-415-1338",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Crabb Heating/Air",
+   "trade": "HVAC",
+   "phone": "662-286-2472",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Shaw Heating/Air",
+   "trade": "HVAC",
+   "phone": "662-808-4270",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Luke Styer",
+   "trade": "Tile",
+   "phone": "662-643-3128",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Jason Gray",
+   "trade": "Tile",
+   "phone": "662-603-1192",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Austin Emerson",
+   "trade": "Tile",
+   "phone": "662-415-1359",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Terry Cummings",
+   "trade": "Paint",
+   "phone": "662-415-9962",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "John Allen Cummings",
+   "trade": "Paint",
+   "phone": "662-643-7546",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Cory Blakley",
+   "trade": "Paint",
+   "phone": "662-279-0486",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Alex Wamsley",
+   "trade": "Dirt work/concrete",
+   "phone": "662-415-3896",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Gary Crum",
+   "trade": "landscape/pressure wash",
+   "phone": "662-415-6341",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Joey Kaufman",
+   "trade": "fence",
+   "phone": "662-212-2069",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Rodriguez",
+   "trade": "Framing",
+   "phone": "662-782-7839",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Graham Roofing",
+   "trade": "roofing",
+   "phone": "662-492-9555",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Tommy Davis",
+   "trade": "masonry",
+   "phone": "662-664-0650",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Larry Duncan",
+   "trade": "masonry",
+   "phone": "662-284-8297",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Roy Gilliam",
+   "trade": "masonry",
+   "phone": "662-415-5088",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Billy Gilliam",
+   "trade": "masonry",
+   "phone": "662-424-2524",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Dale Houston",
+   "trade": "masonry",
+   "phone": "662-603-5534",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Ricky Hughes",
+   "trade": "masonry",
+   "phone": "731-926-5237",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Eric Lowery",
+   "trade": "masonry",
+   "phone": "662-424-3118",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "JD Moffett",
+   "trade": "masonry",
+   "phone": "662-423-2517",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Brian Pace - Ripley",
+   "trade": "masonry",
+   "phone": "662-415-0343",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Steve Price",
+   "trade": "masonry",
+   "phone": "662-396-1754",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Kevin Scott",
+   "trade": "masonry",
+   "phone": "731-607-1341",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Greg Lane",
+   "trade": "Drywall",
+   "phone": "662-416-6807",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Jackie Cooksey",
+   "trade": "stump grinding",
+   "phone": "662-415-2425",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Juans Handyman",
+   "trade": "handyman",
+   "phone": "662-212-3383",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Todd Mitchell",
+   "trade": "vinyl siding",
+   "phone": "662-284-0584",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Tony Moment",
+   "trade": "Concrete",
+   "phone": "662-415-1924",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Matt Tyler",
+   "trade": "Plumbing/electrical",
+   "phone": "731-438-1628",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Garison Lathrop",
+   "trade": "Cabinets,epoxy, woodwork",
+   "phone": "662-603-5202",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Jimmy Pace",
+   "trade": "Cabinets",
+   "phone": "662-643-7977",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Cameron Pace",
+   "trade": "Cabinets",
+   "phone": "662-554-2802",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Allen Hirsch",
+   "trade": "Cabinets",
+   "phone": "731-645-4036",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Joaquin Guerrero",
+   "trade": "Paint",
+   "phone": "901-289-6183",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Jeremy Johnston",
+   "trade": "Custom trim",
+   "phone": "731-610-6360",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Harbin Heating/Air",
+   "trade": "HVAC",
+   "phone": "",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Mauricio Mejia",
+   "trade": "Cabinets",
+   "phone": "662-603-9378",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Jacob Stewart",
+   "trade": "paint/floor/drywall",
+   "phone": "662-603-8872",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Mark Franks",
+   "trade": "cabinets",
+   "phone": "901-834-3072",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Nathan/Scott Bridges",
+   "trade": "carpentry",
+   "phone": "662-554-8515",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Christina Geary",
+   "trade": "Electrician",
+   "phone": "901-687-7712",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "Alan Wilson",
+   "trade": "Plumbing",
+   "phone": "901-870-4117",
+   "jobs": 0,
+   "source": "Corinth list"
+  },
+  {
+   "name": "ASF",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "City of Oxford",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "NEMPA",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "P&L Porta Potty",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "CWM",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Salena Henderson",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Lafayette Ready Mix",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Sebastian Pina",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Williams",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Jerry Hernandez",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Boral Brick",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Mark Fulco",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Elliott",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Felix",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Peyton/Felix",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Peyton",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Brian",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Ana Gomez",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Gutter Master?",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Batesville Overhead",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Wayne",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Corey",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Billy",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Winshield Magician",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Southern Pipe",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Mack",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Todd",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Bumgardener",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Riddle",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Mark Hill",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Magnolia Lighting",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "OAC",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Action Pest",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "ASF/Kurt",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  },
+  {
+   "name": "Kurt",
+   "trade": "",
+   "phone": "",
+   "jobs": 0,
+   "source": "estimate sheets"
+  }
+ ],
+ "crew": [
+  {
+   "name": "Rick Burge",
+   "role": "Operating Manager / CEO",
+   "phone": "(662) 292-1320",
+   "email": "admin@northmshomepros.com"
+  },
+  {
+   "name": "Josh Harris",
+   "role": "Sr. Superintendent \u00b7 Licensed Contractor R21909",
+   "phone": "(662) 871-8071",
+   "email": "josh@northmshomepros.com"
+  },
+  {
+   "name": "Jason Yant",
+   "role": "Senior Project Manager",
+   "phone": "(662) 397-5942",
+   "email": "jason@northmshomepros.com"
+  },
+  {
+   "name": "Walt Burge",
+   "role": "Senior Project Coordinator",
+   "phone": "(662) 292-5533",
+   "email": "waltb@northmshomepros.com"
+  },
+  {
+   "name": "Patton Brock Burge",
+   "role": "Accounting / Bookkeeping",
+   "phone": "",
+   "email": "brockb@northmshomepros.com"
+  },
+  {
+   "name": "Michael Todd Murphy",
+   "role": "Administrative Project Support",
+   "phone": "",
+   "email": ""
+  },
+  {
+   "name": "Sandi Woods",
+   "role": "Materials Specialist",
+   "phone": "(951) 265-8892",
+   "email": "sandiw@northmshomepros.com"
+  }
+ ]
+}

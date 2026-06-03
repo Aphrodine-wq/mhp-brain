@@ -1,0 +1,3325 @@
+{
+ "unit_costs": [
+  {
+   "item_no": "6.11",
+   "description": "Framing Labor",
+   "unit": "sqft",
+   "n_jobs": 68,
+   "median": 7.25,
+   "p25": 6.25,
+   "p75": 9.0,
+   "min": 4.0,
+   "max": 35.0
+  },
+  {
+   "item_no": "1.31.13",
+   "description": "Project Coordination (Supervision)",
+   "unit": "each",
+   "n_jobs": 63,
+   "median": 1250.0,
+   "p25": 1250.0,
+   "p75": 1550.0,
+   "min": 800.0,
+   "max": 2500.0
+  },
+  {
+   "item_no": "6.11",
+   "description": "Framing Material",
+   "unit": "sqft",
+   "n_jobs": 63,
+   "median": 8.9,
+   "p25": 8.44,
+   "p75": 10.06,
+   "min": 4.0,
+   "max": 30.25
+  },
+  {
+   "item_no": "6.20.23",
+   "description": "Interior Trim Material",
+   "unit": "sqft",
+   "n_jobs": 58,
+   "median": 3.21,
+   "p25": 2.35,
+   "p75": 5.0,
+   "min": 0.75,
+   "max": 6.5
+  },
+  {
+   "item_no": "6.20.23",
+   "description": "Interior Trim Labor",
+   "unit": "sqft",
+   "n_jobs": 57,
+   "median": 3.75,
+   "p25": 2.25,
+   "p75": 4.96,
+   "min": 0.75,
+   "max": 15.0
+  },
+  {
+   "item_no": "9.91.23",
+   "description": "Interior Paint Labor",
+   "unit": "interior",
+   "n_jobs": 54,
+   "median": 3.25,
+   "p25": 3.0,
+   "p75": 3.5,
+   "min": 1.25,
+   "max": 10.0
+  },
+  {
+   "item_no": "9.91.23",
+   "description": "Interior Paint Material",
+   "unit": "interior",
+   "n_jobs": 53,
+   "median": 1.5,
+   "p25": 1.5,
+   "p75": 2.19,
+   "min": 0.75,
+   "max": 3.25
+  },
+  {
+   "item_no": "9.91.13",
+   "description": "Exterior Paint Material",
+   "unit": "exterior",
+   "n_jobs": 52,
+   "median": 1.25,
+   "p25": 1.25,
+   "p75": 1.33,
+   "min": 0.25,
+   "max": 3.0
+  },
+  {
+   "item_no": "26",
+   "description": "Electrical Material",
+   "unit": "under roof sqft",
+   "n_jobs": 51,
+   "median": 4.25,
+   "p25": 4.0,
+   "p75": 5.0,
+   "min": 2.25,
+   "max": 10.0
+  },
+  {
+   "item_no": "9.91.13",
+   "description": "Exterior Paint Labor",
+   "unit": "exterior",
+   "n_jobs": 50,
+   "median": 3.0,
+   "p25": 3.0,
+   "p75": 3.25,
+   "min": 0.25,
+   "max": 6.0
+  },
+  {
+   "item_no": "26",
+   "description": "Electrical Labor",
+   "unit": "under roof sqft",
+   "n_jobs": 49,
+   "median": 4.0,
+   "p25": 3.25,
+   "p75": 4.0,
+   "min": 2.25,
+   "max": 12.0
+  },
+  {
+   "item_no": "1.74.19",
+   "description": "Waste Management",
+   "unit": "each",
+   "n_jobs": 47,
+   "median": 425.0,
+   "p25": 350.0,
+   "p75": 450.0,
+   "min": 350.0,
+   "max": 625.0
+  },
+  {
+   "item_no": "6.20.13",
+   "description": "Exterior Trim Material",
+   "unit": "sqft",
+   "n_jobs": 47,
+   "median": 3.83,
+   "p25": 2.25,
+   "p75": 3.9,
+   "min": 1.25,
+   "max": 10.0
+  },
+  {
+   "item_no": "6.20.13",
+   "description": "Exterior Trim Labor",
+   "unit": "sqft",
+   "n_jobs": 47,
+   "median": 2.0,
+   "p25": 2.0,
+   "p75": 4.0,
+   "min": 1.35,
+   "max": 25.0
+  },
+  {
+   "item_no": "22",
+   "description": "Plumbing Material & Labor",
+   "unit": "opening",
+   "n_jobs": 42,
+   "median": 800.0,
+   "p25": 700.0,
+   "p75": 853.5,
+   "min": 250.0,
+   "max": 1200.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Footing Material",
+   "unit": "lft",
+   "n_jobs": 42,
+   "median": 19.0,
+   "p25": 19.0,
+   "p75": 19.0,
+   "min": 5.0,
+   "max": 35.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Footing Labor",
+   "unit": "lft",
+   "n_jobs": 41,
+   "median": 8.0,
+   "p25": 8.0,
+   "p75": 8.0,
+   "min": 5.0,
+   "max": 25.0
+  },
+  {
+   "item_no": "12.36",
+   "description": "Countertop Labor",
+   "unit": "sqft",
+   "n_jobs": 40,
+   "median": 45.0,
+   "p25": 40.0,
+   "p75": 45.0,
+   "min": 17.5,
+   "max": 60.0
+  },
+  {
+   "item_no": "8.14",
+   "description": "Interior Doors",
+   "unit": "interior",
+   "n_jobs": 38,
+   "median": 325.0,
+   "p25": 229.0,
+   "p75": 425.0,
+   "min": 125.0,
+   "max": 600.0
+  },
+  {
+   "item_no": "7.21",
+   "description": "Insulation Material",
+   "unit": "insulation",
+   "n_jobs": 37,
+   "median": 1.85,
+   "p25": 1.85,
+   "p75": 2.18,
+   "min": 0.5,
+   "max": 6.5
+  },
+  {
+   "item_no": "10.57.23",
+   "description": "Closet Shelving Material",
+   "unit": "lft",
+   "n_jobs": 37,
+   "median": 15.0,
+   "p25": 12.0,
+   "p75": 23.75,
+   "min": 10.0,
+   "max": 65.0
+  },
+  {
+   "item_no": "1.52.19",
+   "description": "Sanitary Facilities (Port-A-Johns)",
+   "unit": "each",
+   "n_jobs": 37,
+   "median": 135.0,
+   "p25": 135.0,
+   "p75": 145.0,
+   "min": 110.0,
+   "max": 145.0
+  },
+  {
+   "item_no": "4.05.13",
+   "description": "Masonry Sand",
+   "unit": "cy",
+   "n_jobs": 37,
+   "median": 67.5,
+   "p25": 60.0,
+   "p75": 75.0,
+   "min": 25.0,
+   "max": 75.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Slab Material",
+   "unit": "cy",
+   "n_jobs": 36,
+   "median": 165.0,
+   "p25": 145.0,
+   "p75": 175.0,
+   "min": 55.0,
+   "max": 200.0
+  },
+  {
+   "item_no": "10.57.23",
+   "description": "Closet Shelving Labor",
+   "unit": "lft",
+   "n_jobs": 36,
+   "median": 25.0,
+   "p25": 15.0,
+   "p75": 25.0,
+   "min": 10.0,
+   "max": 50.0
+  },
+  {
+   "item_no": "8.71",
+   "description": "Door Hardware",
+   "unit": "door",
+   "n_jobs": 35,
+   "median": 65.0,
+   "p25": 65.0,
+   "p75": 75.0,
+   "min": 45.0,
+   "max": 115.0
+  },
+  {
+   "item_no": "3.11.13",
+   "description": "Concrete Forming Material (Includes Reinforcement)",
+   "unit": "sqft",
+   "n_jobs": 35,
+   "median": 0.95,
+   "p25": 0.65,
+   "p75": 1.35,
+   "min": 0.35,
+   "max": 6.5
+  },
+  {
+   "item_no": "3.31",
+   "description": "Slab Labor",
+   "unit": "sqft",
+   "n_jobs": 35,
+   "median": 2.25,
+   "p25": 2.0,
+   "p75": 5.0,
+   "min": 1.65,
+   "max": 25.0
+  },
+  {
+   "item_no": "12.36",
+   "description": "Countertop Material",
+   "unit": "sqft",
+   "n_jobs": 34,
+   "median": 45.0,
+   "p25": 40.0,
+   "p75": 55.0,
+   "min": 17.5,
+   "max": 65.0
+  },
+  {
+   "item_no": "9.64",
+   "description": "LVT Flooring - Labor",
+   "unit": "sqft",
+   "n_jobs": 33,
+   "median": 2.0,
+   "p25": 1.75,
+   "p75": 2.19,
+   "min": 1.5,
+   "max": 3.35
+  },
+  {
+   "item_no": "9.64",
+   "description": "LVT Flooring - Materials",
+   "unit": "sqft",
+   "n_jobs": 32,
+   "median": 3.0,
+   "p25": 3.0,
+   "p75": 3.65,
+   "min": 1.75,
+   "max": 4.35
+  },
+  {
+   "item_no": "12.35.30.13",
+   "description": "Kitchen Cabinets",
+   "unit": "lft",
+   "n_jobs": 31,
+   "median": 375.0,
+   "p25": 285.0,
+   "p75": 402.5,
+   "min": 185.0,
+   "max": 550.0
+  },
+  {
+   "item_no": "4.22",
+   "description": "Block Labor",
+   "unit": "block",
+   "n_jobs": 31,
+   "median": 3.0,
+   "p25": 3.0,
+   "p75": 3.0,
+   "min": 3.0,
+   "max": 10.0
+  },
+  {
+   "item_no": "4.22",
+   "description": "Block Material",
+   "unit": "block",
+   "n_jobs": 31,
+   "median": 4.0,
+   "p25": 4.0,
+   "p75": 4.0,
+   "min": 3.45,
+   "max": 6.25
+  },
+  {
+   "item_no": "7.46",
+   "description": "Siding Labor",
+   "unit": "siding",
+   "n_jobs": 29,
+   "median": 4.0,
+   "p25": 2.62,
+   "p75": 5.0,
+   "min": 2.0,
+   "max": 10.0
+  },
+  {
+   "item_no": "7.31.13",
+   "description": "Shingle Roofing Material",
+   "unit": "square",
+   "n_jobs": 29,
+   "median": 135.0,
+   "p25": 105.0,
+   "p75": 145.0,
+   "min": 95.0,
+   "max": 195.0
+  },
+  {
+   "item_no": "7.46",
+   "description": "Siding Material",
+   "unit": "siding",
+   "n_jobs": 28,
+   "median": 5.5,
+   "p25": 4.0,
+   "p75": 5.5,
+   "min": 1.85,
+   "max": 12.0
+  },
+  {
+   "item_no": "7.31.13",
+   "description": "Shingle Roofing Labor",
+   "unit": "square",
+   "n_jobs": 28,
+   "median": 145.0,
+   "p25": 125.0,
+   "p75": 150.0,
+   "min": 115.0,
+   "max": 195.0
+  },
+  {
+   "item_no": "31.31.16.13",
+   "description": "Termite Pre-Treat",
+   "unit": "termite",
+   "n_jobs": 27,
+   "median": 0.15,
+   "p25": 0.15,
+   "p75": 0.21,
+   "min": 0.15,
+   "max": 0.25
+  },
+  {
+   "item_no": "4.21.13",
+   "description": "Exterior Brick Material",
+   "unit": "each",
+   "n_jobs": 26,
+   "median": 450.0,
+   "p25": 11.5,
+   "p75": 450.0,
+   "min": 4.0,
+   "max": 650.0
+  },
+  {
+   "item_no": "9.29",
+   "description": "Drywall",
+   "unit": "sqft",
+   "n_jobs": 26,
+   "median": 3.12,
+   "p25": 2.06,
+   "p75": 3.25,
+   "min": 1.75,
+   "max": 18.0
+  },
+  {
+   "item_no": "9.29",
+   "description": "Drywall",
+   "unit": "board feet",
+   "n_jobs": 26,
+   "median": 1.95,
+   "p25": 1.85,
+   "p75": 2.17,
+   "min": 0.85,
+   "max": 5.5
+  },
+  {
+   "item_no": "12.35.30.23",
+   "description": "Bathroom Vanities",
+   "unit": "bathroom",
+   "n_jobs": 25,
+   "median": 300.0,
+   "p25": 250.0,
+   "p75": 350.0,
+   "min": 225.0,
+   "max": 1000.0
+  },
+  {
+   "item_no": "8.14",
+   "description": "Exterior Doors",
+   "unit": "exterior",
+   "n_jobs": 25,
+   "median": 1500.0,
+   "p25": 1200.0,
+   "p75": 2343.75,
+   "min": 250.0,
+   "max": 2895.0
+  },
+  {
+   "item_no": "4.21.13",
+   "description": "Exterior Brick Labor",
+   "unit": "thousand",
+   "n_jobs": 24,
+   "median": 450.0,
+   "p25": 410.0,
+   "p75": 450.0,
+   "min": 9.5,
+   "max": 500.0
+  },
+  {
+   "item_no": "7.21",
+   "description": "Insulation Labor",
+   "unit": "insulation",
+   "n_jobs": 24,
+   "median": 1.0,
+   "p25": 0.65,
+   "p75": 1.0,
+   "min": 0.25,
+   "max": 3.0
+  },
+  {
+   "item_no": "9.3",
+   "description": "Tile Labor",
+   "unit": "tile",
+   "n_jobs": 24,
+   "median": 8.0,
+   "p25": 6.0,
+   "p75": 10.0,
+   "min": 4.0,
+   "max": 20.0
+  },
+  {
+   "item_no": "26.5",
+   "description": "Lighting Fixtures",
+   "unit": "allowance",
+   "n_jobs": 24,
+   "median": 150.0,
+   "p25": 140.0,
+   "p75": 250.0,
+   "min": 100.0,
+   "max": 300.0
+  },
+  {
+   "item_no": "1.71.23.13",
+   "description": "Construction Staking",
+   "unit": "sqft",
+   "n_jobs": 23,
+   "median": 0.35,
+   "p25": 0.35,
+   "p75": 0.35,
+   "min": 0.15,
+   "max": 0.35
+  },
+  {
+   "item_no": "9.3",
+   "description": "Tile Materials",
+   "unit": "sqft",
+   "n_jobs": 22,
+   "median": 9.05,
+   "p25": 4.0,
+   "p75": 10.0,
+   "min": 3.25,
+   "max": 15.0
+  },
+  {
+   "item_no": "22.4",
+   "description": "Plumbing Fixtures",
+   "unit": "plumbing",
+   "n_jobs": 20,
+   "median": 200.0,
+   "p25": 150.0,
+   "p75": 200.0,
+   "min": 125.0,
+   "max": 500.0
+  },
+  {
+   "item_no": "23",
+   "description": "HVAC Material",
+   "unit": "hvac",
+   "n_jobs": 20,
+   "median": 3850.0,
+   "p25": 3750.0,
+   "p75": 3850.0,
+   "min": 3200.0,
+   "max": 4250.0
+  },
+  {
+   "item_no": "8.5",
+   "description": "Windows",
+   "unit": "windows&exterior",
+   "n_jobs": 18,
+   "median": 497.5,
+   "p25": 341.25,
+   "p75": 500.0,
+   "min": 210.0,
+   "max": 650.0
+  },
+  {
+   "item_no": "7.71.23",
+   "description": "Gutter Material",
+   "unit": "lft",
+   "n_jobs": 18,
+   "median": 4.75,
+   "p25": 4.75,
+   "p75": 9.5,
+   "min": 4.75,
+   "max": 12.0
+  },
+  {
+   "item_no": "7.71.23",
+   "description": "Gutter Labor",
+   "unit": "lft",
+   "n_jobs": 18,
+   "median": 4.5,
+   "p25": 4.5,
+   "p75": 6.5,
+   "min": 4.5,
+   "max": 12.0
+  },
+  {
+   "item_no": "9.3",
+   "description": "Backsplash Material",
+   "unit": "backsplash",
+   "n_jobs": 18,
+   "median": 20.0,
+   "p25": 15.0,
+   "p75": 25.0,
+   "min": 6.0,
+   "max": 25.0
+  },
+  {
+   "item_no": "9.3",
+   "description": "Backsplash Labor",
+   "unit": "backsplash",
+   "n_jobs": 18,
+   "median": 20.0,
+   "p25": 15.0,
+   "p75": 25.0,
+   "min": 5.0,
+   "max": 25.0
+  },
+  {
+   "item_no": "1.74.13",
+   "description": "Progess Cleaning",
+   "unit": "each",
+   "n_jobs": 17,
+   "median": 350.0,
+   "p25": 350.0,
+   "p75": 350.0,
+   "min": 350.0,
+   "max": 750.0
+  },
+  {
+   "item_no": "6.44.39",
+   "description": "Wood Post & Column Material",
+   "unit": "lft",
+   "n_jobs": 17,
+   "median": 15.0,
+   "p25": 15.0,
+   "p75": 35.0,
+   "min": 8.0,
+   "max": 35.0
+  },
+  {
+   "item_no": "33.71",
+   "description": "Electrical Conduit",
+   "unit": "electrical",
+   "n_jobs": 17,
+   "median": 7.0,
+   "p25": 7.0,
+   "p75": 7.0,
+   "min": 7.0,
+   "max": 12.0
+  },
+  {
+   "item_no": "9.68",
+   "description": "Floor Tile",
+   "unit": "sqft",
+   "n_jobs": 16,
+   "median": 4.5,
+   "p25": 4.25,
+   "p75": 4.5,
+   "min": 4.0,
+   "max": 10.0
+  },
+  {
+   "item_no": "9.68",
+   "description": "Floor Tile Labor",
+   "unit": "sqft",
+   "n_jobs": 16,
+   "median": 6.5,
+   "p25": 6.5,
+   "p75": 6.5,
+   "min": 4.0,
+   "max": 6.5
+  },
+  {
+   "item_no": "6.44.39",
+   "description": "Wood Post & Column Labor",
+   "unit": "lft",
+   "n_jobs": 15,
+   "median": 20.0,
+   "p25": 9.5,
+   "p75": 35.0,
+   "min": 5.0,
+   "max": 35.0
+  },
+  {
+   "item_no": "22",
+   "description": "Plumbing Gas Materials and Labor",
+   "unit": "plumbing",
+   "n_jobs": 15,
+   "median": 400.0,
+   "p25": 350.0,
+   "p75": 512.5,
+   "min": 350.0,
+   "max": 1000.0
+  },
+  {
+   "item_no": "6.43.13",
+   "description": "Stair Material",
+   "unit": "stair",
+   "n_jobs": 14,
+   "median": 137.5,
+   "p25": 125.0,
+   "p75": 165.0,
+   "min": 30.0,
+   "max": 175.0
+  },
+  {
+   "item_no": "6.43.13",
+   "description": "Stair Labor",
+   "unit": "stair",
+   "n_jobs": 14,
+   "median": 150.0,
+   "p25": 150.0,
+   "p75": 150.0,
+   "min": 50.0,
+   "max": 150.0
+  },
+  {
+   "item_no": "22.3",
+   "description": "Water Heaters",
+   "unit": "each",
+   "n_jobs": 14,
+   "median": 1950.0,
+   "p25": 1950.0,
+   "p75": 2500.0,
+   "min": 1500.0,
+   "max": 2500.0
+  },
+  {
+   "item_no": "2.41.16",
+   "description": "Structure Demolition",
+   "unit": null,
+   "n_jobs": 13,
+   "median": 1300.0,
+   "p25": 1200.0,
+   "p75": 1500.0,
+   "min": 650.0,
+   "max": 1500.0
+  },
+  {
+   "item_no": "32.16.33",
+   "description": "Porch Material",
+   "unit": "sqft",
+   "n_jobs": 12,
+   "median": 3.31,
+   "p25": 3.0,
+   "p75": 6.25,
+   "min": 3.0,
+   "max": 17.6
+  },
+  {
+   "item_no": "9.3",
+   "description": "Shower Tile",
+   "unit": "sqft",
+   "n_jobs": 11,
+   "median": 12.0,
+   "p25": 10.0,
+   "p75": 18.5,
+   "min": 8.0,
+   "max": 18.5
+  },
+  {
+   "item_no": "9.61.19",
+   "description": "Concrete Floor Staining/Scoring Material",
+   "unit": "sqft",
+   "n_jobs": 11,
+   "median": 1.95,
+   "p25": 0.45,
+   "p75": 1.95,
+   "min": 0.25,
+   "max": 3.25
+  },
+  {
+   "item_no": "9.3",
+   "description": "Shower Labor",
+   "unit": "sqft",
+   "n_jobs": 10,
+   "median": 18.5,
+   "p25": 15.88,
+   "p75": 18.5,
+   "min": 4.5,
+   "max": 18.5
+  },
+  {
+   "item_no": "10.28.19.16",
+   "description": "Shower Door (Included Material & Labor)",
+   "unit": "shower",
+   "n_jobs": 10,
+   "median": 1450.0,
+   "p25": 1450.0,
+   "p75": 1800.0,
+   "min": 1350.0,
+   "max": 2000.0
+  },
+  {
+   "item_no": "1.33.16",
+   "description": "Architectural Plans",
+   "unit": "each",
+   "n_jobs": 10,
+   "median": 100.0,
+   "p25": 100.0,
+   "p75": 250.0,
+   "min": 100.0,
+   "max": 850.0
+  },
+  {
+   "item_no": "7.41.13",
+   "description": "Metal Roofing Labor",
+   "unit": "metal",
+   "n_jobs": 10,
+   "median": 142.5,
+   "p25": 25.0,
+   "p75": 200.0,
+   "min": 2.5,
+   "max": 200.0
+  },
+  {
+   "item_no": "9.61.19",
+   "description": "Concrete Floor Staining/Scoring Labor",
+   "unit": "sqft",
+   "n_jobs": 10,
+   "median": 4.0,
+   "p25": 3.0,
+   "p75": 4.75,
+   "min": 3.0,
+   "max": 4.75
+  },
+  {
+   "item_no": "7.1",
+   "description": "Foundation Waterproofing",
+   "unit": "foundation",
+   "n_jobs": 9,
+   "median": 1.25,
+   "p25": 1.25,
+   "p75": 1.25,
+   "min": 0.65,
+   "max": 125.0
+  },
+  {
+   "item_no": "8.5",
+   "description": "Windows&Exterior doors",
+   "unit": "windows&exterior",
+   "n_jobs": 9,
+   "median": 550.0,
+   "p25": 300.0,
+   "p75": 550.0,
+   "min": 225.0,
+   "max": 550.0
+  },
+  {
+   "item_no": "32.16.33",
+   "description": "Porch Labor",
+   "unit": "sqft",
+   "n_jobs": 8,
+   "median": 4.12,
+   "p25": 3.25,
+   "p75": 12.91,
+   "min": 3.25,
+   "max": 35.0
+  },
+  {
+   "item_no": "7.41.13",
+   "description": "Metal Roofing Labor",
+   "unit": "sqft",
+   "n_jobs": 7,
+   "median": 4.0,
+   "p25": 4.0,
+   "p75": 4.0,
+   "min": 4.0,
+   "max": 165.0
+  },
+  {
+   "item_no": "32.16.33",
+   "description": "Driveway labor",
+   "unit": "sqft",
+   "n_jobs": 7,
+   "median": 3.5,
+   "p25": 3.25,
+   "p75": 4.25,
+   "min": 3.0,
+   "max": 4.5
+  },
+  {
+   "item_no": "12.35.30",
+   "description": "Built-ins",
+   "unit": "built",
+   "n_jobs": 7,
+   "median": 2850.0,
+   "p25": 1850.0,
+   "p75": 2850.0,
+   "min": 850.0,
+   "max": 2850.0
+  },
+  {
+   "item_no": "1.74.13",
+   "description": "Progress Cleaning",
+   "unit": "each",
+   "n_jobs": 6,
+   "median": 350.0,
+   "p25": 350.0,
+   "p75": 350.0,
+   "min": 350.0,
+   "max": 450.0
+  },
+  {
+   "item_no": "32.16.23",
+   "description": "Sidewalk Material",
+   "unit": "sidewalk",
+   "n_jobs": 6,
+   "median": 5.0,
+   "p25": 5.0,
+   "p75": 5.0,
+   "min": 5.0,
+   "max": 10.5
+  },
+  {
+   "item_no": "32.16.23",
+   "description": "Sidewalk Labor",
+   "unit": "sidewalk",
+   "n_jobs": 6,
+   "median": 10.0,
+   "p25": 10.0,
+   "p75": 10.0,
+   "min": 10.0,
+   "max": 10.5
+  },
+  {
+   "item_no": "7.41.13",
+   "description": "Metal Roofing Material&Labor",
+   "unit": "sqft",
+   "n_jobs": 6,
+   "median": 3.4,
+   "p25": 3.4,
+   "p75": 3.4,
+   "min": 3.4,
+   "max": 3.4
+  },
+  {
+   "item_no": "2.41.16",
+   "description": "Structure Demolition",
+   "unit": "day",
+   "n_jobs": 6,
+   "median": 1425.0,
+   "p25": 1350.0,
+   "p75": 1500.0,
+   "min": 1250.0,
+   "max": 1500.0
+  },
+  {
+   "item_no": "9.91.23",
+   "description": "Interior Paint Material",
+   "unit": "sqft",
+   "n_jobs": 6,
+   "median": 1.65,
+   "p25": 1.65,
+   "p75": 1.91,
+   "min": 1.5,
+   "max": 2.0
+  },
+  {
+   "item_no": "9.91.23",
+   "description": "Interior Paint Labor",
+   "unit": "sqft",
+   "n_jobs": 6,
+   "median": 2.5,
+   "p25": 2.25,
+   "p75": 3.12,
+   "min": 2.0,
+   "max": 3.25
+  },
+  {
+   "item_no": "8.14",
+   "description": "Interior Doors",
+   "unit": "each/allowance",
+   "n_jobs": 6,
+   "median": 287.5,
+   "p25": 246.25,
+   "p75": 355.0,
+   "min": 165.0,
+   "max": 365.0
+  },
+  {
+   "item_no": "32.16.33",
+   "description": "Driveway",
+   "unit": "sqft",
+   "n_jobs": 5,
+   "median": 6.25,
+   "p25": 5.0,
+   "p75": 6.25,
+   "min": 5.0,
+   "max": 6.25
+  },
+  {
+   "item_no": "1.51.29",
+   "description": "Rental Equipment",
+   "unit": null,
+   "n_jobs": 5,
+   "median": 3500.0,
+   "p25": 3500.0,
+   "p75": 3500.0,
+   "min": 3500.0,
+   "max": 3500.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Pump Truck",
+   "unit": "each",
+   "n_jobs": 5,
+   "median": 1950.0,
+   "p25": 1950.0,
+   "p75": 1950.0,
+   "min": 1950.0,
+   "max": 1950.0
+  },
+  {
+   "item_no": "5.51",
+   "description": "Structural Steel",
+   "unit": "ton",
+   "n_jobs": 5,
+   "median": 9500.0,
+   "p25": 9500.0,
+   "p75": 9500.0,
+   "min": 9500.0,
+   "max": 9500.0
+  },
+  {
+   "item_no": "6.17.53",
+   "description": "Trusses & Trim Joists - LVL",
+   "unit": "lft",
+   "n_jobs": 5,
+   "median": 7.0,
+   "p25": 7.0,
+   "p75": 7.0,
+   "min": 7.0,
+   "max": 7.0
+  },
+  {
+   "item_no": "7.41.13",
+   "description": "Metal Roofing Material Labor",
+   "unit": "metal",
+   "n_jobs": 5,
+   "median": 200.0,
+   "p25": 200.0,
+   "p75": 200.0,
+   "min": 200.0,
+   "max": 200.0
+  },
+  {
+   "item_no": "8.5",
+   "description": "Windows",
+   "unit": "windows exterior",
+   "n_jobs": 5,
+   "median": 500.0,
+   "p25": 500.0,
+   "p75": 500.0,
+   "min": 500.0,
+   "max": 500.0
+  },
+  {
+   "item_no": "9.3",
+   "description": "Wall Material",
+   "unit": "sqft",
+   "n_jobs": 5,
+   "median": 15.5,
+   "p25": 15.5,
+   "p75": 15.5,
+   "min": 15.5,
+   "max": 15.5
+  },
+  {
+   "item_no": "9.3",
+   "description": "Wall Labor",
+   "unit": "tile",
+   "n_jobs": 5,
+   "median": 10.25,
+   "p25": 10.25,
+   "p75": 10.25,
+   "min": 10.25,
+   "max": 10.25
+  },
+  {
+   "item_no": "9.61.19",
+   "description": "Epoxy Floors Materials",
+   "unit": "sqft",
+   "n_jobs": 5,
+   "median": 1.95,
+   "p25": 1.95,
+   "p75": 1.95,
+   "min": 1.95,
+   "max": 1.95
+  },
+  {
+   "item_no": "9.61.19",
+   "description": "Epoxy Floor Staining/Scoring Labor",
+   "unit": "sqft",
+   "n_jobs": 5,
+   "median": 3.25,
+   "p25": 3.25,
+   "p75": 3.25,
+   "min": 3.25,
+   "max": 3.25
+  },
+  {
+   "item_no": "9.68",
+   "description": "Brick Pavers and Labor",
+   "unit": "sqft",
+   "n_jobs": 5,
+   "median": 13.25,
+   "p25": 13.25,
+   "p75": 13.25,
+   "min": 13.25,
+   "max": 13.25
+  },
+  {
+   "item_no": "9.68",
+   "description": "Ceiling Tiles",
+   "unit": "sqft",
+   "n_jobs": 5,
+   "median": 6.5,
+   "p25": 6.5,
+   "p75": 6.5,
+   "min": 6.5,
+   "max": 6.5
+  },
+  {
+   "item_no": "6.11",
+   "description": "Fencing Material",
+   "unit": "lft",
+   "n_jobs": 5,
+   "median": 20.0,
+   "p25": 13.5,
+   "p75": 25.0,
+   "min": 13.0,
+   "max": 25.0
+  },
+  {
+   "item_no": "6.43.13",
+   "description": "Stair Material",
+   "unit": "step",
+   "n_jobs": 5,
+   "median": 100.0,
+   "p25": 100.0,
+   "p75": 125.0,
+   "min": 25.0,
+   "max": 125.0
+  },
+  {
+   "item_no": "6.43.13",
+   "description": "Stair Labor",
+   "unit": "step",
+   "n_jobs": 5,
+   "median": 150.0,
+   "p25": 150.0,
+   "p75": 150.0,
+   "min": 150.0,
+   "max": 150.0
+  },
+  {
+   "item_no": "33.71",
+   "description": "Electrical Conduit",
+   "unit": "lft",
+   "n_jobs": 5,
+   "median": 8.0,
+   "p25": 7.0,
+   "p75": 8.0,
+   "min": 7.0,
+   "max": 250.0
+  },
+  {
+   "item_no": "9.68",
+   "description": "Backsplash Tile Materails",
+   "unit": "sqft",
+   "n_jobs": 4,
+   "median": 10.0,
+   "p25": 9.5,
+   "p75": 13.75,
+   "min": 8.0,
+   "max": 25.0
+  },
+  {
+   "item_no": "9.68",
+   "description": "Backsplash Tile Labor",
+   "unit": "sqft",
+   "n_jobs": 4,
+   "median": 13.75,
+   "p25": 11.88,
+   "p75": 17.5,
+   "min": 10.0,
+   "max": 25.0
+  },
+  {
+   "item_no": "12.35.30",
+   "description": "Built-ins",
+   "unit": "lft",
+   "n_jobs": 4,
+   "median": 200.0,
+   "p25": 193.75,
+   "p75": 237.5,
+   "min": 175.0,
+   "max": 350.0
+  },
+  {
+   "item_no": "9.3",
+   "description": "Tile Material&Labor",
+   "unit": "tile",
+   "n_jobs": 4,
+   "median": 15.0,
+   "p25": 14.5,
+   "p75": 973.75,
+   "min": 13.0,
+   "max": 3850.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Slab",
+   "unit": "sqft",
+   "n_jobs": 4,
+   "median": 8.5,
+   "p25": 8.5,
+   "p75": 8.5,
+   "min": 8.5,
+   "max": 8.5
+  },
+  {
+   "item_no": "6.44.39",
+   "description": "Wood Post & Column Material",
+   "unit": "each",
+   "n_jobs": 4,
+   "median": 15.0,
+   "p25": 15.0,
+   "p75": 27.5,
+   "min": 15.0,
+   "max": 65.0
+  },
+  {
+   "item_no": "6.41.93",
+   "description": "Cabinet & Drawer Hardware",
+   "unit": "cabinet",
+   "n_jobs": 4,
+   "median": 11.75,
+   "p25": 8.5,
+   "p75": 15.0,
+   "min": 8.5,
+   "max": 15.0
+  },
+  {
+   "item_no": "9.91.13",
+   "description": "Exterior Paint Material",
+   "unit": "sqft",
+   "n_jobs": 4,
+   "median": 2.0,
+   "p25": 1.62,
+   "p75": 2.25,
+   "min": 1.25,
+   "max": 2.25
+  },
+  {
+   "item_no": "9.91.13",
+   "description": "Exterior Paint Labor",
+   "unit": "sqft",
+   "n_jobs": 4,
+   "median": 2.62,
+   "p25": 2.25,
+   "p75": 3.19,
+   "min": 2.25,
+   "max": 3.75
+  },
+  {
+   "item_no": "1.31.13",
+   "description": "Project Coordination (Supervision)",
+   "unit": "month",
+   "n_jobs": 4,
+   "median": 1375.0,
+   "p25": 1062.5,
+   "p75": 1500.0,
+   "min": 500.0,
+   "max": 1500.0
+  },
+  {
+   "item_no": "8.71",
+   "description": "Door Hardware",
+   "unit": "each/allowance",
+   "n_jobs": 4,
+   "median": 65.0,
+   "p25": 62.5,
+   "p75": 67.5,
+   "min": 55.0,
+   "max": 75.0
+  },
+  {
+   "item_no": "6.11",
+   "description": "Fencing Labor",
+   "unit": "lft",
+   "n_jobs": 4,
+   "median": 10.0,
+   "p25": 8.0,
+   "p75": 12.75,
+   "min": 8.0,
+   "max": 15.0
+  },
+  {
+   "item_no": "1.52.19",
+   "description": "Sanitary Facilities (Port-A-Johns)",
+   "unit": "month",
+   "n_jobs": 4,
+   "median": 117.5,
+   "p25": 110.0,
+   "p75": 125.0,
+   "min": 110.0,
+   "max": 125.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Block Material",
+   "unit": "block",
+   "n_jobs": 4,
+   "median": 4.0,
+   "p25": 4.0,
+   "p75": 4.0,
+   "min": 4.0,
+   "max": 4.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Block Labor",
+   "unit": "block",
+   "n_jobs": 4,
+   "median": 4.0,
+   "p25": 3.0,
+   "p75": 5.0,
+   "min": 3.0,
+   "max": 5.0
+  },
+  {
+   "item_no": "7.25",
+   "description": "Foundation Moisture Barrier",
+   "unit": "sqft",
+   "n_jobs": 4,
+   "median": 0.25,
+   "p25": 0.25,
+   "p75": 0.25,
+   "min": 0.25,
+   "max": 0.25
+  },
+  {
+   "item_no": "8.14",
+   "description": "Exterior Doors",
+   "unit": "each/allowance",
+   "n_jobs": 4,
+   "median": 1175.0,
+   "p25": 1075.0,
+   "p75": 1250.0,
+   "min": 1000.0,
+   "max": 1250.0
+  },
+  {
+   "item_no": "8.5",
+   "description": "Windows",
+   "unit": "each/allowance",
+   "n_jobs": 4,
+   "median": 472.5,
+   "p25": 435.0,
+   "p75": 565.0,
+   "min": 435.0,
+   "max": 730.0
+  },
+  {
+   "item_no": "23",
+   "description": "HVAC Material",
+   "unit": "ton",
+   "n_jobs": 4,
+   "median": 3800.0,
+   "p25": 3695.0,
+   "p75": 3850.0,
+   "min": 3530.0,
+   "max": 3850.0
+  },
+  {
+   "item_no": "26",
+   "description": "Electrical Material",
+   "unit": "sqft",
+   "n_jobs": 4,
+   "median": 3.0,
+   "p25": 2.25,
+   "p75": 3.75,
+   "min": 2.25,
+   "max": 3.75
+  },
+  {
+   "item_no": "26",
+   "description": "Electrical Labor",
+   "unit": "sqft",
+   "n_jobs": 4,
+   "median": 3.12,
+   "p25": 2.5,
+   "p75": 3.75,
+   "min": 2.5,
+   "max": 3.75
+  },
+  {
+   "item_no": "31.31.16.13",
+   "description": "Termite Pre-Treat",
+   "unit": "sqft",
+   "n_jobs": 4,
+   "median": 0.15,
+   "p25": 0.15,
+   "p75": 0.15,
+   "min": 0.15,
+   "max": 0.15
+  },
+  {
+   "item_no": "32.16.33",
+   "description": "Driveway Material",
+   "unit": "sqft",
+   "n_jobs": 4,
+   "median": 2.5,
+   "p25": 2.5,
+   "p75": 2.5,
+   "min": 2.5,
+   "max": 2.5
+  },
+  {
+   "item_no": "22",
+   "description": "Plumbing Material",
+   "unit": "opening",
+   "n_jobs": 4,
+   "median": 375.0,
+   "p25": 375.0,
+   "p75": 468.75,
+   "min": 375.0,
+   "max": 750.0
+  },
+  {
+   "item_no": "7.41.13",
+   "description": "Metal Roofing Labor",
+   "unit": "square",
+   "n_jobs": 3,
+   "median": 150.0,
+   "p25": 115.0,
+   "p75": 240.0,
+   "min": 80.0,
+   "max": 330.0
+  },
+  {
+   "item_no": "4.21.13",
+   "description": "Exterior Brick Labor",
+   "unit": "each",
+   "n_jobs": 3,
+   "median": 3.25,
+   "p25": 3.25,
+   "p75": 3.25,
+   "min": 3.25,
+   "max": 3.25
+  },
+  {
+   "item_no": "6.44.39",
+   "description": "Wood Post & Column Labor",
+   "unit": "per",
+   "n_jobs": 3,
+   "median": 75.0,
+   "p25": 45.0,
+   "p75": 112.5,
+   "min": 15.0,
+   "max": 150.0
+  },
+  {
+   "item_no": "9.3",
+   "description": "Tile Labor",
+   "unit": "sqft",
+   "n_jobs": 3,
+   "median": 8.0,
+   "p25": 5.5,
+   "p75": 9.0,
+   "min": 3.0,
+   "max": 10.0
+  },
+  {
+   "item_no": "9.3",
+   "description": "Shower Tile Materials",
+   "unit": "tile",
+   "n_jobs": 3,
+   "median": 15.5,
+   "p25": 13.75,
+   "p75": 17.75,
+   "min": 12.0,
+   "max": 20.0
+  },
+  {
+   "item_no": "6.44.39",
+   "description": "Wood Post & Column Labor",
+   "unit": "eact",
+   "n_jobs": 3,
+   "median": 20.0,
+   "p25": 20.0,
+   "p75": 20.0,
+   "min": 20.0,
+   "max": 20.0
+  },
+  {
+   "item_no": "7.21",
+   "description": "Insulation Material",
+   "unit": "sqft",
+   "n_jobs": 3,
+   "median": 0.75,
+   "p25": 0.75,
+   "p75": 0.75,
+   "min": 0.75,
+   "max": 0.75
+  },
+  {
+   "item_no": "7.21",
+   "description": "Insulation Labor",
+   "unit": "sqft",
+   "n_jobs": 3,
+   "median": 1.75,
+   "p25": 1.75,
+   "p75": 1.75,
+   "min": 1.75,
+   "max": 1.75
+  },
+  {
+   "item_no": "6.11",
+   "description": "Framing Labor",
+   "unit": "each",
+   "n_jobs": 3,
+   "median": 850.0,
+   "p25": 850.0,
+   "p75": 1200.0,
+   "min": 850.0,
+   "max": 1550.0
+  },
+  {
+   "item_no": "32.9",
+   "description": "Grass Turf",
+   "unit": "sqft",
+   "n_jobs": 3,
+   "median": 8.5,
+   "p25": 6.14,
+   "p75": 8.5,
+   "min": 3.78,
+   "max": 8.5
+  },
+  {
+   "item_no": "8.33.23",
+   "description": "Barn Door Kits",
+   "unit": "barn",
+   "n_jobs": 3,
+   "median": 115.0,
+   "p25": 72.5,
+   "p75": 115.0,
+   "min": 30.0,
+   "max": 115.0
+  },
+  {
+   "item_no": "26",
+   "description": "Electrical Material",
+   "unit": "each",
+   "n_jobs": 3,
+   "median": 1750.0,
+   "p25": 1750.0,
+   "p75": 1750.0,
+   "min": 1750.0,
+   "max": 1750.0
+  },
+  {
+   "item_no": "7.41.13",
+   "description": "Metal Roofing Material&Labor",
+   "unit": "square",
+   "n_jobs": 2,
+   "median": 205.0,
+   "p25": 142.5,
+   "p75": 267.5,
+   "min": 80.0,
+   "max": 330.0
+  },
+  {
+   "item_no": "12.35.33",
+   "description": "Laundry Cabinets",
+   "unit": "laundry",
+   "n_jobs": 2,
+   "median": 275.0,
+   "p25": 250.0,
+   "p75": 300.0,
+   "min": 225.0,
+   "max": 325.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Driveway Concrete",
+   "unit": "cy",
+   "n_jobs": 2,
+   "median": 165.0,
+   "p25": 165.0,
+   "p75": 165.0,
+   "min": 165.0,
+   "max": 165.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Driveway Labor",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 6.0,
+   "p25": 6.0,
+   "p75": 6.0,
+   "min": 6.0,
+   "max": 6.0
+  },
+  {
+   "item_no": "7.25",
+   "description": "Foundation Moisture Barrier",
+   "unit": "foundation",
+   "n_jobs": 2,
+   "median": 1.62,
+   "p25": 1.44,
+   "p75": 1.81,
+   "min": 1.25,
+   "max": 2.0
+  },
+  {
+   "item_no": "32.16.33",
+   "description": "Screen Porch Labor",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 6.12,
+   "p25": 4.69,
+   "p75": 7.56,
+   "min": 3.25,
+   "max": 9.0
+  },
+  {
+   "item_no": "8.75",
+   "description": "Garage Door",
+   "unit": "door",
+   "n_jobs": 2,
+   "median": 2500.0,
+   "p25": 2500.0,
+   "p75": 2500.0,
+   "min": 2500.0,
+   "max": 2500.0
+  },
+  {
+   "item_no": "4.43",
+   "description": "Interior Fireplace Finish Labor",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 10.0,
+   "p25": 10.0,
+   "p75": 10.0,
+   "min": 10.0,
+   "max": 10.0
+  },
+  {
+   "item_no": "4.43",
+   "description": "Stone Material Interior Fireplace",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 10.0,
+   "p25": 10.0,
+   "p75": 10.0,
+   "min": 10.0,
+   "max": 10.0
+  },
+  {
+   "item_no": "10.57.33",
+   "description": "Built In",
+   "unit": "built",
+   "n_jobs": 2,
+   "median": 3500.0,
+   "p25": 3500.0,
+   "p75": 3500.0,
+   "min": 3500.0,
+   "max": 3500.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "80lb bag concrete",
+   "unit": "per",
+   "n_jobs": 2,
+   "median": 7.0,
+   "p25": 7.0,
+   "p75": 7.0,
+   "min": 7.0,
+   "max": 7.0
+  },
+  {
+   "item_no": "8.75",
+   "description": "Door Labor",
+   "unit": "per",
+   "n_jobs": 2,
+   "median": 75.0,
+   "p25": 75.0,
+   "p75": 75.0,
+   "min": 75.0,
+   "max": 75.0
+  },
+  {
+   "item_no": "9.61.19",
+   "description": "Bathroom Floor Material",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 13.0,
+   "p25": 13.0,
+   "p75": 13.0,
+   "min": 13.0,
+   "max": 13.0
+  },
+  {
+   "item_no": "9.61.19",
+   "description": "Bathroom Floor Labor",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 15.0,
+   "p25": 15.0,
+   "p75": 15.0,
+   "min": 15.0,
+   "max": 15.0
+  },
+  {
+   "item_no": "9.68",
+   "description": "Wall Tile Material",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 9.0,
+   "p25": 9.0,
+   "p75": 9.0,
+   "min": 9.0,
+   "max": 9.0
+  },
+  {
+   "item_no": "9.68",
+   "description": "Wall Tile Labor",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 10.0,
+   "p25": 10.0,
+   "p75": 10.0,
+   "min": 10.0,
+   "max": 10.0
+  },
+  {
+   "item_no": "9.68",
+   "description": "Carpet Material",
+   "unit": "cy",
+   "n_jobs": 2,
+   "median": 16.5,
+   "p25": 16.5,
+   "p75": 16.5,
+   "min": 16.5,
+   "max": 16.5
+  },
+  {
+   "item_no": "9.68",
+   "description": "Carpet Labor",
+   "unit": "cy",
+   "n_jobs": 2,
+   "median": 12.5,
+   "p25": 12.5,
+   "p75": 12.5,
+   "min": 12.5,
+   "max": 12.5
+  },
+  {
+   "item_no": "8.75",
+   "description": "Skylights",
+   "unit": "door",
+   "n_jobs": 2,
+   "median": 650.0,
+   "p25": 650.0,
+   "p75": 650.0,
+   "min": 650.0,
+   "max": 650.0
+  },
+  {
+   "item_no": "6.11",
+   "description": "Fence Material",
+   "unit": "lft",
+   "n_jobs": 2,
+   "median": 14.75,
+   "p25": 13.38,
+   "p75": 16.12,
+   "min": 12.0,
+   "max": 17.5
+  },
+  {
+   "item_no": "6.11",
+   "description": "Framing Labor",
+   "unit": "lft",
+   "n_jobs": 2,
+   "median": 12.75,
+   "p25": 10.88,
+   "p75": 14.62,
+   "min": 9.0,
+   "max": 16.5
+  },
+  {
+   "item_no": "4.43",
+   "description": "backfill",
+   "unit": "cy",
+   "n_jobs": 2,
+   "median": 65.0,
+   "p25": 65.0,
+   "p75": 65.0,
+   "min": 65.0,
+   "max": 65.0
+  },
+  {
+   "item_no": "5.51",
+   "description": "Metal Fence",
+   "unit": "lft",
+   "n_jobs": 2,
+   "median": 70.0,
+   "p25": 70.0,
+   "p75": 70.0,
+   "min": 70.0,
+   "max": 70.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Chain wall Footing Labor",
+   "unit": "lft",
+   "n_jobs": 2,
+   "median": 9.12,
+   "p25": 8.56,
+   "p75": 9.69,
+   "min": 8.0,
+   "max": 10.25
+  },
+  {
+   "item_no": "3.31",
+   "description": "Slab Material",
+   "unit": "yard/allowance",
+   "n_jobs": 2,
+   "median": 190.0,
+   "p25": 187.5,
+   "p75": 192.5,
+   "min": 185.0,
+   "max": 195.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Foundation Labor",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 1.9,
+   "p25": 1.88,
+   "p75": 1.93,
+   "min": 1.85,
+   "max": 1.95
+  },
+  {
+   "item_no": "4.05.13",
+   "description": "Masonry Sand",
+   "unit": "yard",
+   "n_jobs": 2,
+   "median": 60.0,
+   "p25": 60.0,
+   "p75": 60.0,
+   "min": 60.0,
+   "max": 60.0
+  },
+  {
+   "item_no": "4.21.13",
+   "description": "Exterior Brick Material",
+   "unit": "1000/allowance",
+   "n_jobs": 2,
+   "median": 420.0,
+   "p25": 420.0,
+   "p75": 420.0,
+   "min": 420.0,
+   "max": 420.0
+  },
+  {
+   "item_no": "4.22",
+   "description": "Block Labor",
+   "unit": "each",
+   "n_jobs": 2,
+   "median": 2.25,
+   "p25": 2.25,
+   "p75": 2.25,
+   "min": 2.25,
+   "max": 2.25
+  },
+  {
+   "item_no": "4.22",
+   "description": "Block Material",
+   "unit": "each",
+   "n_jobs": 2,
+   "median": 3.0,
+   "p25": 3.0,
+   "p75": 3.0,
+   "min": 3.0,
+   "max": 3.0
+  },
+  {
+   "item_no": "7.21",
+   "description": "Fiberglass Insulation",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 2.25,
+   "p25": 2.25,
+   "p75": 2.25,
+   "min": 2.25,
+   "max": 2.25
+  },
+  {
+   "item_no": "7.46",
+   "description": "Siding Material",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 2.0,
+   "p25": 2.0,
+   "p75": 2.0,
+   "min": 2.0,
+   "max": 2.0
+  },
+  {
+   "item_no": "7.46",
+   "description": "Siding Labor",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 2.35,
+   "p25": 2.35,
+   "p75": 2.35,
+   "min": 2.35,
+   "max": 2.35
+  },
+  {
+   "item_no": "9.29",
+   "description": "Drywall",
+   "unit": "board ft",
+   "n_jobs": 2,
+   "median": 1.25,
+   "p25": 1.25,
+   "p75": 1.25,
+   "min": 1.25,
+   "max": 1.25
+  },
+  {
+   "item_no": "9.3",
+   "description": "Floor Tile Labor",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 3.5,
+   "p25": 3.5,
+   "p75": 3.5,
+   "min": 3.5,
+   "max": 3.5
+  },
+  {
+   "item_no": "9.3",
+   "description": "Floor Tile Material",
+   "unit": "sqft/allowance",
+   "n_jobs": 2,
+   "median": 4.0,
+   "p25": 4.0,
+   "p75": 4.0,
+   "min": 4.0,
+   "max": 4.0
+  },
+  {
+   "item_no": "9.3",
+   "description": "Backsplash and shower floors Material",
+   "unit": "sqft/allowance",
+   "n_jobs": 2,
+   "median": 15.0,
+   "p25": 15.0,
+   "p75": 15.0,
+   "min": 15.0,
+   "max": 15.0
+  },
+  {
+   "item_no": "9.3",
+   "description": "Backsplash Labor",
+   "unit": "base",
+   "n_jobs": 2,
+   "median": 25.0,
+   "p25": 25.0,
+   "p75": 25.0,
+   "min": 25.0,
+   "max": 25.0
+  },
+  {
+   "item_no": "9.64",
+   "description": "Hardwood Material",
+   "unit": "sqft/allowance",
+   "n_jobs": 2,
+   "median": 3.0,
+   "p25": 3.0,
+   "p75": 3.0,
+   "min": 3.0,
+   "max": 3.0
+  },
+  {
+   "item_no": "9.64",
+   "description": "Hardwood Labor",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 5.0,
+   "p25": 5.0,
+   "p75": 5.0,
+   "min": 5.0,
+   "max": 5.0
+  },
+  {
+   "item_no": "12.35.30.23",
+   "description": "Bathroom Vanities and Islands",
+   "unit": "lft",
+   "n_jobs": 2,
+   "median": 225.0,
+   "p25": 225.0,
+   "p75": 225.0,
+   "min": 225.0,
+   "max": 225.0
+  },
+  {
+   "item_no": "12.36",
+   "description": "Countertop Material",
+   "unit": "sqft allowance",
+   "n_jobs": 2,
+   "median": 42.5,
+   "p25": 41.25,
+   "p75": 43.75,
+   "min": 40.0,
+   "max": 45.0
+  },
+  {
+   "item_no": "22",
+   "description": "Plumbing Material",
+   "unit": "each opening",
+   "n_jobs": 2,
+   "median": 325.0,
+   "p25": 312.5,
+   "p75": 337.5,
+   "min": 300.0,
+   "max": 350.0
+  },
+  {
+   "item_no": "22",
+   "description": "Plumbing Labor",
+   "unit": "each opening",
+   "n_jobs": 2,
+   "median": 412.5,
+   "p25": 406.25,
+   "p75": 418.75,
+   "min": 400.0,
+   "max": 425.0
+  },
+  {
+   "item_no": "22",
+   "description": "Gas Openings Labor",
+   "unit": "each opening",
+   "n_jobs": 2,
+   "median": 350.0,
+   "p25": 350.0,
+   "p75": 350.0,
+   "min": 350.0,
+   "max": 350.0
+  },
+  {
+   "item_no": "22.11.16",
+   "description": "Water Service",
+   "unit": "lft",
+   "n_jobs": 2,
+   "median": 8.0,
+   "p25": 8.0,
+   "p75": 8.0,
+   "min": 8.0,
+   "max": 8.0
+  },
+  {
+   "item_no": "32.16.23",
+   "description": "Porch Material",
+   "unit": "lft",
+   "n_jobs": 2,
+   "median": 35.0,
+   "p25": 35.0,
+   "p75": 35.0,
+   "min": 35.0,
+   "max": 35.0
+  },
+  {
+   "item_no": "32.16.23",
+   "description": "Porch Labor",
+   "unit": "lft",
+   "n_jobs": 2,
+   "median": 35.0,
+   "p25": 35.0,
+   "p75": 35.0,
+   "min": 35.0,
+   "max": 35.0
+  },
+  {
+   "item_no": "32.32.23.13",
+   "description": "Segmented Block Retaining Wall",
+   "unit": "lft",
+   "n_jobs": 2,
+   "median": 230.0,
+   "p25": 230.0,
+   "p75": 230.0,
+   "min": 230.0,
+   "max": 230.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Footing Material",
+   "unit": "each",
+   "n_jobs": 2,
+   "median": 35.0,
+   "p25": 35.0,
+   "p75": 35.0,
+   "min": 35.0,
+   "max": 35.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Footing Labor",
+   "unit": "each",
+   "n_jobs": 2,
+   "median": 40.0,
+   "p25": 40.0,
+   "p75": 40.0,
+   "min": 40.0,
+   "max": 40.0
+  },
+  {
+   "item_no": "2.41.16",
+   "description": "Structure Demolition",
+   "unit": "each",
+   "n_jobs": 2,
+   "median": 500.0,
+   "p25": 425.0,
+   "p75": 575.0,
+   "min": 350.0,
+   "max": 650.0
+  },
+  {
+   "item_no": "5.52",
+   "description": "Metal Railings",
+   "unit": "lft",
+   "n_jobs": 2,
+   "median": 135.0,
+   "p25": 135.0,
+   "p75": 135.0,
+   "min": 135.0,
+   "max": 135.0
+  },
+  {
+   "item_no": "32.16.33",
+   "description": "Screen Porch Material",
+   "unit": "lft",
+   "n_jobs": 2,
+   "median": 13.25,
+   "p25": 13.25,
+   "p75": 13.25,
+   "min": 13.25,
+   "max": 13.25
+  },
+  {
+   "item_no": "32.32.23.13",
+   "description": "Segmented Block Retaining Wall",
+   "unit": "segmented",
+   "n_jobs": 2,
+   "median": 230.0,
+   "p25": 230.0,
+   "p75": 230.0,
+   "min": 230.0,
+   "max": 230.0
+  },
+  {
+   "item_no": "32.8",
+   "description": "Irrigation (Includes French Drains & Sprinklers)",
+   "unit": "irrigation",
+   "n_jobs": 2,
+   "median": 30.0,
+   "p25": 30.0,
+   "p75": 30.0,
+   "min": 30.0,
+   "max": 30.0
+  },
+  {
+   "item_no": "7.41.13",
+   "description": "Metal Roofing Material&Labor",
+   "unit": "metal",
+   "n_jobs": 2,
+   "median": 85.0,
+   "p25": 85.0,
+   "p75": 85.0,
+   "min": 85.0,
+   "max": 85.0
+  },
+  {
+   "item_no": "32.16.23",
+   "description": "French Drain",
+   "unit": "lft",
+   "n_jobs": 2,
+   "median": 28.5,
+   "p25": 28.5,
+   "p75": 28.5,
+   "min": 28.5,
+   "max": 28.5
+  },
+  {
+   "item_no": "32.16.23",
+   "description": "Weed Barrier",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 0.35,
+   "p25": 0.35,
+   "p75": 0.35,
+   "min": 0.35,
+   "max": 0.35
+  },
+  {
+   "item_no": "32.16.33",
+   "description": "Sand Instalaltion",
+   "unit": "cdy",
+   "n_jobs": 2,
+   "median": 15.0,
+   "p25": 15.0,
+   "p75": 15.0,
+   "min": 15.0,
+   "max": 15.0
+  },
+  {
+   "item_no": "32.16.33",
+   "description": "Pea Gravel",
+   "unit": "cdy",
+   "n_jobs": 2,
+   "median": 25.0,
+   "p25": 25.0,
+   "p75": 25.0,
+   "min": 25.0,
+   "max": 25.0
+  },
+  {
+   "item_no": "32.32.23.13",
+   "description": "Rubber Mulch",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 2.25,
+   "p25": 2.25,
+   "p75": 2.25,
+   "min": 2.25,
+   "max": 2.25
+  },
+  {
+   "item_no": "5.52",
+   "description": "Metal Railings",
+   "unit": "each",
+   "n_jobs": 2,
+   "median": 800.0,
+   "p25": 800.0,
+   "p75": 800.0,
+   "min": 800.0,
+   "max": 800.0
+  },
+  {
+   "item_no": "6.17.53",
+   "description": "Trusses & Trim Joists Labor",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 3.0,
+   "p25": 3.0,
+   "p75": 3.0,
+   "min": 3.0,
+   "max": 3.0
+  },
+  {
+   "item_no": "7.1",
+   "description": "Foundation Waterproofing",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 3.5,
+   "p25": 3.5,
+   "p75": 3.5,
+   "min": 3.5,
+   "max": 3.5
+  },
+  {
+   "item_no": "9.29",
+   "description": "Drywall",
+   "unit": "sqft feet",
+   "n_jobs": 2,
+   "median": 1.7,
+   "p25": 1.7,
+   "p75": 1.7,
+   "min": 1.7,
+   "max": 1.7
+  },
+  {
+   "item_no": "9.91.13",
+   "description": "Exterior Paint Material & Labor",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 3.0,
+   "p25": 3.0,
+   "p75": 3.0,
+   "min": 3.0,
+   "max": 3.0
+  },
+  {
+   "item_no": "22",
+   "description": "Plumbing Material/Labor",
+   "unit": "opening",
+   "n_jobs": 2,
+   "median": 450.0,
+   "p25": 450.0,
+   "p75": 450.0,
+   "min": 450.0,
+   "max": 450.0
+  },
+  {
+   "item_no": "22.11.16",
+   "description": "Water Service",
+   "unit": null,
+   "n_jobs": 2,
+   "median": 6.0,
+   "p25": 6.0,
+   "p75": 6.0,
+   "min": 6.0,
+   "max": 6.0
+  },
+  {
+   "item_no": "24",
+   "description": "Vent Hood, Exhaust Fan, Dryer Ducts",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 0.75,
+   "p25": 0.75,
+   "p75": 0.75,
+   "min": 0.75,
+   "max": 0.75
+  },
+  {
+   "item_no": "33.3",
+   "description": "Sewer",
+   "unit": "allowance",
+   "n_jobs": 2,
+   "median": 8.0,
+   "p25": 8.0,
+   "p75": 8.0,
+   "min": 8.0,
+   "max": 8.0
+  },
+  {
+   "item_no": "7.41.13",
+   "description": "Metal Roofing Material",
+   "unit": "metal",
+   "n_jobs": 2,
+   "median": 3.65,
+   "p25": 3.65,
+   "p75": 3.65,
+   "min": 3.65,
+   "max": 3.65
+  },
+  {
+   "item_no": "32.16.33",
+   "description": "Railing Material",
+   "unit": "lft",
+   "n_jobs": 2,
+   "median": 10.0,
+   "p25": 10.0,
+   "p75": 10.0,
+   "min": 10.0,
+   "max": 10.0
+  },
+  {
+   "item_no": "4.43",
+   "description": "Gravel Material",
+   "unit": "cy",
+   "n_jobs": 2,
+   "median": 80.0,
+   "p25": 80.0,
+   "p75": 80.0,
+   "min": 80.0,
+   "max": 80.0
+  },
+  {
+   "item_no": "7.1",
+   "description": "Geo Fabric",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 2.35,
+   "p25": 2.35,
+   "p75": 2.35,
+   "min": 2.35,
+   "max": 2.35
+  },
+  {
+   "item_no": "32.16.33",
+   "description": "Retaining Wall Material",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 6.88,
+   "p25": 6.81,
+   "p75": 6.94,
+   "min": 6.75,
+   "max": 7.0
+  },
+  {
+   "item_no": "32.16.33",
+   "description": "Retaining Wall Labor",
+   "unit": "sqft",
+   "n_jobs": 2,
+   "median": 8.0,
+   "p25": 8.0,
+   "p75": 8.0,
+   "min": 8.0,
+   "max": 8.0
+  },
+  {
+   "item_no": "32.32.23.13",
+   "description": "Backfill dirt Material",
+   "unit": "cy",
+   "n_jobs": 2,
+   "median": 55.0,
+   "p25": 55.0,
+   "p75": 55.0,
+   "min": 55.0,
+   "max": 55.0
+  },
+  {
+   "item_no": "32.8",
+   "description": "Sock Pipe",
+   "unit": "lft",
+   "n_jobs": 2,
+   "median": 0.5,
+   "p25": 0.5,
+   "p75": 0.5,
+   "min": 0.5,
+   "max": 0.5
+  },
+  {
+   "item_no": "32.9",
+   "description": "Landscaping/Sodding",
+   "unit": "landscaping",
+   "n_jobs": 2,
+   "median": 225.0,
+   "p25": 225.0,
+   "p75": 225.0,
+   "min": 225.0,
+   "max": 225.0
+  }
+ ],
+ "lump_costs": [
+  {
+   "item_no": "1",
+   "description": "General Conditions",
+   "n_jobs": 94,
+   "median": 2500.0,
+   "p25": 1962.5,
+   "p75": 3500.0
+  },
+  {
+   "item_no": "1.74.23",
+   "description": "Final Cleaning",
+   "n_jobs": 94,
+   "median": 850.0,
+   "p25": 850.0,
+   "p75": 1950.0
+  },
+  {
+   "item_no": "1.71.13",
+   "description": "Mobilization",
+   "n_jobs": 91,
+   "median": 1250.0,
+   "p25": 800.0,
+   "p75": 2000.0
+  },
+  {
+   "item_no": "1.41.26",
+   "description": "Building Permits",
+   "n_jobs": 62,
+   "median": 800.0,
+   "p25": 350.0,
+   "p75": 800.0
+  },
+  {
+   "item_no": "31.22",
+   "description": "Site Prep/Grading",
+   "n_jobs": 42,
+   "median": 2500.0,
+   "p25": 1600.0,
+   "p75": 3375.0
+  },
+  {
+   "item_no": "1.74.13",
+   "description": "Progess Cleaning",
+   "n_jobs": 42,
+   "median": 350.0,
+   "p25": 350.0,
+   "p75": 850.0
+  },
+  {
+   "item_no": "1.33.16",
+   "description": "Architectural Plans",
+   "n_jobs": 38,
+   "median": 500.0,
+   "p25": 350.0,
+   "p75": 1500.0
+  },
+  {
+   "item_no": "26.5",
+   "description": "Lighting Fixtures",
+   "n_jobs": 36,
+   "median": 900.0,
+   "p25": 350.0,
+   "p75": 2598.75
+  },
+  {
+   "item_no": "1.31.13",
+   "description": "Project Coordination (Supervision)",
+   "n_jobs": 31,
+   "median": 1250.0,
+   "p25": 987.5,
+   "p75": 1250.0
+  },
+  {
+   "item_no": "6.41.93",
+   "description": "Cabinet & Drawer Hardware",
+   "n_jobs": 30,
+   "median": 1250.0,
+   "p25": 475.0,
+   "p75": 1500.0
+  },
+  {
+   "item_no": "2.41.16",
+   "description": "Structure Demolition",
+   "n_jobs": 28,
+   "median": 1250.0,
+   "p25": 837.5,
+   "p75": 2662.5
+  },
+  {
+   "item_no": "22.4",
+   "description": "Plumbing Fixtures",
+   "n_jobs": 28,
+   "median": 2000.0,
+   "p25": 1112.5,
+   "p75": 4510.0
+  },
+  {
+   "item_no": "1.74.19",
+   "description": "Waste Management",
+   "n_jobs": 25,
+   "median": 450.0,
+   "p25": 425.0,
+   "p75": 450.0
+  },
+  {
+   "item_no": "11.30.13.13",
+   "description": "Kitchen Appliances",
+   "n_jobs": 23,
+   "median": 6500.0,
+   "p25": 3862.5,
+   "p75": 8500.0
+  },
+  {
+   "item_no": "2.21.13",
+   "description": "Engineering (Site Surveys)",
+   "n_jobs": 23,
+   "median": 650.0,
+   "p25": 500.0,
+   "p75": 1025.0
+  },
+  {
+   "item_no": "22.3",
+   "description": "Water Heaters",
+   "n_jobs": 21,
+   "median": 1000.0,
+   "p25": 850.0,
+   "p75": 1900.0
+  },
+  {
+   "item_no": "33.7",
+   "description": "Electrical Meter (Permanent Power)",
+   "n_jobs": 21,
+   "median": 1500.0,
+   "p25": 1500.0,
+   "p75": 1500.0
+  },
+  {
+   "item_no": "1.51.13",
+   "description": "Temporary Power",
+   "n_jobs": 20,
+   "median": 800.0,
+   "p25": 800.0,
+   "p75": 800.0
+  },
+  {
+   "item_no": "1.51.36",
+   "description": "Temporary Water",
+   "n_jobs": 20,
+   "median": 500.0,
+   "p25": 500.0,
+   "p75": 500.0
+  },
+  {
+   "item_no": "10.28.19.16",
+   "description": "Shower Door (Included Material & Labor)",
+   "n_jobs": 19,
+   "median": 1800.0,
+   "p25": 1350.0,
+   "p75": 1950.0
+  },
+  {
+   "item_no": "10.32",
+   "description": "Fireplace Material",
+   "n_jobs": 19,
+   "median": 4800.0,
+   "p25": 4312.5,
+   "p75": 7000.0
+  },
+  {
+   "item_no": "6.49.13",
+   "description": "Mantel Material",
+   "n_jobs": 17,
+   "median": 500.0,
+   "p25": 500.0,
+   "p75": 500.0
+  },
+  {
+   "item_no": "10.32",
+   "description": "Fireplace Labor",
+   "n_jobs": 17,
+   "median": 750.0,
+   "p25": 750.0,
+   "p75": 750.0
+  },
+  {
+   "item_no": "32.9",
+   "description": "Landscaping/Sodding",
+   "n_jobs": 15,
+   "median": 2850.0,
+   "p25": 2500.0,
+   "p75": 4500.0
+  },
+  {
+   "item_no": "6.49.13",
+   "description": "Mantel Labor",
+   "n_jobs": 15,
+   "median": 500.0,
+   "p25": 500.0,
+   "p75": 500.0
+  },
+  {
+   "item_no": "23",
+   "description": "HVAC Material",
+   "n_jobs": 14,
+   "median": 3750.0,
+   "p25": 3000.0,
+   "p75": 84000.0
+  },
+  {
+   "item_no": "11.30.13.13",
+   "description": "Laundry Appliances",
+   "n_jobs": 14,
+   "median": 2000.0,
+   "p25": 1650.0,
+   "p75": 2250.0
+  },
+  {
+   "item_no": "6.11",
+   "description": "Framing Material",
+   "n_jobs": 14,
+   "median": 3600.0,
+   "p25": 1128.75,
+   "p75": 14500.0
+  },
+  {
+   "item_no": "8.14",
+   "description": "Exterior Doors",
+   "n_jobs": 14,
+   "median": 1000.0,
+   "p25": 623.75,
+   "p75": 1968.75
+  },
+  {
+   "item_no": "33.3",
+   "description": "Septic",
+   "n_jobs": 13,
+   "median": 5500.0,
+   "p25": 5500.0,
+   "p75": 7250.0
+  },
+  {
+   "item_no": "26",
+   "description": "Electrical Material",
+   "n_jobs": 12,
+   "median": 1500.0,
+   "p25": 1025.0,
+   "p75": 1675.0
+  },
+  {
+   "item_no": "4.43",
+   "description": "Pump Truck",
+   "n_jobs": 12,
+   "median": 1950.0,
+   "p25": 1912.5,
+   "p75": 2250.0
+  },
+  {
+   "item_no": "28.16",
+   "description": "Alarm Installation Material",
+   "n_jobs": 8,
+   "median": 1500.0,
+   "p25": 1500.0,
+   "p75": 1500.0
+  },
+  {
+   "item_no": "9.3",
+   "description": "Tile Material&Labor",
+   "n_jobs": 8,
+   "median": 5500.0,
+   "p25": 5250.0,
+   "p75": 7000.0
+  },
+  {
+   "item_no": "6.11",
+   "description": "Framing Labor",
+   "n_jobs": 8,
+   "median": 1100.0,
+   "p25": 425.0,
+   "p75": 3700.0
+  },
+  {
+   "item_no": "22",
+   "description": "Plumbing Gas Materials and Labor",
+   "n_jobs": 7,
+   "median": 550.0,
+   "p25": 500.0,
+   "p75": 675.0
+  },
+  {
+   "item_no": "5.52",
+   "description": "Metal Railings",
+   "n_jobs": 7,
+   "median": 49500.0,
+   "p25": 25425.0,
+   "p75": 49500.0
+  },
+  {
+   "item_no": "6.20.13",
+   "description": "Exterior Trim Material",
+   "n_jobs": 7,
+   "median": 325.0,
+   "p25": 180.0,
+   "p75": 387.5
+  },
+  {
+   "item_no": "9.91.13",
+   "description": "Exterior Paint Labor",
+   "n_jobs": 7,
+   "median": 650.0,
+   "p25": 350.0,
+   "p75": 650.0
+  },
+  {
+   "item_no": "26",
+   "description": "Electrical Labor",
+   "n_jobs": 6,
+   "median": 700.0,
+   "p25": 700.0,
+   "p75": 1300.0
+  },
+  {
+   "item_no": "33.51.33",
+   "description": "water service",
+   "n_jobs": 6,
+   "median": 1100.0,
+   "p25": 850.0,
+   "p75": 1350.0
+  },
+  {
+   "item_no": "9.3",
+   "description": "Shower Labor",
+   "n_jobs": 6,
+   "median": 10000.0,
+   "p25": 10000.0,
+   "p75": 10000.0
+  },
+  {
+   "item_no": "4.21.13",
+   "description": "Exterior Brick Labor",
+   "n_jobs": 6,
+   "median": 825.0,
+   "p25": 650.0,
+   "p75": 3250.0
+  },
+  {
+   "item_no": "12.35.30.13",
+   "description": "Kitchen Cabinets",
+   "n_jobs": 5,
+   "median": 40000.0,
+   "p25": 40000.0,
+   "p75": 40000.0
+  },
+  {
+   "item_no": "9.3",
+   "description": "Shower Tile",
+   "n_jobs": 5,
+   "median": 7000.0,
+   "p25": 7000.0,
+   "p75": 7000.0
+  },
+  {
+   "item_no": "32.16.23",
+   "description": "Sidewalk Material",
+   "n_jobs": 5,
+   "median": 525.0,
+   "p25": 400.0,
+   "p75": 525.0
+  },
+  {
+   "item_no": "32.16.23",
+   "description": "Sidewalk Labor",
+   "n_jobs": 5,
+   "median": 1050.0,
+   "p25": 500.0,
+   "p75": 1050.0
+  },
+  {
+   "item_no": "12.35.30.23",
+   "description": "Bathroom Vanities",
+   "n_jobs": 5,
+   "median": 1350.0,
+   "p25": 525.0,
+   "p75": 2250.0
+  },
+  {
+   "item_no": "1.3",
+   "description": "Bonds",
+   "n_jobs": 5,
+   "median": 10000.0,
+   "p25": 10000.0,
+   "p75": 10000.0
+  },
+  {
+   "item_no": "10.57.33",
+   "description": "Glass Allowance",
+   "n_jobs": 5,
+   "median": 165000.0,
+   "p25": 165000.0,
+   "p75": 165000.0
+  },
+  {
+   "item_no": "32.16.23",
+   "description": "Parking Lot sidewalk",
+   "n_jobs": 5,
+   "median": 6500.0,
+   "p25": 6500.0,
+   "p75": 6500.0
+  },
+  {
+   "item_no": "1.3",
+   "description": "Equipment Rental",
+   "n_jobs": 5,
+   "median": 2850.0,
+   "p25": 2850.0,
+   "p75": 2850.0
+  },
+  {
+   "item_no": "8.71",
+   "description": "Door Hardware",
+   "n_jobs": 5,
+   "median": 65.0,
+   "p25": 65.0,
+   "p75": 125.0
+  },
+  {
+   "item_no": "12.36",
+   "description": "Countertop Material",
+   "n_jobs": 4,
+   "median": 20000.0,
+   "p25": 20000.0,
+   "p75": 20000.0
+  },
+  {
+   "item_no": "12.35.30",
+   "description": "Built-ins",
+   "n_jobs": 4,
+   "median": 3500.0,
+   "p25": 1337.5,
+   "p75": 6250.0
+  },
+  {
+   "item_no": "6.20.13",
+   "description": "Exterior Trim Labor",
+   "n_jobs": 4,
+   "median": 650.0,
+   "p25": 650.0,
+   "p75": 975.0
+  },
+  {
+   "item_no": "4.05.13",
+   "description": "Masonry Sand",
+   "n_jobs": 4,
+   "median": 60.0,
+   "p25": 60.0,
+   "p75": 61.25
+  },
+  {
+   "item_no": "9.91.13",
+   "description": "Exterior Paint Material",
+   "n_jobs": 4,
+   "median": 100.0,
+   "p25": 86.25,
+   "p75": 100.0
+  },
+  {
+   "item_no": "4.21.13",
+   "description": "Exterior Brick Material",
+   "n_jobs": 4,
+   "median": 650.0,
+   "p25": 606.25,
+   "p75": 3725.0
+  },
+  {
+   "item_no": "28.16",
+   "description": "Alarm Installation Labor",
+   "n_jobs": 3,
+   "median": 2500.0,
+   "p25": 2000.0,
+   "p75": 2500.0
+  },
+  {
+   "item_no": "9.91.23",
+   "description": "Interior Paint Material",
+   "n_jobs": 3,
+   "median": 350.0,
+   "p25": 275.0,
+   "p75": 6425.0
+  },
+  {
+   "item_no": "1.52.19",
+   "description": "Sanitary Facilities (Port-A-Johns)",
+   "n_jobs": 3,
+   "median": 135.0,
+   "p25": 135.0,
+   "p75": 135.0
+  },
+  {
+   "item_no": "8.75",
+   "description": "Poocket Doots",
+   "n_jobs": 3,
+   "median": 425.0,
+   "p25": 425.0,
+   "p75": 425.0
+  },
+  {
+   "item_no": "11.30.33",
+   "description": "Attic Stairs",
+   "n_jobs": 3,
+   "median": 250.0,
+   "p25": 245.0,
+   "p75": 250.0
+  },
+  {
+   "item_no": "12.35.33",
+   "description": "Laundry Cabinets",
+   "n_jobs": 3,
+   "median": 1450.0,
+   "p25": 900.0,
+   "p75": 1450.0
+  },
+  {
+   "item_no": "32.16.33",
+   "description": "Dumpster Enclosure",
+   "n_jobs": 3,
+   "median": 12000.0,
+   "p25": 12000.0,
+   "p75": 12000.0
+  },
+  {
+   "item_no": "8.5",
+   "description": "Windows",
+   "n_jobs": 3,
+   "median": 850.0,
+   "p25": 850.0,
+   "p75": 1925.0
+  },
+  {
+   "item_no": "32.32.23.13",
+   "description": "Segmented Block Retaining Wall",
+   "n_jobs": 3,
+   "median": 14905.0,
+   "p25": 14905.0,
+   "p75": 14905.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Equipment Rental",
+   "n_jobs": 3,
+   "median": 3750.0,
+   "p25": 2250.0,
+   "p75": 3750.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Footing Material",
+   "n_jobs": 3,
+   "median": 15600.0,
+   "p25": 14050.0,
+   "p75": 15600.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Block Fill Concrete",
+   "n_jobs": 2,
+   "median": 165.0,
+   "p25": 165.0,
+   "p75": 165.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Block Fill Concrete Labor",
+   "n_jobs": 2,
+   "median": 500.0,
+   "p25": 500.0,
+   "p75": 500.0
+  },
+  {
+   "item_no": "11.81.19",
+   "description": "Handicap Lift System",
+   "n_jobs": 2,
+   "median": 15000.0,
+   "p25": 15000.0,
+   "p75": 15000.0
+  },
+  {
+   "item_no": "31.31.16.13",
+   "description": "Equipment Rental",
+   "n_jobs": 2,
+   "median": 1500.0,
+   "p25": 1500.0,
+   "p75": 1500.0
+  },
+  {
+   "item_no": "32.8",
+   "description": "Irrigation (Includes French Drains & Sprinklers)",
+   "n_jobs": 2,
+   "median": 5000.0,
+   "p25": 5000.0,
+   "p75": 5000.0
+  },
+  {
+   "item_no": "8.75",
+   "description": "Garage Door",
+   "n_jobs": 2,
+   "median": 4600.0,
+   "p25": 2900.0,
+   "p75": 6300.0
+  },
+  {
+   "item_no": "8.33.23",
+   "description": "Cosco Door",
+   "n_jobs": 2,
+   "median": 425.0,
+   "p25": 425.0,
+   "p75": 425.0
+  },
+  {
+   "item_no": "12.21",
+   "description": "Cabinet Hardware",
+   "n_jobs": 2,
+   "median": 362.5,
+   "p25": 243.75,
+   "p75": 481.25
+  },
+  {
+   "item_no": "12.36",
+   "description": "Countertop Labor",
+   "n_jobs": 2,
+   "median": 800.0,
+   "p25": 800.0,
+   "p75": 800.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Concrete Labor",
+   "n_jobs": 2,
+   "median": 50.0,
+   "p25": 50.0,
+   "p75": 50.0
+  },
+  {
+   "item_no": "22",
+   "description": "Plumbing Material & Labor",
+   "n_jobs": 2,
+   "median": 750.0,
+   "p25": 700.0,
+   "p75": 800.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Slab Material",
+   "n_jobs": 2,
+   "median": 3997.5,
+   "p25": 2071.25,
+   "p75": 5923.75
+  },
+  {
+   "item_no": "4.21.13",
+   "description": "Pump Truck",
+   "n_jobs": 2,
+   "median": 1900.0,
+   "p25": 1900.0,
+   "p75": 1900.0
+  },
+  {
+   "item_no": "6.49.19",
+   "description": "Shutters Material",
+   "n_jobs": 2,
+   "median": 850.0,
+   "p25": 850.0,
+   "p75": 850.0
+  },
+  {
+   "item_no": "7.71.23",
+   "description": "Gutter Material",
+   "n_jobs": 2,
+   "median": 1840.0,
+   "p25": 1635.0,
+   "p75": 2045.0
+  },
+  {
+   "item_no": "8.33.23",
+   "description": "Pocket Door",
+   "n_jobs": 2,
+   "median": 385.0,
+   "p25": 385.0,
+   "p75": 385.0
+  },
+  {
+   "item_no": "10.28.19.16",
+   "description": "Shower Tile Insert",
+   "n_jobs": 2,
+   "median": 6000.0,
+   "p25": 6000.0,
+   "p75": 6000.0
+  },
+  {
+   "item_no": "10.28.19.16",
+   "description": "Shower Door Glass",
+   "n_jobs": 2,
+   "median": 2037.5,
+   "p25": 1981.25,
+   "p75": 2093.75
+  },
+  {
+   "item_no": "10.32",
+   "description": "Gas Fireplace Insert",
+   "n_jobs": 2,
+   "median": 5550.0,
+   "p25": 5275.0,
+   "p75": 5825.0
+  },
+  {
+   "item_no": "12.35.30",
+   "description": "Cabinet Hardware",
+   "n_jobs": 2,
+   "median": 850.0,
+   "p25": 850.0,
+   "p75": 850.0
+  },
+  {
+   "item_no": "23.1",
+   "description": "Vent Hood",
+   "n_jobs": 2,
+   "median": 850.0,
+   "p25": 850.0,
+   "p75": 850.0
+  },
+  {
+   "item_no": "33.3",
+   "description": "Water Meter",
+   "n_jobs": 2,
+   "median": 850.0,
+   "p25": 850.0,
+   "p75": 850.0
+  },
+  {
+   "item_no": "33.51.33",
+   "description": "Gas Meter",
+   "n_jobs": 2,
+   "median": 850.0,
+   "p25": 850.0,
+   "p75": 850.0
+  },
+  {
+   "item_no": "1.41.23",
+   "description": "Equipment Rental",
+   "n_jobs": 2,
+   "median": 650.0,
+   "p25": 650.0,
+   "p75": 650.0
+  },
+  {
+   "item_no": "6.20.23",
+   "description": "Interior Trim Labor",
+   "n_jobs": 2,
+   "median": 725.0,
+   "p25": 487.5,
+   "p75": 962.5
+  },
+  {
+   "item_no": "9.29",
+   "description": "Drywall",
+   "n_jobs": 2,
+   "median": 625.0,
+   "p25": 462.5,
+   "p75": 787.5
+  },
+  {
+   "item_no": "2.26.23",
+   "description": "Equipment rental",
+   "n_jobs": 2,
+   "median": 2125.0,
+   "p25": 1437.5,
+   "p75": 2812.5
+  },
+  {
+   "item_no": "1.51.29",
+   "description": "Environmental",
+   "n_jobs": 2,
+   "median": 850.0,
+   "p25": 850.0,
+   "p75": 850.0
+  },
+  {
+   "item_no": "3.31",
+   "description": "Pump Truck",
+   "n_jobs": 2,
+   "median": 1800.0,
+   "p25": 1800.0,
+   "p75": 1800.0
+  },
+  {
+   "item_no": "4.21.13",
+   "description": "Exterior Brick Material and Labor",
+   "n_jobs": 2,
+   "median": 9800.0,
+   "p25": 9800.0,
+   "p75": 9800.0
+  },
+  {
+   "item_no": "7.21",
+   "description": "Insulation Material & Labor",
+   "n_jobs": 2,
+   "median": 5333.95,
+   "p25": 5333.95,
+   "p75": 5333.95
+  },
+  {
+   "item_no": "9.61.19",
+   "description": "Shower Labor",
+   "n_jobs": 2,
+   "median": 2500.0,
+   "p25": 2500.0,
+   "p75": 2500.0
+  },
+  {
+   "item_no": "9.61.19",
+   "description": "Shower Tile Material",
+   "n_jobs": 2,
+   "median": 2000.0,
+   "p25": 2000.0,
+   "p75": 2000.0
+  },
+  {
+   "item_no": "10.28.19.17",
+   "description": "Water Proofing",
+   "n_jobs": 2,
+   "median": 850.0,
+   "p25": 850.0,
+   "p75": 850.0
+  },
+  {
+   "item_no": "2.41.13.23",
+   "description": "Tree Removal",
+   "n_jobs": 2,
+   "median": 9250.0,
+   "p25": 8875.0,
+   "p75": 9625.0
+  },
+  {
+   "item_no": "28.16",
+   "description": "Excavator/Skid Steer",
+   "n_jobs": 2,
+   "median": 2195.0,
+   "p25": 2195.0,
+   "p75": 2195.0
+  },
+  {
+   "item_no": "28.16",
+   "description": "Buggy/Mini Skid",
+   "n_jobs": 2,
+   "median": 1960.0,
+   "p25": 1960.0,
+   "p75": 1960.0
+  },
+  {
+   "item_no": "6.11",
+   "description": "Fencing Labor",
+   "n_jobs": 1,
+   "median": 800.0,
+   "p25": 800.0,
+   "p75": 800.0
+  }
+ ],
+ "source": "149 MHP historical estimates",
+ "markup_median": 0.178
+}
