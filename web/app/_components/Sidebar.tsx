@@ -8,6 +8,7 @@ type NavItem = { href: string; label: string; icon: React.ReactNode };
 
 const NAV: NavItem[] = [
   { href: "/", label: "Home", icon: (<><path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" /></>) },
+  { href: "/estimate-builder", label: "Estimate Builder", icon: (<><rect x="6" y="3" width="12" height="18" rx="2" /><path d="M9 7h6M9 11h6M9 15h6" /></>) },
   { href: "/estimates", label: "Estimates", icon: (<><path d="M6 2h9l5 5v15H6z" /><path d="M14 2v6h6" /><path d="M9 13h6M9 17h6" /></>) },
   { href: "/projects", label: "Projects", icon: (<path d="M3 7h6l2 2h10v11H3z" />) },
   { href: "/live", label: "Live", icon: (<path d="M3 12h4l2-6 4 14 3-9 2 3h3" />) },
@@ -16,11 +17,10 @@ const NAV: NavItem[] = [
   { href: "/activity", label: "Activity", icon: (<><circle cx="12" cy="12" r="9" /><path d="M12 8v4l3 2" /></>) },
 ];
 
-const SETTINGS: NavItem = {
-  href: "/settings",
-  label: "Settings",
-  icon: (<><circle cx="12" cy="12" r="3" /><path d="M19 12a7 7 0 00-.1-1l2-1.6-2-3.4-2.4 1a7 7 0 00-1.7-1l-.4-2.5h-4l-.4 2.5a7 7 0 00-1.7 1l-2.4-1-2 3.4 2 1.6a7 7 0 000 2l-2 1.6 2 3.4 2.4-1a7 7 0 001.7 1l.4 2.5h4l.4-2.5a7 7 0 001.7-1l2.4 1 2-3.4-2-1.6a7 7 0 00.1-1z" /></>),
-};
+const FOOT: NavItem[] = [
+  { href: "/integrations", label: "Integrations", icon: (<><path d="M9 17H7A5 5 0 017 7h2" /><path d="M15 7h2a5 5 0 010 10h-2" /><path d="M8 12h8" /></>) },
+  { href: "/settings", label: "Settings", icon: (<><circle cx="12" cy="12" r="3" /><path d="M19 12a7 7 0 00-.1-1l2-1.6-2-3.4-2.4 1a7 7 0 00-1.7-1l-.4-2.5h-4l-.4 2.5a7 7 0 00-1.7 1l-2.4-1-2 3.4 2 1.6a7 7 0 000 2l-2 1.6 2 3.4 2.4-1a7 7 0 001.7 1l.4 2.5h4l.4-2.5a7 7 0 001.7-1l2.4 1 2-3.4-2-1.6a7 7 0 00.1-1z" /></>) },
+];
 
 const ROLE_LABEL: Record<SessionUser["role"], string> = { admin: "Admin", editor: "Editor", viewer: "Viewer" };
 
@@ -56,7 +56,7 @@ export default function Sidebar({ user }: { user: SessionUser }) {
       <nav>
         {NAV.map(link)}
         <div className="nav-sep" />
-        {link(SETTINGS)}
+        {FOOT.map(link)}
       </nav>
       <div className="profile-row">
         <Link href="/settings" className="profile">

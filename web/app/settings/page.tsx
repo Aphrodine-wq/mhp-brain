@@ -1,31 +1,21 @@
 import { stats } from "@/lib/queries";
 import { currentUser } from "@/lib/auth";
-import { isConfigured } from "@/lib/oauth/providers";
-import { listConnections } from "@/lib/oauth/store";
 import SettingsForm from "./SettingsForm";
-import Connections, { type ProviderState } from "./Connections";
 
 export const dynamic = "force-dynamic";
 
 const ROLE_LABEL = { admin: "Admin", editor: "Editor", viewer: "Viewer" } as const;
 
-export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ oauth?: string }> }) {
-  const [{ oauth }, s, user, conns] = await Promise.all([searchParams, stats(), currentUser(), listConnections()]);
-  const conn = (id: ProviderState["id"]) => conns.find((c) => c.provider === id) ?? null;
-  const providers: ProviderState[] = [
-    { id: "quickbooks", label: "QuickBooks", configured: isConfigured("quickbooks"), connection: conn("quickbooks") },
-    { id: "gmail", label: "Google (Gmail intake)", configured: isConfigured("gmail"), connection: conn("gmail") },
-  ];
+export default async function SettingsPage() {
+  const [s, user] = await Promise.all([stats(), currentUser()]);
   const signedInAs = user ? `${user.name} · ${ROLE_LABEL[user.role]}${user.scope ? ` · ${user.scope}` : ""}` : "—";
 
   return (
     <section className="view">
       <h2>Settings</h2>
-      <div className="sub">Defaults for the estimator, connections, and company info.</div>
+      <div className="sub">Defaults for the estimator and company info. (QuickBooks &amp; Gmail moved to Integrations.)</div>
 
       <SettingsForm />
-
-      {user?.role === "admin" && <Connections providers={providers} oauthResult={oauth ?? null} />}
 
       <div className="panel" style={{ marginTop: 18 }}>
         <h3>Company</h3>

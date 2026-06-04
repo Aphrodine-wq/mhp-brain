@@ -15,7 +15,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ prov
 
   const sp = req.nextUrl.searchParams;
   const done = (status: string) => {
-    const u = new URL("/", req.url);
+    const u = new URL("/integrations", req.url);
     u.searchParams.set("oauth", status); // e.g. connected:gmail | error:state_mismatch
     return NextResponse.redirect(u);
   };
