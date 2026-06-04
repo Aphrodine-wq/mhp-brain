@@ -1,8 +1,44 @@
-# OAuth setup — QuickBooks + Google (Gmail intake)
+# OAuth setup — Sign-in (Google login) + QuickBooks/Gmail (read-only data)
 
-Both connections are **read-only**. The flow code is already built — this is just registering the
-two apps and pasting four values into `web/.env.local`. `OAUTH_ENC_KEY` and the redirect URIs are
-already filled in.
+Two unrelated things share this file:
+- **Sign in with Google** (below) — how people *log in*. Public, identity only, mints a session.
+- **QuickBooks + Gmail** — read-only *data connections*, admin-gated, store tokens. Separate creds.
+
+The flow code for all of it is built; this is just registering apps and pasting values into
+`web/.env.local`.
+
+> ⚠️ `vercel env pull` overwrote `web/.env.local` with only the Neon keys, so the earlier
+> `OAUTH_ENC_KEY` / `QB_REDIRECT_URI` / `GMAIL_REDIRECT_URI` scaffold is **gone** — re-add those
+> (and the Google keys below) and keep the durable copy in **Vercel project env**, not just locally.
+
+## Sign in with Google (login)
+
+Adds a **Continue with Google** button to `/login`. A Google account signs in **only if its
+verified email already matches an active user** — there's no new-account creation, so this can't
+let in anyone you haven't seeded with `scripts/seed-users.mjs`.
+
+Fill in `web/.env.local`:
+
+```
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/google/callback   # prod: https://mhp-brain.vercel.app/api/auth/google/callback
+```
+
+1. https://console.cloud.google.com → same project as Gmail is fine.
+2. **OAuth consent screen** → add `openid`, `email`, `profile` (non-sensitive — no Google review needed).
+   While the app is in "testing", every person who signs in must be a listed **test user**.
+3. **Credentials → OAuth client ID → Web application.** You can **reuse the Gmail client** (just add
+   the `…/api/auth/google/callback` redirect URIs to it) or create a dedicated one.
+4. Add both redirect URIs (local + prod). Copy **Client ID → `GOOGLE_CLIENT_ID`**, **Secret → `GOOGLE_CLIENT_SECRET`**.
+5. The button only appears once all three `GOOGLE_*` are set; restart dev to load them.
+
+---
+
+## QuickBooks + Gmail (read-only data connections)
+
+Both connections are **read-only**. Register the two apps and paste four values into
+`web/.env.local`. (`OAUTH_ENC_KEY` + the `*_REDIRECT_URI`s were wiped by the env pull above — re-add them.)
 
 ## What you fill in (`web/.env.local`)
 

@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import type { SubRow } from "@/lib/queries";
 import { post } from "@/lib/client";
 
-const smallBtn: React.CSSProperties = { padding: "4px 10px", fontSize: 12 };
-
 export default function SubsTable({ subs }: { subs: SubRow[] }) {
   const router = useRouter();
   const [f, setF] = useState("");
@@ -52,6 +50,16 @@ export default function SubsTable({ subs }: { subs: SubRow[] }) {
             <tr><th>Name</th><th>Trade / Type</th><th>Phone</th><th className="n">Jobs</th><th>Source</th><th></th></tr>
           </thead>
           <tbody>
+            {list.length === 0 && (
+              <tr>
+                <td colSpan={6}>
+                  <div className="empty">
+                    <div className="big">No subs match</div>
+                    Try a different search, or clear the filter.
+                  </div>
+                </td>
+              </tr>
+            )}
             {list.map((x) => {
               const ed = editing === x.key;
               return (
@@ -66,13 +74,13 @@ export default function SubsTable({ subs }: { subs: SubRow[] }) {
                   <td className="n" style={{ whiteSpace: "nowrap" }}>
                     {ed ? (
                       <>
-                        <button className="btn ghost" style={smallBtn} disabled={busy === x.key} onClick={() => save(x)}>Save</button>{" "}
+                        <button className="btn ghost sm" disabled={busy === x.key} onClick={() => save(x)}>Save</button>{" "}
                         <button className="x" onClick={() => setEditing(null)}>×</button>
                       </>
                     ) : (
                       <>
-                        <button className="btn ghost" style={smallBtn} onClick={() => startEdit(x)}>Edit</button>{" "}
-                        <button className="btn ghost" style={smallBtn} disabled={busy === x.key} onClick={() => toggleVerified(x)}>
+                        <button className="btn ghost sm" onClick={() => startEdit(x)}>Edit</button>{" "}
+                        <button className="btn ghost sm" disabled={busy === x.key} onClick={() => toggleVerified(x)}>
                           {x.verified ? "Unconfirm" : "Confirm"}
                         </button>
                       </>

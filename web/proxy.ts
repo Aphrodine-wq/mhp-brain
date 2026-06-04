@@ -8,7 +8,15 @@ import { SESSION_COOKIE } from "@/lib/auth-constants";
 
 // /api/dev-login is public so the (dev-only) one-click login can mint a session with no prior
 // cookie — same chicken-and-egg as /api/login. It 404s in production regardless.
-const PUBLIC = new Set(["/login", "/api/login", "/api/dev-login"]);
+// The /api/auth/google/* pair is public for the same reason: they ARE the login, so they run
+// before any session exists (the callback is what mints it).
+const PUBLIC = new Set([
+  "/login",
+  "/api/login",
+  "/api/dev-login",
+  "/api/auth/google/start",
+  "/api/auth/google/callback",
+]);
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

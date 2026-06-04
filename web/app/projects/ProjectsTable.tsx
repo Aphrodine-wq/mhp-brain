@@ -41,6 +41,16 @@ export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) 
             </tr>
           </thead>
           <tbody>
+            {list.length === 0 && (
+              <tr>
+                <td colSpan={7}>
+                  <div className="empty">
+                    <div className="big">No projects match</div>
+                    Clear the filter to see all jobs.
+                  </div>
+                </td>
+              </tr>
+            )}
             {list.map((p) => (
               <tr key={p.id}>
                 <td>{p.name}</td>

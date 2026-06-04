@@ -9,6 +9,11 @@ export default function SettingsForm() {
   const [cont, setCont] = useState(true);
   const [loaded, setLoaded] = useState(false);
 
+  // Hydrate once from localStorage AFTER mount. This has to be an effect, not a lazy useState
+  // initializer: this client component still SSRs with the defaults, so reading localStorage at
+  // render time would hydrate-mismatch (server has no localStorage). The `loaded` guard on the
+  // persist effect below keeps it from writing defaults back before this runs.
+  /* eslint-disable react-hooks/set-state-in-effect -- localStorage hydration has no render-time equivalent under SSR */
   useEffect(() => {
     try {
       const s = JSON.parse(localStorage.getItem("mhp_settings") || "{}");
@@ -21,6 +26,7 @@ export default function SettingsForm() {
     }
     setLoaded(true);
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     if (loaded) localStorage.setItem("mhp_settings", JSON.stringify({ markup, market, bands, cont }));
