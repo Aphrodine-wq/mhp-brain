@@ -1,0 +1,11 @@
+@page { size: letter; margin: 1.4cm 1.6cm; }
+body { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 9.5px;
+       line-height: 1.42; color: #1a1a1a; }
+h1 { font-size: 22px; border-bottom: 2px solid #16263c; padding-bottom: 6px; color: #16263c; }
+h2 { font-size: 14px; margin-top: 18px; margin-bottom: 6px; color: #16263c;
+     border-bottom: 1px solid #ccc; padding-bottom: 3px; }
+ul { list-style: none; padding-left: 0; }
+li { padding: 2px 0; border-bottom: 1px dotted #e2e2e2; }
+code { background: #f2f2f2; padding: 0 3px; border-radius: 2px; font-size: 9px; }
+strong { color: #16263c; }
+p { margin: 6px 0; }

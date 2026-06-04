@@ -164,6 +164,45 @@ total, so separating it is a contained change.
 
 ---
 
+## Part 6 — The Actuals Loop (tracking + the flywheel)
+
+The invoices in the company's accounting inbox are the highest-value data MHP owns. They arrive at a
+**dedicated business address first**, then get keyed into QuickBooks. That makes the inbox the front
+door for money-in and the system's natural home: it reads invoices live, and QuickBooks confirms each
+one got booked (a free audit — "this bill hit the email but isn't in QB yet"). One pipe feeds two
+payoffs.
+
+**Payoff 1 — Track actuals vs where the job is (live).**
+One card per active job: **budget vs actual, by CSI division.** For each division — what it was bid at,
+what's been invoiced against it so far, and the gap. The gap *is* the signal: "framing bid $40k,
+you're at $52k and not done." Progress is proxied by **dollars, not calendar** — actual ÷ estimated
+total — so it needs zero data entry to work day one. The alarm that matters: any division crosses its
+estimate before the job is marked done. That's Margin Radar, and it falls out of the invoice feed for
+free. (Optional later: let someone mark "framing done" to sharpen % complete from "budget burned" to
+true progress.)
+
+**Payoff 2 — Each job teaches the next (the flywheel).**
+When a job closes you have both numbers: what you **bid** and what it **actually cost**. The delta is
+the lesson. At close, the system feeds that delta back into the catalog: bid framing at $7.25/sqft but
+the last five jobs really ran $8.10 → the rate corrects itself, **recency-weighted (EWMA)** so recent
+jobs dominate. Every rate starts carrying a record — *bid $X, actual $Y, across N jobs, confidence
+band tightening.* The next addition is priced off what your last additions actually cost, not a guess.
+This is the moat compounding, and the thing Procore/Buildertrend structurally can't do — they price
+off your typing; this prices off your reality.
+
+**The guard (don't learn from noise).** A missing or unreadable actual must never silently corrupt a
+catalog rate. If the actual isn't available — e.g. trapped in a scanned PDF, or the job isn't closed —
+the loop **holds** and flags the job as awaiting actuals. Bad data corrupts the moat; the loop only
+learns from confirmed, matched actuals (exact/high confidence). Weak matches go to a review queue, not
+the catalog.
+
+**Schema is already shaped for it:** `estimates` (the bid, per-division `line_items`), `actuals`
+(`closing_total`), `unit_costs` (the rates that get corrected). The invoice pipe is the missing input
+that turns tracking, Margin Radar, and the flywheel on at once. See `test_actuals_loop.py` for the
+loop proven on two real jobs (Jooste closes; Moore is correctly held pending invoice ingestion).
+
+---
+
 ## What it needs to be real (honest list)
 
 - **Auth + multi-user** — Rick, Josh, Jason, Walt, Sandi with the right access.

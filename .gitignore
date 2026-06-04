@@ -1,3 +1,5 @@
 mhp.db
 __pycache__/
 *.pyc
+mhp.db.bak-*
+*.bak-*

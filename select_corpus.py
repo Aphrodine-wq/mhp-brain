@@ -14,7 +14,7 @@ PROJECT_DIRS = [MHP / "01_Active Projects", MHP / "02_Dead Projects"]
 
 # Files that look like estimates but are NOT MHP's prime estimate
 EXCLUDE = re.compile(r"\b(dsc|allowance|selection|invoice|change order|sub\b)", re.I)
-ESTIMATE_HINT = re.compile(r"estimate", re.I)
+ESTIMATE_HINT = re.compile(r"estimat", re.I)   # matches estimate / estimation / estimating
 CLOSING_HINT = re.compile(r"clos(e|ing)|close ?out|final budget", re.I)
 
 
