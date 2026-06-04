@@ -1,0 +1,55 @@
+import Link from "next/link";
+import { stats, projectsList } from "@/lib/queries";
+import { money } from "@/lib/format";
+
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const [s, projects] = await Promise.all([stats(), projectsList()]);
+  const active = projects.filter((p) => p.status === "Active");
+
+  return (
+    <section className="view">
+      <div className="row" style={{ justifyContent: "space-between", marginTop: 0, alignItems: "flex-start" }}>
+        <div>
+          <h2 style={{ margin: 0 }}>Projects</h2>
+          <div className="sub" style={{ margin: "6px 0" }}>North Mississippi Home Pros</div>
+        </div>
+        <Link className="btn" href="/estimates">+ New Estimate</Link>
+      </div>
+
+      <div className="stat-strip">
+        <div><div className="sv">{s.active}</div><div className="sk">Active jobs</div></div>
+        <div><div className="sv">{money(s.active_value)}</div><div className="sk">Active book value</div></div>
+        <div><div className="sv">{s.bid}</div><div className="sk">Bids out</div></div>
+      </div>
+
+      <div className="sec-h">Active now</div>
+      <div className="proj-cards">
+        {active.length ? (
+          active.map((x) => (
+            <Link key={x.id} href="/projects" className="pcard">
+              <div className="pc-top">
+                <div className="pc-name">{x.name}</div>
+                <span className="badge active">Active</span>
+              </div>
+              <div className="pc-val">{x.value ? money(x.value) : "—"}</div>
+              <div className="pc-meta">
+                <span>{x.market || "—"}</span><span className="pdot" />
+                <span>{x.last || "—"}</span><span className="pdot" />
+                <span>{x.estimates} bid{x.estimates === 1 ? "" : "s"}</span>
+              </div>
+            </Link>
+          ))
+        ) : (
+          <div className="sub">No active jobs right now.</div>
+        )}
+      </div>
+
+      <div className="morelink">
+        {s.aging} aging · {s.paused} paused · {s.projects} jobs all-time.{" "}
+        <Link href="/projects">View all projects →</Link>
+      </div>
+    </section>
+  );
+}

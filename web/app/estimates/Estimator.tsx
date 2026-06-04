@@ -1,0 +1,256 @@
+"use client";
+
+import { useRef, useState } from "react";
+import type { CatalogRow } from "@/lib/queries";
+import { money } from "@/lib/format";
+
+interface Line {
+  key: number;
+  description: string;
+  unit: string | null;
+  division: string;
+  item_no: string;
+  jobs: number;
+  p25: number | null;
+  p75: number | null;
+  kind: string;
+  qty: string;
+  rate: string;
+}
+
+const PLACEHOLDER =
+  "e.g. Gut and remodel a 300 sqft kitchen in Oxford. Demo existing, new framing, drywall, 70 linear feet of custom cabinets, quartz countertops, LVT flooring, repaint, new electrical and plumbing fixtures, tile backsplash.";
+
+export default function Estimator({ catalog }: { catalog: CatalogRow[] }) {
+  const [view, setView] = useState<"input" | "load" | "result">("input");
+  const [desc, setDesc] = useState("");
+  const [files, setFiles] = useState<FileList | null>(null);
+  const [lines, setLines] = useState<Line[]>([]);
+  const [notes, setNotes] = useState<string[]>([]);
+  const [markup, setMarkup] = useState(18);
+  const [pick, setPick] = useState(0);
+  const keyRef = useRef(0);
+  const nextKey = () => ++keyRef.current;
+
+  async function readFiles() {
+    const docs: { name: string; text?: string }[] = [];
+    if (files) {
+      for (const f of Array.from(files)) {
+        if (/\.(txt|csv|md)$/i.test(f.name)) docs.push({ name: f.name, text: await f.text() });
+        else docs.push({ name: f.name });
+      }
+    }
+    return docs;
+  }
+
+  async function build() {
+    setView("load");
+    const docs = await readFiles();
+    const r = await fetch("/api/estimate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ description: desc, docs }),
+    });
+    const d = await r.json();
+    setMarkup(d.markup);
+    setNotes(d.notes);
+    const sorted = [...d.lines].sort((a, b) => (a.division || "").localeCompare(b.division || ""));
+    setLines(
+      sorted.map((l) => ({
+        key: nextKey(),
+        description: l.description,
+        unit: l.unit,
+        division: l.division,
+        item_no: l.item_no,
+        jobs: l.jobs,
+        p25: l.p25,
+        p75: l.p75,
+        kind: l.kind,
+        qty: l.qty == null ? "" : String(l.qty),
+        rate: l.rate == null ? "" : String(l.rate),
+      })),
+    );
+    setView("result");
+  }
+
+  const update = (key: number, field: "qty" | "rate", value: string) =>
+    setLines((ls) => ls.map((l) => (l.key === key ? { ...l, [field]: value } : l)));
+  const remove = (key: number) => setLines((ls) => ls.filter((l) => l.key !== key));
+  const addPick = () => {
+    const c = catalog[pick];
+    if (!c) return;
+    setLines((ls) => [
+      ...ls,
+      { key: nextKey(), description: c.description, unit: c.unit, division: c.division, item_no: c.item_no, jobs: c.jobs, p25: null, p75: null, kind: "added", qty: "", rate: c.rate == null ? "" : String(c.rate) },
+    ]);
+  };
+
+  async function exportx() {
+    const out = lines.map((l) => ({ description: l.description, qty: l.qty, rate: l.rate }));
+    const r = await fetch("/api/export", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lines: out, markup }),
+    });
+    const blob = await r.blob();
+    const u = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = u;
+    a.download = "MHP_Estimate.xlsx";
+    a.click();
+    URL.revokeObjectURL(u);
+  }
+
+  // live preview rollup
+  const mk = 1 + (markup || 0) / 100;
+  let sub = 0;
+  const byDiv: Record<string, number> = {};
+  for (const l of lines) {
+    const it = (parseFloat(l.qty) || 0) * (parseFloat(l.rate) || 0);
+    sub += it;
+    const d = (l.division || "Other").replace(/^Division\s*/, "Div ").replace(/:.*$/, (m) => m.split(":")[0]);
+    byDiv[d] = (byDiv[d] || 0) + it;
+  }
+  const cont = sub * 0.1;
+  const bid = sub * mk;
+
+  // group consecutive lines by division for header rows
+  const groups: { division: string; lines: Line[] }[] = [];
+  for (const l of lines) {
+    const div = l.division || "Other";
+    const last = groups[groups.length - 1];
+    if (!last || last.division !== div) groups.push({ division: div, lines: [l] });
+    else last.lines.push(l);
+  }
+
+  if (view === "input") {
+    return (
+      <section className="view">
+        <h2>Describe the job</h2>
+        <div className="sub">
+          Type everything you know — scope, rooms, square footage, finishes. The more detail, the better the
+          seed. You&apos;ll edit every line next.
+        </div>
+        <textarea value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={PLACEHOLDER} />
+        <div className="upload">
+          <span className="upload-h">Upload plans, scope docs, or photos <span>(optional)</span></span>
+          <input type="file" multiple onChange={(e) => setFiles(e.target.files)} />
+        </div>
+        <div className="row">
+          <button className="btn" onClick={build}>Build Estimate →</button>
+        </div>
+      </section>
+    );
+  }
+
+  if (view === "load") {
+    return (
+      <section className="view">
+        <div style={{ textAlign: "center", padding: 80 }}>
+          <div className="spin" />
+          <div style={{ fontFamily: "var(--disp)", fontSize: 18, color: "var(--muted)" }}>
+            Building your estimate from MHP history…
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="view">
+      <div className="row" style={{ justifyContent: "space-between" }}>
+        <h2 style={{ margin: 0 }}>Estimate — editable</h2>
+        <div>
+          <button className="btn ghost" onClick={() => setView("input")}>← New</button>{" "}
+          <button className="btn" onClick={exportx}>Export to Excel</button>
+        </div>
+      </div>
+      {notes.length > 0 && <div className="notes">{notes.map((n, i) => <div key={i}>• {n}</div>)}</div>}
+
+      <div className="est-layout">
+        <div>
+          <div className="card">
+            <table>
+              <thead>
+                <tr>
+                  <th>CSI</th><th>Item</th><th className="n">Qty</th><th>Unit</th><th className="n">Rate ($)</th>
+                  <th className="n">Item Total</th><th>Backed by</th><th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {groups.map((g, gi) => (
+                  <FragmentGroup key={gi} division={g.division}>
+                    {g.lines.map((l) => {
+                      const it = (parseFloat(l.qty) || 0) * (parseFloat(l.rate) || 0);
+                      return (
+                        <tr key={l.key} className={l.kind === "missing" ? "miss" : undefined}>
+                          <td>{l.item_no || ""}</td>
+                          <td>{l.description}</td>
+                          <td className="n">
+                            <input className="cell" type="number" value={l.qty} onChange={(e) => update(l.key, "qty", e.target.value)} />
+                          </td>
+                          <td>{l.unit || ""}</td>
+                          <td className="n">
+                            <input className="cell" type="number" step="any" value={l.rate} onChange={(e) => update(l.key, "rate", e.target.value)} />
+                          </td>
+                          <td className="n">{money(it)}</td>
+                          <td>
+                            {l.p25 != null ? (
+                              <small className="j">${l.p25}–${l.p75} · {l.jobs}j</small>
+                            ) : l.jobs > 0 ? (
+                              <small className="j">{l.jobs}j</small>
+                            ) : null}
+                          </td>
+                          <td><button className="x" onClick={() => remove(l.key)}>×</button></td>
+                        </tr>
+                      );
+                    })}
+                  </FragmentGroup>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="add">
+            <select value={pick} onChange={(e) => setPick(Number(e.target.value))}>
+              {catalog.map((x, i) => (
+                <option key={i} value={i}>{x.description} — ${x.rate}/{x.unit} ({x.jobs}j)</option>
+              ))}
+            </select>
+            <button className="btn ghost" onClick={addPick}>+ Add line</button>
+          </div>
+        </div>
+
+        <div className="preview">
+          <h3><span className="live" /> Live Preview</h3>
+          <div className="pv-body">
+            {Object.entries(byDiv).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).length ? (
+              Object.entries(byDiv).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).map(([k, v]) => (
+                <div key={k} className="pv-div"><span>{k}</span><b>{money(v)}</b></div>
+              ))
+            ) : (
+              <div className="pv-div"><span>Fill quantities to price</span></div>
+            )}
+          </div>
+          <div className="pv-tot">
+            <div className="pv-line"><span>Subtotal cost</span><b>{money(sub)}</b></div>
+            <div className="pv-line"><span>Contingency</span><b>{money(cont)}</b></div>
+            <div className="pv-line">
+              <span>Markup <input className="mk" type="number" value={markup} style={{ width: 56 }} onChange={(e) => setMarkup(Number(e.target.value))} /> %</span>
+            </div>
+            <div className="pv-bid"><span>Bid</span><b>{money(bid)}</b></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// division header row + its lines (a <tbody> can't hold a fragment with a header <tr> cleanly via map keys otherwise)
+function FragmentGroup({ division, children }: { division: string; children: React.ReactNode }) {
+  return (
+    <>
+      <tr className="div"><td colSpan={8}>{division}</td></tr>
+      {children}
+    </>
+  );
+}

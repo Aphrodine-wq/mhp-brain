@@ -1,0 +1,42 @@
+import { randomBytes } from "node:crypto";
+import { cookies } from "next/headers";
+import { NextResponse, type NextRequest } from "next/server";
+import { getAuthorizeUrl, type ProviderId } from "@/lib/oauth";
+import { requireAdmin } from "@/lib/auth";
+
+// Step 1 of the OAuth flow: GET /api/oauth/<provider>/start
+//   quickbooks -> realmId comes back on the callback.
+//   gmail      -> pass ?account=<dedicated box address>; we carry it across the round-trip.
+
+const PROVIDERS = new Set<ProviderId>(["quickbooks", "gmail"]);
+const STATE_TTL = 600; // seconds — the consent screen round-trip is short-lived
+
+export async function GET(req: NextRequest, { params }: { params: Promise<{ provider: string }> }) {
+  const { provider } = await params;
+  if (!PROVIDERS.has(provider as ProviderId)) {
+    return NextResponse.json({ error: "unknown provider" }, { status: 404 });
+  }
+
+  // Closed by default: minting a key to the books requires an admin session.
+  if (!(await requireAdmin())) {
+    return NextResponse.json({ error: "admin session required" }, { status: 401 });
+  }
+
+  const state = randomBytes(32).toString("hex");
+  const jar = await cookies();
+  const secure = process.env.NODE_ENV === "production";
+  // sameSite "lax" (not strict) so the cookie survives the top-level redirect back from the provider.
+  const cookieOpts = { httpOnly: true, secure, sameSite: "lax" as const, path: "/", maxAge: STATE_TTL };
+
+  jar.set(`oauth_state_${provider}`, state, cookieOpts);
+
+  if (provider === "gmail") {
+    const account = req.nextUrl.searchParams.get("account");
+    if (!account) {
+      return NextResponse.json({ error: "gmail requires ?account=<box address>" }, { status: 400 });
+    }
+    jar.set("oauth_account_gmail", account, cookieOpts);
+  }
+
+  return NextResponse.redirect(getAuthorizeUrl(provider as ProviderId, state));
+}
