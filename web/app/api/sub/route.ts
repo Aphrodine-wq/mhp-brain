@@ -1,8 +1,11 @@
 import { writeOverride, OverrideError, subKey } from "@/lib/overrides";
+import { requireRole } from "@/lib/auth";
 
-// Confirm a sub (verified) and/or correct its trade/phone. Keyed by normalized name.
+// Confirm a sub (verified) and/or correct its trade/phone. Keyed by normalized name. Editor+ only;
+// audit actor is the signed-in user.
 export async function POST(req: Request) {
-  if (req.headers.get("x-mhp-write") !== "1") return Response.json({ error: "forbidden" }, { status: 403 });
+  const user = await requireRole("editor");
+  if (!user) return Response.json({ error: "editor role required" }, { status: 403 });
   let data;
   try {
     data = await req.json();
@@ -10,7 +13,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "bad json" }, { status: 400 });
   }
   if (!data.name) return Response.json({ error: "missing name" }, { status: 400 });
-  const actor = String(data.actor || "Walt Burge").slice(0, 60);
+  const actor = user.name.slice(0, 60);
   const key = subKey(String(data.name));
   try {
     for (const field of ["trade", "phone", "verified"] as const) {

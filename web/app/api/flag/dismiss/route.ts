@@ -1,15 +1,18 @@
 import { writeOverride, OverrideError } from "@/lib/overrides";
+import { requireRole } from "@/lib/auth";
 
 // Dismiss (or un-dismiss) a Live flag/priority. entity_id is the synthetic "pid:flag_type" key.
+// Editor+ only; audit actor is the signed-in user.
 export async function POST(req: Request) {
-  if (req.headers.get("x-mhp-write") !== "1") return Response.json({ error: "forbidden" }, { status: 403 });
+  const user = await requireRole("editor");
+  if (!user) return Response.json({ error: "editor role required" }, { status: 403 });
   let data;
   try {
     data = await req.json();
   } catch {
     return Response.json({ error: "bad json" }, { status: 400 });
   }
-  const actor = String(data.actor || "Walt Burge").slice(0, 60);
+  const actor = user.name.slice(0, 60);
   try {
     await writeOverride({
       entityType: "live_flag",

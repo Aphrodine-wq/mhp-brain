@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import type { SessionUser } from "@/lib/auth";
 
 type NavItem = { href: string; label: string; icon: React.ReactNode };
 
@@ -21,8 +22,11 @@ const SETTINGS: NavItem = {
   icon: (<><circle cx="12" cy="12" r="3" /><path d="M19 12a7 7 0 00-.1-1l2-1.6-2-3.4-2.4 1a7 7 0 00-1.7-1l-.4-2.5h-4l-.4 2.5a7 7 0 00-1.7 1l-2.4-1-2 3.4 2 1.6a7 7 0 000 2l-2 1.6 2 3.4 2.4-1a7 7 0 001.7 1l.4 2.5h4l.4-2.5a7 7 0 001.7-1l2.4 1 2-3.4-2-1.6a7 7 0 00.1-1z" /></>),
 };
 
-export default function Sidebar() {
+const ROLE_LABEL: Record<SessionUser["role"], string> = { admin: "Admin", editor: "Editor", viewer: "Viewer" };
+
+export default function Sidebar({ user }: { user: SessionUser }) {
   const pathname = usePathname();
+  const router = useRouter();
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   const link = ({ href, label, icon }: NavItem) => (
@@ -31,6 +35,16 @@ export default function Sidebar() {
       {label}
     </Link>
   );
+
+  const initials =
+    user.name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?";
+  const roleLabel = ROLE_LABEL[user.role] + (user.scope ? ` · ${user.scope}` : "");
+
+  async function logout() {
+    await fetch("/api/logout", { method: "POST" });
+    router.replace("/login");
+    router.refresh();
+  }
 
   return (
     <aside className="sidebar">
@@ -44,13 +58,22 @@ export default function Sidebar() {
         <div className="nav-sep" />
         {link(SETTINGS)}
       </nav>
-      <Link href="/settings" className="profile">
-        <div className="avatar">WB</div>
-        <div className="pmeta">
-          <div className="pname">Walt Burge</div>
-          <div className="prole">Senior Project Coordinator</div>
-        </div>
-      </Link>
+      <div className="profile-row">
+        <Link href="/settings" className="profile">
+          <div className="avatar">{initials}</div>
+          <div className="pmeta">
+            <div className="pname">{user.name}</div>
+            <div className="prole">{roleLabel}</div>
+          </div>
+        </Link>
+        <button className="logout" onClick={logout} title="Sign out" aria-label="Sign out">
+          <svg viewBox="0 0 24 24">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+            <path d="M16 17l5-5-5-5" />
+            <path d="M21 12H9" />
+          </svg>
+        </button>
+      </div>
     </aside>
   );
 }

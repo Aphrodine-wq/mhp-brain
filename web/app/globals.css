@@ -211,3 +211,24 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .empty .big{font-family:var(--disp);font-size:22px;color:var(--ink);margin-bottom:8px}
 .filterbar{display:flex;gap:8px;margin:18px 0;align-items:center}
 .filterbar input{flex:1;max-width:320px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-family:var(--sans)}
+/* auth: login page */
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--paper);padding:24px}
+.login-card{width:100%;max-width:360px;background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:34px 32px;box-shadow:0 4px 24px rgba(17,20,24,.06);display:flex;flex-direction:column;gap:14px}
+.login-logo{height:40px;width:auto;align-self:flex-start;margin-bottom:2px}
+.login-brand{font-family:var(--disp);font-weight:600;font-size:22px;letter-spacing:-.3px;color:var(--navy);margin:0}
+.login-sub{color:var(--muted);font-size:14px;margin:-8px 0 4px}
+.login label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--ink)}
+.login input{padding:11px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;
+  font-family:var(--sans);font-size:15px;color:var(--ink)}
+.login input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(11,61,145,.12)}
+.login .btn{margin-top:6px;width:100%;justify-content:center;text-align:center}
+.login .btn:disabled{opacity:.6;cursor:default}
+.login-err{background:#fbe9e4;border:1px solid #e6c4b8;color:var(--warn);font-size:13px;padding:9px 12px;border-radius:8px}
+/* auth: sidebar profile + logout */
+.profile-row{display:flex;align-items:stretch;border-top:1px solid rgba(255,255,255,.1)}
+.profile-row .profile{flex:1;border-top:0}
+.logout{background:0;border:0;cursor:pointer;color:rgba(255,255,255,.45);padding:0 16px;display:flex;
+  align-items:center;border-left:1px solid rgba(255,255,255,.08);transition:background .12s,color .12s}
+.logout:hover{color:#fff;background:rgba(255,255,255,.06)}
+.logout svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
