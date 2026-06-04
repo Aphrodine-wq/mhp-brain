@@ -1,8 +1,10 @@
 import { db } from "./db";
 import { loadCatalog, loadNJobs } from "./catalog";
+import { loadOverrides, subKey } from "./overrides";
 
 // Faithful TS ports of app.py's read functions. Queries are batched (no per-row round-trips)
 // so this stays fast on Turso, but the computed results match the Python exactly.
+// Corrections are applied as a read-time overlay (see lib/overrides.ts).
 
 const STATUS_RANK: Record<string, number> = {
   Active: 0,
@@ -49,6 +51,7 @@ export interface ProjectRow {
 }
 
 export async function projectsList(): Promise<ProjectRow[]> {
+  const ov = await loadOverrides("project");
   const prows = (await db.execute("SELECT id,name,type,status,market,last_activity FROM projects")).rows;
   const erows = (
     await db.execute("SELECT project_id,sum_sov_total,est_date FROM estimates WHERE parse_confidence!='FAILED'")
@@ -64,12 +67,13 @@ export async function projectsList(): Promise<ProjectRow[]> {
   const out: ProjectRow[] = prows.map((p) => {
     const pid = String(p.id);
     const ests = estByProject.get(pid) ?? [];
+    const o = ov.get(pid); // overlay: status / market / type
     return {
       id: pid,
       name: String(p.name),
-      type: (p.type as string | null) ?? "",
-      status: String(p.status),
-      market: (p.market as string | null) ?? "",
+      type: (o?.type ?? (p.type as string | null)) ?? "",
+      status: o?.status ?? String(p.status),
+      market: (o?.market ?? (p.market as string | null)) ?? "",
       last: (p.last_activity as string | null) ?? "",
       value: pyRound(projectValue(ests)),
       estimates: ests.length,
@@ -82,28 +86,38 @@ export async function projectsList(): Promise<ProjectRow[]> {
 
 export interface SubRow {
   name: string;
+  key: string;
   trade: string;
   phone: string;
   jobs: number;
   projects: string;
   source: string;
+  verified: boolean;
 }
 
 export async function subsList(): Promise<SubRow[]> {
+  const ov = await loadOverrides("sub");
   let rows;
   try {
     rows = (await db.execute("SELECT name,trade,phone,jobs,projects,source FROM subs ORDER BY jobs DESC, name")).rows;
   } catch {
     return [];
   }
-  return rows.map((r) => ({
-    name: String(r.name),
-    trade: (r.trade as string | null) ?? "",
-    phone: (r.phone as string | null) ?? "",
-    jobs: Number(r.jobs ?? 0),
-    projects: (r.projects as string | null) ?? "",
-    source: (r.source as string | null) ?? "",
-  }));
+  return rows.map((r) => {
+    const name = String(r.name);
+    const k = subKey(name);
+    const o = ov.get(k) ?? {};
+    return {
+      name,
+      key: k,
+      trade: o.trade ?? ((r.trade as string | null) ?? ""),
+      phone: o.phone ?? ((r.phone as string | null) ?? ""),
+      jobs: Number(r.jobs ?? 0),
+      projects: (r.projects as string | null) ?? "",
+      source: (r.source as string | null) ?? "",
+      verified: o.verified === "true",
+    };
+  });
 }
 
 export interface CrewRow {
@@ -171,7 +185,6 @@ export async function catalogList(): Promise<CatalogRow[]> {
   return rows;
 }
 
-// local canon (avoid import cycle clarity) — identical to canon.ts
 function canonKey(s: string): string {
   return String(s ?? "").replace(/\s+/g, " ").trim().toLowerCase();
 }
@@ -224,7 +237,6 @@ export async function margin(): Promise<MarginResult> {
   const { unit } = await loadCatalog();
   const njobs = await loadNJobs();
 
-  // (1) markup leaks — active/aging/bid jobs bid thin, deduped by project name (first seen wins)
   const markup: MarginResult["markup"] = [];
   const seen = new Set<string>();
   const mkRows = (
@@ -247,7 +259,6 @@ export async function margin(): Promise<MarginResult> {
   }
   markup.sort((a, b) => b.uplift - a.uplift);
 
-  // (2) systematic line-item underpricing
   const leak = new Map<string, { desc: string; n: number; gap: number; p: number[] }>();
   const liRows = (
     await db.execute(`
@@ -279,7 +290,7 @@ export async function margin(): Promise<MarginResult> {
   const items: MarginResult["items"] = [];
   for (const e of leak.values()) {
     const typ = medianOf(e.p);
-    if (typ >= 0.45 && e.n < 15) continue; // drop low-confidence artifacts
+    if (typ >= 0.45 && e.n < 15) continue;
     items.push({ item: e.desc, jobs: e.n, under: pyRound(typ * 100), recoverable: pyRound(e.gap) });
   }
   items.sort((a, b) => b.recoverable - a.recoverable);
@@ -287,7 +298,6 @@ export async function margin(): Promise<MarginResult> {
   return { recoverable: total, markup, items: items.slice(0, 14) };
 }
 
-// statistics.median — average of the two middles on even-length
 function medianOf(vals: number[]): number {
   const v = [...vals].sort((a, b) => a - b);
   const n = v.length;
@@ -296,7 +306,11 @@ function medianOf(vals: number[]): number {
   return n % 2 ? v[mid] : (v[mid - 1] + v[mid]) / 2;
 }
 
-type Flag = [string, string];
+export interface LiveFlag {
+  level: string;
+  text: string;
+  key: string;
+}
 export interface LiveJob {
   name: string;
   status: string;
@@ -305,17 +319,19 @@ export interface LiveJob {
   value: number;
   delta: number | null;
   revisions: number;
-  flags: Flag[];
+  flags: LiveFlag[];
   health: string;
 }
 export interface LiveResult {
   jobs: LiveJob[];
-  priorities: Flag[];
+  priorities: LiveFlag[];
 }
 
-// Faithful port of live_data(): forward look on active/aging/bid jobs.
+// Faithful port of live_data(): forward look on active/aging/bid jobs, plus flag-dismissal overlay.
 export async function liveData(): Promise<LiveResult> {
   const { unit } = await loadCatalog();
+  const flagOv = await loadOverrides("live_flag");
+  const dismissed = (pid: string, ftype: string) => flagOv.get(`${pid}:${ftype}`)?.dismissed === "true";
 
   const candidates = (
     await db.execute("SELECT id,name,status,market,last_activity FROM projects WHERE status IN ('Active','Aging','Bid')")
@@ -323,7 +339,6 @@ export async function liveData(): Promise<LiveResult> {
   const pids = candidates.map((r) => String(r.id));
   if (pids.length === 0) return { jobs: [], priorities: [] };
 
-  // all non-failed estimates for candidate projects, grouped
   const placeholders = pids.map(() => "?").join(",");
   const estRows = (
     await db.execute({
@@ -338,7 +353,6 @@ export async function liveData(): Promise<LiveResult> {
     estByProject.get(pid)!.push({ id: String(e.id), sov: e.sum_sov_total as number | null, date: (e.est_date as string | null) ?? "" });
   }
 
-  // latest_priced per project
   function latestPriced(pid: string): { eid: string | null; value: number; revs: number } {
     const ests = estByProject.get(pid) ?? [];
     const priced = ests.filter((e) => e.sov && e.sov > 0);
@@ -353,7 +367,6 @@ export async function liveData(): Promise<LiveResult> {
   const chosen = new Map<string, { eid: string | null; value: number; revs: number }>();
   for (const pid of pids) chosen.set(pid, latestPriced(pid));
 
-  // pricing_delta inputs: line_items for the chosen estimate ids
   const eids = [...chosen.values()].map((c) => c.eid).filter((e): e is string => e != null);
   const liByEst = new Map<string, { cd: string; qty: number; up: number; nu: string }[]>();
   if (eids.length) {
@@ -394,7 +407,7 @@ export async function liveData(): Promise<LiveResult> {
   }
 
   const jobs: LiveJob[] = [];
-  const priorities: Flag[] = [];
+  const priorities: LiveFlag[] = [];
   for (const r of candidates) {
     const pid = String(r.id);
     const name = String(r.name);
@@ -403,33 +416,36 @@ export async function liveData(): Promise<LiveResult> {
     const la = (r.last_activity as string | null) ?? "";
     const { eid, value, revs } = chosen.get(pid)!;
     const delta = pricingDelta(eid);
-    const flags: Flag[] = [];
+    const flags: LiveFlag[] = [];
+    const add = (arr: LiveFlag[], level: string, text: string, ftype: string) => {
+      if (!dismissed(pid, ftype)) arr.push({ level, text, key: `${pid}:${ftype}` });
+    };
 
     if ((status === "Active" || status === "Aging") && value === 0) {
-      flags.push(["red", "No priced estimate on file"]);
-      if (status === "Active") priorities.push(["red", `${name}: no estimate on file — price it`]);
+      add(flags, "red", "No priced estimate on file", "no_estimate");
+      if (status === "Active") add(priorities, "red", `${name}: no estimate on file — price it`, "no_estimate");
     }
     if (status === "Aging") {
-      priorities.push(["amber", `${name}: quiet since ${la || "?"} — still active, or close it out?`]);
+      add(priorities, "amber", `${name}: quiet since ${la || "?"} — still active, or close it out?`, "aging_confirm");
     }
     if (delta !== null && delta < -0.04) {
       const lvl = delta < -0.1 ? "red" : "amber";
-      flags.push([lvl, `Priced ${Math.round(Math.abs(delta) * 100)}% below your norm — margin risk`]);
+      add(flags, lvl, `Priced ${Math.round(Math.abs(delta) * 100)}% below your norm — margin risk`, "underpriced");
       if (lvl === "red" && status === "Active") {
-        priorities.push(["red", `${name}: bid ${Math.round(Math.abs(delta) * 100)}% under your historical pricing — check margin`]);
+        add(priorities, "red", `${name}: bid ${Math.round(Math.abs(delta) * 100)}% under your historical pricing — check margin`, "underpriced");
       }
     }
     if (delta !== null && delta > 0.08) {
-      flags.push(["green", `Priced ${Math.round(delta * 100)}% above norm — healthy cushion`]);
+      add(flags, "green", `Priced ${Math.round(delta * 100)}% above norm — healthy cushion`, "healthy");
     }
     if (revs >= 5) {
-      flags.push(["amber", `${revs} estimate revisions — scope still moving`]);
+      add(flags, "amber", `${revs} estimate revisions — scope still moving`, "scope_moving");
     }
     if (status === "Bid") {
-      priorities.push(["blue", `${name}: bid out, not signed — follow up`]);
+      add(priorities, "blue", `${name}: bid out, not signed — follow up`, "bid_followup");
     }
 
-    const levels = flags.map((f) => f[0]);
+    const levels = flags.map((f) => f.level);
     const health = levels.includes("red") ? "red" : levels.includes("amber") ? "amber" : "green";
     if (status === "Active") {
       jobs.push({
@@ -448,6 +464,6 @@ export async function liveData(): Promise<LiveResult> {
 
   const order: Record<string, number> = { red: 0, amber: 1, green: 2 };
   jobs.sort((a, b) => order[a.health] - order[b.health] || b.value - a.value);
-  priorities.sort((a, b) => (order[a[0]] ?? 3) - (order[b[0]] ?? 3));
+  priorities.sort((a, b) => (order[a.level] ?? 3) - (order[b.level] ?? 3));
   return { jobs, priorities };
 }
