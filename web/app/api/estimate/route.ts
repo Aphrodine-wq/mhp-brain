@@ -1,9 +1,11 @@
+import { requireUser } from "@/lib/auth";
 import { parseJobText } from "@/lib/parse-job";
 import { buildLines } from "@/lib/pricing";
 
 const DEFAULT_MARKUP = 1.18; // matches estimate.DEFAULT_MARKUP
 
 export async function POST(req: Request) {
+  if (!(await requireUser())) return Response.json({ error: "unauthorized" }, { status: 401 });
   const data = await req.json();
   let text: string = data.description ?? "";
   for (const doc of data.docs ?? []) {

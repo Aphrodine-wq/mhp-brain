@@ -114,6 +114,12 @@ export async function currentUser(): Promise<SessionUser | null> {
   };
 }
 
+// Authenticated-only gate (any role). Returns the user or null; the caller answers 401. Completes
+// the require* family — read routes use this, write routes use requireRole, oauth uses requireAdmin.
+export async function requireUser(): Promise<SessionUser | null> {
+  return currentUser();
+}
+
 // Gate by minimum role. Returns the user when they satisfy it, else null (caller answers 401/403).
 export async function requireRole(min: SessionUser["role"]): Promise<SessionUser | null> {
   const u = await currentUser();

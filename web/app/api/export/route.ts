@@ -1,3 +1,4 @@
+import { requireUser } from "@/lib/auth";
 import { writeXlsx } from "@/lib/xlsx";
 
 interface InLine {
@@ -7,6 +8,7 @@ interface InLine {
 }
 
 export async function POST(req: Request) {
+  if (!(await requireUser())) return Response.json({ error: "unauthorized" }, { status: 401 });
   const data = await req.json();
   const lines = (data.lines ?? [])
     .filter((l: InLine) => l.qty && l.rate)
