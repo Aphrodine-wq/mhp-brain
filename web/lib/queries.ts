@@ -502,12 +502,14 @@ export async function estimatesList(): Promise<EstimateRow[]> {
     const stated = r.stated_total as number | null;
     const total = sov && sov > 0 ? sov : stated && stated > 0 ? stated : item ?? 0;
     const d = ((r.est_date as string | null) ?? "").slice(0, 10);
+    // source_file is a long raw path/sheet string — show just the filename, no extension.
+    const src = (((r.source_file as string | null) ?? "").split(/[/\\]/).pop() ?? "").replace(/\.(xlsx?|pdf|csv)$/i, "").trim();
     return {
       id: String(r.id),
       project: String(r.name),
       projectId: String(r.project_id),
       date: d.startsWith("0000") ? "" : d,
-      source: (r.source_file as string | null) ?? "",
+      source: src,
       lineItems: Number(r.line_item_count ?? 0),
       total: pyRound(total ?? 0),
       confidence: (r.parse_confidence as string | null) ?? "",
