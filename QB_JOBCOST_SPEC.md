@@ -51,12 +51,12 @@ Customer:Job.** Tagged → near-automatic. Untagged → inference (see Phase B).
 
 ## The accuracy traps (these decide whether the number is trustworthy)
 
-1. **Labor — the #1 trap.** If MHP runs payroll *outside* QuickBooks (a separate payroll service,
-   cash, or 1099 subs booked as bills), then QB job-cost **understates cost and overstates margin** —
-   sometimes massively. A job that looks +12% can be a loss once real labor lands. **Every job P&L
-   must declare whether labor is included**, and if not, the margin is marked *gross-of-labor /
-   incomplete*, never reported as a confirmed result. Resolving labor allocation is prerequisite to
-   any loss claim.
+1. **Labor — the #1 trap. RESOLVED for MHP: payroll runs through QuickBooks** (confirmed
+   2026-06-03), so direct labor *is* captured in job cost. The cost side is complete on day one and
+   CONFIRMED-LOSS calls are supportable. The guard stays in the code regardless — every job P&L still
+   declares whether labor is present, and any job missing it is marked *gross-of-labor / incomplete*
+   rather than reported as a result. (Also keeps the build honest for the second sale, where the next
+   contractor may *not* run payroll in QB — there, labor allocation becomes prerequisite again.)
 2. **Untagged costs.** Bills not assigned to a job sit in general overhead — some genuinely are,
    some are misallocated job costs. We surface the untagged pool, never silently drop it.
 3. **Overhead vs direct.** Don't let unallocated overhead masquerade as job cost or vice versa. Keep
@@ -137,8 +137,8 @@ The bridge between QuickBooks and the brain's 149 projects:
 ## What James needs to provide to start
 
 1. QuickBooks Online access (admin can authorize the app, or an accountant-user, read-only).
-2. **The labor answer:** is payroll *in* QuickBooks, or run elsewhere? This single fact determines
-   whether the cost side is complete on day one.
+2. ~~**The labor answer:** is payroll in QuickBooks, or run elsewhere?~~ **CONFIRMED: payroll is in
+   QuickBooks** — labor is captured, cost side is complete. No labor-allocation pre-work needed.
 3. Whether the bookkeeper tags bills to Customer:Job (decides Phase B effort).
 4. For litigation specifically: the signed contract values and any bank records the accountant wants
    cross-checked — so the system reconciles to them, not just to QB.
