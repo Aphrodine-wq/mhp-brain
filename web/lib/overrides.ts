@@ -75,34 +75,3 @@ export async function writeOverride(opts: {
     throw e;
   }
 }
-
-export interface AuditRow {
-  ts: string;
-  actor: string;
-  entity_type: string;
-  entity_id: string;
-  label: string | null;
-  field: string;
-  old: string | null;
-  new: string | null;
-  action: string;
-}
-
-export async function auditList(limit = 500): Promise<AuditRow[]> {
-  const r = await db.execute({
-    sql: `SELECT ts,actor,entity_type,entity_id,entity_label,field,old_value,new_value,action
-          FROM audit_log ORDER BY ts DESC, id DESC LIMIT ?`,
-    args: [limit],
-  });
-  return r.rows.map((x) => ({
-    ts: String(x.ts),
-    actor: String(x.actor),
-    entity_type: String(x.entity_type),
-    entity_id: String(x.entity_id),
-    label: x.entity_label as string | null,
-    field: String(x.field),
-    old: x.old_value as string | null,
-    new: x.new_value as string | null,
-    action: String(x.action),
-  }));
-}
