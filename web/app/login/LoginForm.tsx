@@ -68,7 +68,7 @@ export default function LoginForm({ next, dev }: { next: string; dev: boolean })
         </button>
         {dev && (
           <button type="button" className="login-dev" onClick={devLogin} disabled={busy}>
-            Dev sign-in (admin) · local only
+            Skip login — sign in as admin
           </button>
         )}
       </form>
