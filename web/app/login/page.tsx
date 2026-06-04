@@ -9,5 +9,5 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   // Only allow local return paths (no open redirect to //evil.com).
   const dest = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
   if (await currentUser()) redirect(dest);
-  return <LoginForm next={dest} />;
+  return <LoginForm next={dest} dev={process.env.NODE_ENV !== "production"} />;
 }

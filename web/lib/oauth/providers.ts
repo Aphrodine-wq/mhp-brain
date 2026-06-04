@@ -22,6 +22,17 @@ function need(name: string): string {
   return v;
 }
 
+// Cheap, throw-free check of whether a provider's creds are present. Drives the Settings UI so we
+// never render an enabled "Connect" that would 500 inside providerConfig()'s need().
+const ENV_KEYS: Record<ProviderId, string[]> = {
+  quickbooks: ["QB_CLIENT_ID", "QB_CLIENT_SECRET", "QB_REDIRECT_URI"],
+  gmail: ["GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REDIRECT_URI"],
+};
+
+export function isConfigured(id: ProviderId): boolean {
+  return ENV_KEYS[id].every((k) => Boolean(process.env[k]));
+}
+
 export function providerConfig(id: ProviderId): ProviderConfig {
   switch (id) {
     case "quickbooks":

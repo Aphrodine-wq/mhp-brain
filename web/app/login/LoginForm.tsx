@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function LoginForm({ next }: { next: string }) {
+export default function LoginForm({ next, dev }: { next: string; dev: boolean }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,6 +34,19 @@ export default function LoginForm({ next }: { next: string }) {
     }
   }
 
+  async function devLogin() {
+    setBusy(true);
+    setError("");
+    try {
+      await fetch("/api/dev-login", { method: "POST" });
+      router.replace(next);
+      router.refresh();
+    } catch {
+      setError("Dev login failed");
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="login">
       <form className="login-card" onSubmit={submit}>
@@ -53,6 +66,11 @@ export default function LoginForm({ next }: { next: string }) {
         <button className="btn" type="submit" disabled={busy}>
           {busy ? "Signing in…" : "Sign in"}
         </button>
+        {dev && (
+          <button type="button" className="login-dev" onClick={devLogin} disabled={busy}>
+            Dev sign-in (admin) · local only
+          </button>
+        )}
       </form>
     </div>
   );

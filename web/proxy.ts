@@ -6,7 +6,9 @@ import { SESSION_COOKIE } from "@/lib/auth-constants";
 // hit the DB — token validity, expiry, and role are enforced in the Node route handlers / server
 // components via currentUser()/requireRole(). Defense in depth, no DB round-trip per asset.
 
-const PUBLIC = new Set(["/login", "/api/login"]);
+// /api/dev-login is public so the (dev-only) one-click login can mint a session with no prior
+// cookie — same chicken-and-egg as /api/login. It 404s in production regardless.
+const PUBLIC = new Set(["/login", "/api/login", "/api/dev-login"]);
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

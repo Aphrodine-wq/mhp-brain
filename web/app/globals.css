@@ -225,6 +225,13 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .login .btn{margin-top:6px;width:100%;justify-content:center;text-align:center}
 .login .btn:disabled{opacity:.6;cursor:default}
 .login-err{background:#fbe9e4;border:1px solid #e6c4b8;color:var(--warn);font-size:13px;padding:9px 12px;border-radius:8px}
+.login-dev{margin-top:2px;background:0;border:1px dashed var(--line);color:var(--muted);padding:9px;
+  border-radius:9px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:border-color .12s,color .12s}
+.login-dev:hover{border-color:var(--navy);color:var(--navy)}
+.login-dev:disabled{opacity:.6;cursor:default}
+/* connections notices */
+.conn-ok{background:#e3f1e4;border:1px solid #bfe0c2;color:#2f6b34;font-size:13px;padding:8px 12px;border-radius:8px;margin-bottom:10px}
+.conn-err{background:#fbe9e4;border:1px solid #e6c4b8;color:var(--warn);font-size:13px;padding:8px 12px;border-radius:8px;margin-bottom:10px}
 /* auth: sidebar profile + logout */
 .profile-row{display:flex;align-items:stretch;border-top:1px solid rgba(255,255,255,.1)}
 .profile-row .profile{flex:1;border-top:0}

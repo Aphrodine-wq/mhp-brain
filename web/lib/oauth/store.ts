@@ -64,3 +64,15 @@ export async function audit(provider: string, account: string, action: string, d
     args: [`${provider}:${account}`, provider, detail, action],
   });
 }
+
+// Connection status for the Settings UI — provider/account/expiry only, never the tokens.
+export async function listConnections(): Promise<{ provider: string; account: string; expiresAt: string }[]> {
+  const rows = (
+    await db.execute(`SELECT provider, account, expires_at FROM oauth_connections ORDER BY provider`)
+  ).rows;
+  return rows.map((r) => ({
+    provider: String(r.provider),
+    account: String(r.account),
+    expiresAt: String(r.expires_at),
+  }));
+}
