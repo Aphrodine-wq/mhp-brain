@@ -1,17 +1,16 @@
-// Idempotent migration runner: applies every .sql in lib/migrations in order.
-// Default target is the local mhp.db; prod sets TURSO_DATABASE_URL + TURSO_AUTH_TOKEN.
-import { createClient } from "@libsql/client";
+// Idempotent migration runner (Postgres). Applies every .sql in lib/migrations in order.
+// Run: node --env-file=.env.local scripts/migrate.mjs   (or set DATABASE_URL)
+import pg from "pg";
 import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-const url = process.env.TURSO_DATABASE_URL ?? "file:/Users/jameswalton/Projects/mhp-brain/mhp.db";
-const db = createClient({ url, authToken: process.env.TURSO_AUTH_TOKEN });
-
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const dir = join(dirname(fileURLToPath(import.meta.url)), "../lib/migrations");
 const files = readdirSync(dir).filter((f) => f.endsWith(".sql")).sort();
 for (const f of files) {
-  await db.executeMultiple(readFileSync(join(dir, f), "utf8"));
+  await pool.query(readFileSync(join(dir, f), "utf8")); // multi-statement DDL, no params
   console.log("applied", f);
 }
-console.log("migrations done ->", url);
+console.log("migrations done ->", process.env.DATABASE_URL);
+await pool.end();

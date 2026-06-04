@@ -207,9 +207,11 @@ export async function stats(): Promise<Stats> {
   for (const p of pl) counts[p.status] = (counts[p.status] ?? 0) + 1;
   const active_value = pl.filter((p) => p.status === "Active").reduce((s, p) => s + p.value, 0);
 
-  const g = async (sql: string) => Number((await db.execute(sql)).rows[0][0]);
+  const g = async (sql: string) => Number((await db.execute(sql)).rows[0].n);
   const has = async (t: string) =>
-    Number((await db.execute({ sql: "SELECT COUNT(*) FROM sqlite_master WHERE name=?", args: [t] })).rows[0][0]) > 0;
+    Number(
+      (await db.execute({ sql: "SELECT COUNT(*) AS n FROM information_schema.tables WHERE table_name=?", args: [t] })).rows[0].n,
+    ) > 0;
 
   return {
     active: counts["Active"] ?? 0,
@@ -218,9 +220,9 @@ export async function stats(): Promise<Stats> {
     bid: counts["Bid"] ?? 0,
     paused: counts["Paused"] ?? 0,
     projects: pl.length,
-    line_items: await g("SELECT COUNT(*) FROM line_items"),
-    subs: (await has("subs")) ? await g("SELECT COUNT(*) FROM subs") : 0,
-    crew: (await has("crew")) ? await g("SELECT COUNT(*) FROM crew") : 0,
+    line_items: await g("SELECT COUNT(*) AS n FROM line_items"),
+    subs: (await has("subs")) ? await g("SELECT COUNT(*) AS n FROM subs") : 0,
+    crew: (await has("crew")) ? await g("SELECT COUNT(*) AS n FROM crew") : 0,
   };
 }
 

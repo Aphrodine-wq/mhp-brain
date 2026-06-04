@@ -18,14 +18,14 @@ export async function saveConnection(c: Connection): Promise<void> {
   await db.execute({
     sql: `INSERT INTO oauth_connections
             (provider, account, realm_id, access_enc, refresh_enc, expires_at, scope, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+          VALUES (?, ?, ?, ?, ?, ?, ?, now()::text, now()::text)
           ON CONFLICT(provider, account) DO UPDATE SET
             realm_id    = excluded.realm_id,
             access_enc  = excluded.access_enc,
             refresh_enc = excluded.refresh_enc,
             expires_at  = excluded.expires_at,
             scope       = excluded.scope,
-            updated_at  = datetime('now')`,
+            updated_at  = now()::text`,
     args: [
       c.provider, c.account, c.realmId,
       encrypt(c.accessToken), encrypt(c.refreshToken), // tokens NEVER hit the row in clear
@@ -60,7 +60,7 @@ export async function loadConnection(provider: ProviderId, account: string): Pro
 export async function audit(provider: string, account: string, action: string, detail: string): Promise<void> {
   await db.execute({
     sql: `INSERT INTO audit_log (ts, actor, entity_type, entity_id, entity_label, field, old_value, new_value, action)
-          VALUES (datetime('now'), 'oauth', 'oauth', ?, ?, 'token', NULL, ?, ?)`,
+          VALUES (now()::text, 'oauth', 'oauth', ?, ?, 'token', NULL, ?, ?)`,
     args: [`${provider}:${account}`, provider, detail, action],
   });
 }
