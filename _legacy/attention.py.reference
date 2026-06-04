@@ -1,0 +1,113 @@
+"""Attention queue — the 'what needs me today' list, derived from the data.
+
+Each rule turns a data condition into an actionable flag. Flags respect admin edits (a status
+fix clears its flag) and can be dismissed (dismissal is itself a logged override). This is the
+admin counterpart to the Live view: Live is forward-looking on active jobs; this is integrity +
+pipeline hygiene across the whole book.
+
+Severity:  red = broken/urgent · amber = needs a look · blue = housekeeping
+"""
+import sqlite3
+from pathlib import Path
+
+import admin
+
+DB = Path(__file__).parent / "mhp.db"
+
+STALE_MONTHS = 4          # an 'Active' job quiet this long is suspect
+MED_MARKUP = 1.178        # MHP's own median markup; bids under it are thin
+HOLLOW_STATUSES = {"Active", "Bid", "Paused", "Likely Done"}
+
+
+def _months_between(a, b):
+    """Whole months from 'YYYY-MM' a to b (b-a). Returns None if unparseable."""
+    try:
+        ay, am = int(a[:4]), int(a[5:7])
+        by, bm = int(b[:4]), int(b[5:7])
+        return (by - ay) * 12 + (bm - am)
+    except (ValueError, IndexError, TypeError):
+        return None
+
+
+def attention_items(include_dismissed=False):
+    con = admin.connect()
+    admin.ensure_tables(con)
+    pov = admin.overlay(con, "project")
+    dismissed = admin.dismissed_flags(con)
+    today = admin.today_month()
+
+    def eff(pid, field, base):
+        return pov.get((pid, field), base)
+
+    # projects that have a real (canonical) priced estimate
+    have_canon = {pid for (pid,) in con.execute(
+        "SELECT DISTINCT project_id FROM canonical_estimates WHERE sum_sov_total>0")}
+
+    # thin-bid: canonical estimate marked up below MHP's own median
+    thin = {}
+    for pid, item, sov in con.execute(
+            "SELECT project_id, sum_item_total, sum_sov_total FROM canonical_estimates "
+            "WHERE sum_item_total>0 AND sum_sov_total>0"):
+        mk = sov / item
+        if mk < MED_MARKUP - 0.005:
+            thin[pid] = round((mk - 1) * 100)
+
+    items = []
+
+    def add(kind, sev, pid, name, msg, action, field=None, suggest=None):
+        fid = f"{kind}:{pid}"
+        if fid in dismissed and not include_dismissed:
+            return
+        items.append({"id": fid, "kind": kind, "severity": sev, "entity_type": "project",
+                      "entity_id": pid, "label": name, "message": msg, "action": action,
+                      "field": field, "suggest": suggest, "dismissed": fid in dismissed})
+
+    rows = con.execute("SELECT id,name,status,market,type,last_activity FROM projects").fetchall()
+    for pid, name, status, market, typ, la in rows:
+        status = eff(pid, "status", status)
+        market = eff(pid, "market", market or "")
+        la = la or ""
+
+        # 1. future last-activity date = corrupt data
+        if la and la > today:
+            add("future_date", "red", pid, name,
+                f"Last activity dated {la} — that's in the future (today {today}).",
+                "Fix the date or the source file.")
+
+        # 2. hollow: live status, no priced estimate on file
+        if status in HOLLOW_STATUSES and pid not in have_canon:
+            sev = "red" if status in ("Active", "Bid") else "amber"
+            add("hollow", sev, pid, name,
+                f"Status is '{status}' but there's no priced estimate on file.",
+                "Parse the bid, or set status to Dead/Unknown.",
+                field="status", suggest="Dead")
+
+        # 3. stale active
+        if status == "Active" and la:
+            gap = _months_between(la, today)
+            if gap is not None and gap >= STALE_MONTHS:
+                add("stale", "amber", pid, name,
+                    f"Active but quiet since {la} ({gap} months).",
+                    "Confirm it's live, or move to Aging/Dead.",
+                    field="status", suggest="Aging")
+
+        # 4. blank market — can't segment it
+        if not market:
+            add("blank_market", "blue", pid, name,
+                "No market set — won't show in any market breakdown.",
+                "Set the market.", field="market", suggest="Oxford")
+
+        # 5. thin bid vs own median markup
+        if pid in thin and status in ("Active", "Aging", "Bid"):
+            add("thin_bid", "amber", pid, name,
+                f"Canonical bid marked up {thin[pid]}% — below your {round((MED_MARKUP-1)*100)}% median.",
+                "Review pricing before it goes out.")
+
+    con.close()
+    order = {"red": 0, "amber": 1, "blue": 2}
+    items.sort(key=lambda x: (order.get(x["severity"], 3), x["label"]))
+    counts = {"red": 0, "amber": 0, "blue": 0}
+    for it in items:
+        if not it["dismissed"]:
+            counts[it["severity"]] = counts.get(it["severity"], 0) + 1
+    return {"items": items, "counts": counts, "total": sum(counts.values())}

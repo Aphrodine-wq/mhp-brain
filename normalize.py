@@ -17,12 +17,15 @@ DB = Path(__file__).parent / "mhp.db"
 HERE = Path(__file__).parent
 
 UNIT_ALIASES = {
-    "sqft": ["sqft", "sq ft", "sf", "square foot", "square feet"],
+    "sqft": ["sqft", "sq ft", "sf", "square foot", "square feet", "sqft feet"],
     "lft": ["lft", "lf", "lnft", "linear foot", "linear feet", "ln ft"],
-    "each": ["each", "ea", "ea."],
-    "cy": ["cy", "yard", "yards", "cubic yard"],
+    "each": ["each", "ea", "ea.", "eact"],
+    "cy": ["cy", "cubic yard", "cubic yards", "cdy"],   # NOTE: bare 'yard' is ambiguous (carpet=sq-yd) — resolved item-aware below
     "square": ["square", "per square", "sq"],
     "thousand": ["per thousand", "thousand"],
+    "board feet": ["board feet", "board ft", "board ft.", "board"],
+    "hour": ["hour", "hr", "hrs"],
+    "windows exterior": ["windows exterior", "windows&exterior"],
 }
 
 
@@ -31,16 +34,60 @@ def canon(desc):
     return re.sub(r"\s+", " ", str(desc or "")).strip().lower()
 
 
+def canon_division(raw):
+    """Clean, consistent division label: 'Division N: Name'.
+
+    Source headers come through verbatim, so spacing is ragged ('Division 1:' vs
+    'Division 10:  '). This standardizes formatting WITHOUT changing the division
+    name MHP chose — it's a labeling cleanup, not a re-taxonomy. Names are preserved
+    exactly (incl. 'Metal', '(Doors & Windows)'); only whitespace/format is normalized.
+    """
+    if not raw:
+        return raw
+    m = re.match(r"\s*division\s+(\d+)\s*:\s*(.+)", str(raw), re.I)
+    if not m:
+        return re.sub(r"\s+", " ", str(raw)).strip()
+    num, name = int(m.group(1)), re.sub(r"\s+", " ", m.group(2)).strip()
+    return f"Division {num}: {name}"
+
+
+# Aggregate rows that ride along in the template but are NOT real line items —
+# they're division/grand subtotals. Labeled SUBTOTAL so they stop polluting IRREGULAR
+# and are cleanly excluded from the cost catalog.
+SUBTOTAL_DESCS = {"all subtotals", "subtotal", "subtotals", "grand total", "total"}
+
+
+def is_subtotal(desc):
+    return canon(desc) in SUBTOTAL_DESCS
+
+
 def norm_unit(u):
     if not u:
         return None
     s = re.sub(r"\s+", " ", str(u)).strip().lower().rstrip(".")
+    s = re.sub(r"^per\s+", "", s)                       # "per door" -> "door"
+    s = re.sub(r"[/ ]allowance$", "", s).strip()        # "sqft/allowance" -> "sqft" (allowance is a flag, not a unit)
     for canon, aliases in UNIT_ALIASES.items():
-        if s in aliases or any(s == a for a in aliases):
+        if s in aliases:
             return canon
-    # strip leading "per " noise: "per door" -> "door"
-    s = re.sub(r"^per\s+", "", s)
     return s or None
+
+
+def resolve_unit(canon_desc, nu):
+    """Item-aware fix for scope-words that mean different measures per item.
+
+    Some sheets write the *location/scope* in the unit column instead of a measure:
+      'per interior'/'per exterior' = sqft for area work (paint, electrical) but 'each' for
+      counted items (doors); 'under roof sqft' = sqft. And 'yard' = cubic yard for concrete/sand
+      but *square* yard for carpet. A flat alias map would convert carpet to cubic yards — so the
+      true unit is resolved from the line's description, not the string alone.
+    """
+    d = canon_desc or ""
+    if nu in ("interior", "exterior", "under roof sqft"):
+        return "each" if "door" in d else "sqft"
+    if nu in ("yard", "yards"):
+        return "sqyd" if "carpet" in d else "cy"
+    return nu
 
 
 def classify(qty, unit_price, item_total):
@@ -80,24 +127,32 @@ def main():
             item_no TEXT, canon_desc TEXT, division TEXT, description TEXT,
             n_jobs INTEGER, median_total REAL, p25 REAL, p75 REAL
         );
-        ALTER TABLE line_items ADD COLUMN norm_unit TEXT;
-        ALTER TABLE line_items ADD COLUMN price_kind TEXT;
-        ALTER TABLE line_items ADD COLUMN canon_desc TEXT;
     """)
+    # Idempotent: only add the Layer-1 label columns the first time (re-runs must not crash).
+    existing = {r[1] for r in con.execute("PRAGMA table_info(line_items)")}
+    for col in ("norm_unit", "price_kind", "canon_desc"):
+        if col not in existing:
+            con.execute(f"ALTER TABLE line_items ADD COLUMN {col} TEXT")
 
     rows = con.execute("""SELECT id,item_no,division,description,qty,unit,unit_price,item_total,estimate_id
                           FROM line_items""").fetchall()
+    # Superseded revisions stay in line_items (real history) but are kept OUT of the catalog
+    # so one re-saved job isn't double-weighted in the medians.
+    superseded = {r[0] for r in con.execute("SELECT id FROM estimates WHERE parse_confidence='SUPERSEDED'")}
     unit_b = {}   # (item_no, canon, unit) -> {div,desc,prices:[(up,eid)]}
     lump_b = {}   # (item_no, canon)       -> {div,desc,totals:[(it,eid)]}
-    counts = {"UNIT_RATE": 0, "LUMP_SUM": 0, "IRREGULAR": 0}
+    counts = {"UNIT_RATE": 0, "LUMP_SUM": 0, "IRREGULAR": 0, "SUBTOTAL": 0}
     for lid, ino, div, desc, qty, unit, up, it, eid in rows:
-        nu = norm_unit(unit)
         cd = canon(desc)
-        kind = classify(qty, up, it)
+        nu = resolve_unit(cd, norm_unit(unit))
+        div = canon_division(div)
+        kind = "SUBTOTAL" if is_subtotal(desc) else classify(qty, up, it)
         counts[kind] += 1
-        con.execute("UPDATE line_items SET norm_unit=?, price_kind=?, canon_desc=? WHERE id=?",
-                    (nu, kind, cd, lid))
+        con.execute("UPDATE line_items SET norm_unit=?, price_kind=?, canon_desc=?, division=? WHERE id=?",
+                    (nu, kind, cd, div, lid))
         ino = (str(ino).strip() if ino else None)
+        if eid in superseded:
+            continue  # excluded from catalog (still labeled above)
         if kind == "UNIT_RATE" and up and up > 0:
             b = unit_b.setdefault((ino, cd, nu), {"div": div, "desc": desc, "p": []})
             b["p"].append((up, eid))
@@ -130,7 +185,8 @@ def main():
     n_unit = con.execute("SELECT COUNT(*) FROM unit_costs").fetchone()[0]
     n_lump = con.execute("SELECT COUNT(*) FROM lump_costs").fetchone()[0]
     print(f"Classified {total} lines: "
-          f"{counts['UNIT_RATE']} unit-rate, {counts['LUMP_SUM']} lump-sum, {counts['IRREGULAR']} irregular")
+          f"{counts['UNIT_RATE']} unit-rate, {counts['LUMP_SUM']} lump-sum, "
+          f"{counts['IRREGULAR']} irregular, {counts['SUBTOTAL']} subtotal")
     print(f"Built {n_unit} unit-cost + {n_lump} lump-sum entries (>=2 jobs), keyed by CSI item #")
 
     write_catalog(con)

@@ -16,6 +16,11 @@ from estimate import load_catalog, write_xlsx, DEFAULT_MARKUP
 from normalize import canon
 from parse_job import parse_job_text, qty_for
 
+import admin
+import attention
+import board
+import quickbooks
+
 DB = Path(__file__).parent / "mhp.db"
 PORT = 8770
 
@@ -85,15 +90,22 @@ def project_value(ests):
 
 
 def projects_list():
-    """Each project with refined status, last activity, and its CURRENT estimate."""
+    """Each project with refined status, last activity, and its CURRENT estimate.
+    Admin overrides (status/market/type) are overlaid on the parsed base values."""
     con = sqlite3.connect(DB)
+    admin.ensure_tables(con)
+    pov = admin.overlay(con, "project")
     prows = con.execute("SELECT id,name,type,status,market,last_activity FROM projects").fetchall()
     out = []
     for pid, name, typ, status, market, la in prows:
+        status = pov.get((pid, "status"), status)
+        market = pov.get((pid, "market"), market)
+        typ = pov.get((pid, "type"), typ)
         ests = con.execute("""SELECT sum_sov_total,est_date FROM estimates
             WHERE project_id=? AND parse_confidence!='FAILED'""", (pid,)).fetchall()
-        out.append({"name": name, "type": typ or "", "status": status, "market": market or "",
-                    "last": la or "", "value": round(project_value(ests)), "estimates": len(ests)})
+        out.append({"id": pid, "name": name, "type": typ or "", "status": status,
+                    "market": market or "", "last": la or "",
+                    "value": round(project_value(ests)), "estimates": len(ests)})
     con.close()
     rank = {"Active": 0, "Aging": 1, "Bid": 2, "Paused": 3, "Likely Done": 4, "Unknown": 5, "Dead": 6}
     out.sort(key=lambda p: (rank.get(p["status"], 9), -p["value"]))
@@ -125,64 +137,6 @@ def crew_list():
 
 def _has(con, t):
     return con.execute("SELECT COUNT(*) FROM sqlite_master WHERE name=?", (t,)).fetchone()[0]
-
-
-def margin():
-    """Where MHP leaves money on the table — measured against MHP's OWN history.
-    (1) Markup leaks: jobs bid below the 17.8% median markup. (2) Line-item underpricing:
-    items consistently priced below the catalog median. Clamped + reliable-median-only so
-    data-entry artifacts (brick/tile unit slips) don't inflate the numbers."""
-    from estimate import load_catalog
-    import statistics
-    con = sqlite3.connect(DB)
-    unit, _ = load_catalog(con)
-    njobs = dict(con.execute("SELECT canon_desc,n_jobs FROM unit_costs").fetchall())
-    MED_MK = 1.178
-
-    # --- markup leaks (active/aging/bid jobs bid thin) ---
-    markup, seen = [], set()
-    for sf, name, status, item, sov, mk_item in con.execute("""
-        SELECT e.source_file,p.name,p.status,e.sum_item_total,e.sum_sov_total,e.est_date
-        FROM estimates e JOIN projects p ON p.id=e.project_id
-        WHERE e.parse_confidence!='FAILED' AND e.sum_item_total>0 AND e.sum_sov_total>0
-          AND p.status IN ('Active','Aging','Bid')"""):
-        if name in seen:
-            continue
-        seen.add(name)
-        mk = sov / item
-        if mk < MED_MK - 0.005:
-            markup.append({"name": name, "status": status, "markup": round((mk - 1) * 100),
-                           "uplift": round(item * MED_MK - sov)})
-    markup.sort(key=lambda x: -x["uplift"])
-
-    # --- systematic line-item underpricing ---
-    leak = {}
-    for cd, desc, qty, up, nu in con.execute("""
-        SELECT li.canon_desc,li.description,li.qty,li.unit_price,li.norm_unit
-        FROM line_items li JOIN estimates e ON e.id=li.estimate_id
-        WHERE li.price_kind='UNIT_RATE' AND li.qty>0 AND li.unit_price>0
-          AND e.parse_confidence!='FAILED'"""):
-        h = unit.get(cd)
-        if not h or not h["median"] or (h.get("unit") or "") != (nu or "") or njobs.get(cd, 0) < 5:
-            continue
-        med = h["median"]
-        if up < med * 0.97:
-            r = leak.setdefault(cd, {"desc": desc, "n": 0, "gap": 0.0, "p": []})
-            r["n"] += 1
-            r["gap"] += min(med - up, med * 0.5) * qty
-            r["p"].append(min((med - up) / med, 0.5))
-    items = []
-    for r in leak.values():
-        typ = statistics.median(r["p"])
-        # drop low-confidence artifacts: big gap on few jobs (likely a unit slip)
-        if typ >= 0.45 and r["n"] < 15:
-            continue
-        items.append({"item": r["desc"], "jobs": r["n"], "under": round(typ * 100),
-                      "recoverable": round(r["gap"])})
-    items.sort(key=lambda x: -x["recoverable"])
-    con.close()
-    total = sum(i["recoverable"] for i in items)
-    return {"recoverable": total, "markup": markup, "items": items[:14]}
 
 
 def live_data():
@@ -299,10 +253,16 @@ class H(BaseHTTPRequestHandler):
             self._send(200, json.dumps(crew_list()))
         elif self.path == "/api/live":
             self._send(200, json.dumps(live_data()))
-        elif self.path == "/api/margin":
-            self._send(200, json.dumps(margin()))
         elif self.path == "/api/stats":
             self._send(200, json.dumps(stats()))
+        elif self.path == "/api/admin/board":
+            self._send(200, json.dumps(board.board_data()))
+        elif self.path == "/api/admin/attention":
+            self._send(200, json.dumps(attention.attention_items()))
+        elif self.path == "/api/admin/audit":
+            self._send(200, json.dumps(admin.recent_audit()))
+        elif self.path == "/api/admin/qb-status":
+            self._send(200, json.dumps(quickbooks.status()))
         elif self.path.lstrip("/") in {"logo.svg", "logo-light.png", "logo.png"}:
             name = self.path.lstrip("/")
             ctype = "image/svg+xml" if name.endswith(".svg") else "image/png"
@@ -330,6 +290,16 @@ class H(BaseHTTPRequestHandler):
             write_xlsx(lines, tmp)
             self._send(200, tmp.read_bytes(),
                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        elif self.path == "/api/admin/override":
+            r = admin.set_override(data.get("entity_type"), data.get("entity_id"),
+                                   data.get("field"), data.get("value"))
+            self._send(200 if r.get("ok") else 400, json.dumps(r))
+        elif self.path == "/api/admin/dismiss":
+            r = admin.set_override("flag", data.get("flag_id"), "dismissed",
+                                   "false" if data.get("undo") else "true")
+            self._send(200 if r.get("ok") else 400, json.dumps(r))
+        elif self.path == "/api/admin/qb-sync":
+            self._send(200, json.dumps(quickbooks.sync_actuals(commit=bool(data.get("commit")))))
         else:
             self._send(404, "{}")
 
@@ -429,13 +399,6 @@ small.j{color:var(--muted);font-size:11px}
 .pname{font-size:14px;font-weight:600;color:#fff}
 .prole{font-size:11px;color:rgba(255,255,255,.55);margin-top:1px}
 /* dashboard */
-.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin:22px 0}
-.metric{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;
-  box-shadow:0 1px 2px rgba(17,20,24,.04)}
-.metric .v{font-family:var(--disp);font-size:30px;font-weight:600;line-height:1.1}
-.metric .k{color:var(--muted);font-size:12px;margin-top:5px;text-transform:uppercase;letter-spacing:.5px}
-.metric.accent{background:var(--navy);border-color:var(--navy)}
-.metric.accent .v{color:#fff}.metric.accent .k{color:rgba(255,255,255,.7)}
 .cols{display:grid;grid-template-columns:1.4fr 1fr;gap:22px;margin-top:8px}
 @media(max-width:900px){.cols{grid-template-columns:1fr}}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;
@@ -564,6 +527,34 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .empty .big{font-family:var(--disp);font-size:22px;color:var(--ink);margin-bottom:8px}
 .filterbar{display:flex;gap:8px;margin:18px 0;align-items:center}
 .filterbar input{flex:1;max-width:320px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-family:var(--sans)}
+/* admin */
+.navbadge{margin-left:auto;background:#c0392b;color:#fff;font-size:10px;font-weight:700;min-width:18px;
+  height:18px;border-radius:9px;display:none;align-items:center;justify-content:center;padding:0 5px}
+.navbadge.show{display:inline-flex}
+.health-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0 28px}
+.hcard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:0 1px 2px rgba(17,20,24,.04)}
+.hcard .hv{font-family:var(--disp);font-size:26px;font-weight:600;line-height:1.1}
+.hcard .hk{color:var(--muted);font-size:11.5px;margin-top:5px;text-transform:uppercase;letter-spacing:.4px}
+.hcard.warn{border-color:#e7c9b6;background:#fdf6f1}.hcard.warn .hv{color:#b4541f}
+.qrow{display:flex;gap:12px;align-items:flex-start;padding:13px 18px;border-bottom:1px solid var(--line)}
+.qrow:last-child{border-bottom:0}.qrow:hover{background:#fcfbf8}
+.qrow .qmsg{flex:1}.qrow .qlabel{font-weight:600;font-size:14px}.qrow .qtext{color:var(--muted);font-size:13px;margin-top:2px}
+.qrow .qact{color:var(--navy);font-size:12px;margin-top:4px}
+.qbtns{display:flex;gap:6px;flex-shrink:0;align-items:center}
+.qbtn{font-size:12px;font-weight:600;padding:6px 11px;border-radius:7px;border:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer}
+.qbtn:hover{border-color:var(--navy);background:var(--paper)}.qbtn.fix{background:var(--navy);color:#fff;border-color:var(--navy)}
+.sevdot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex-shrink:0}
+.sevdot.red{background:#c0392b}.sevdot.amber{background:#d99a2b}.sevdot.blue{background:var(--blue)}
+.pipebar{display:flex;height:10px;border-radius:5px;overflow:hidden;margin:6px 0 16px;border:1px solid var(--line)}
+.editsel{padding:5px 8px;border:1px solid var(--line);border-radius:7px;font-family:var(--sans);font-size:13px;background:#fff;cursor:pointer}
+.editsel:focus{outline:none;border-color:var(--navy)}
+.editmk{width:96px;padding:5px 8px;border:1px solid transparent;border-radius:7px;font-family:var(--sans);font-size:13px;background:transparent}
+.editmk:hover{border-color:var(--line)}.editmk:focus{outline:none;border-color:var(--navy);background:#fff}
+.auditrow{display:flex;gap:10px;padding:9px 18px;border-bottom:1px solid var(--line);font-size:12.5px;align-items:baseline}
+.auditrow:last-child{border-bottom:0}.auditrow .at{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.auditrow .ae{flex:1}.auditrow .ao{color:var(--warn)}.auditrow .an{color:#2f6b34;font-weight:600}
+.qbcard{display:flex;gap:14px;align-items:center;padding:18px 20px}
+.qbstate{width:11px;height:11px;border-radius:50%;flex-shrink:0}.qbstate.on{background:#2f9e44}.qbstate.off{background:#d99a2b}
 </style></head><body>
 <div class=app>
 <aside class=sidebar>
@@ -573,9 +564,9 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
     <a class=nav data-v=estimates onclick="nav('estimates')"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg>Estimates</a>
     <a class=nav data-v=projects onclick="nav('projects')"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v11H3z"/></svg>Projects</a>
     <a class=nav data-v=live onclick="nav('live')"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-6 4 14 3-9 2 3h3"/></svg>Live</a>
-    <a class=nav data-v=margin onclick="nav('margin')"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>Margin</a>
     <a class=nav data-v=subs onclick="nav('subs')"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5"/><path d="M16 6a3 3 0 010 6M21 20c0-2.5-2-4-4-4.5"/></svg>Subs</a>
     <a class=nav data-v=crew onclick="nav('crew')"><svg viewBox="0 0 24 24"><path d="M4 20a8 8 0 0116 0"/><circle cx="12" cy="7" r="4"/></svg>Crew</a>
+    <a class=nav data-v=admin onclick="nav('admin')"><svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Admin <span id=admin-badge class=navbadge></span></a>
     <div class=nav-sep></div>
     <a class=nav data-v=settings onclick="nav('settings')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 00-.1-1l2-1.6-2-3.4-2.4 1a7 7 0 00-1.7-1l-.4-2.5h-4l-.4 2.5a7 7 0 00-1.7 1l-2.4-1-2 3.4 2 1.6a7 7 0 000 2l-2 1.6 2 3.4 2.4-1a7 7 0 001.7 1l.4 2.5h4l.4-2.5a7 7 0 001.7-1l2.4 1 2-3.4-2-1.6a7 7 0 00.1-1z"/></svg>Settings</a>
   </nav>
@@ -674,26 +665,40 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
   <div class=living-grid id=living></div>
 </div></section>
 
-<section id=view-margin class=view style=display:none><div class=view-inner>
-  <h2>Margin</h2>
-  <div class=sub>Where you're leaving money on the table — measured against <b>your own history</b>,
-    not some national average. "Recoverable" = what you'd add by pricing to your own median.</div>
-  <div class=dash-grid id=marginhead></div>
-  <div class=cols>
-    <div class=panel><h3>Markup — jobs bid thin</h3><div id=mkleaks></div></div>
-    <div class=panel><h3>Line items you underprice</h3>
-      <div class=card style="border:0;box-shadow:none"><table class=dtable><thead><tr><th>Item</th>
-        <th class=n>Jobs</th><th class=n>Typ. under</th><th class=n>Recoverable</th></tr></thead>
-        <tbody id=lineleaks></tbody></table></div></div>
-  </div>
-  <div class=morelink>Numbers exclude data-entry artifacts (brick/tile unit slips). This is
-    "stop charging less than your own middle," not "charge more than ever."</div>
-</div></section>
-
 <section id=view-crew class=view style=display:none><div class=view-inner>
   <h2>Crew</h2>
   <div class=sub>The MHP team — roles and contacts from the personnel directory.</div>
   <div class=crew-grid id=crewgrid></div>
+</div></section>
+
+<section id=view-admin class=view style=display:none><div class=view-inner>
+  <h2>Admin</h2>
+  <div class=sub>The control panel — pipeline at a glance, what needs attention, and the books behind it. Edits here are logged and overlay the parsed data without changing it.</div>
+
+  <div class=sec-h style=margin-top:8px>Data health</div>
+  <div class=health-grid id=healthgrid></div>
+
+  <div class=cols>
+    <div class=panel>
+      <h3>Attention queue <span id=attncount class=sub style="margin:0;font-weight:400"></span></h3>
+      <div id=attnlist></div>
+    </div>
+    <div>
+      <div class=panel style=margin-bottom:22px>
+        <h3>Pipeline</h3>
+        <div style=padding:16px20px id=pipeline></div>
+      </div>
+      <div class=panel style=margin-bottom:22px>
+        <h3>QuickBooks — actuals</h3>
+        <div id=qbcard></div>
+      </div>
+    </div>
+  </div>
+
+  <div class=panel style=margin-top:22px>
+    <h3>Recent changes</h3>
+    <div id=auditlog></div>
+  </div>
 </div></section>
 
 <section id=view-settings class=view style=display:none><div class=view-inner>
@@ -735,9 +740,11 @@ function nav(v){
   document.querySelectorAll('.view').forEach(x=>x.style.display='none');
   document.getElementById('view-'+v).style.display='block';
   document.querySelectorAll('.nav').forEach(a=>a.classList.toggle('active',a.dataset.v===v));
-  const L={home:loadDash,projects:loadProjects,subs:loadSubs,crew:loadCrew,live:loadLive,margin:loadMargin};
-  if(L[v]&&!loaded[v]){loaded[v]=true;L[v]();}
+  const L={home:loadDash,projects:loadProjects,subs:loadSubs,crew:loadCrew,live:loadLive,admin:loadAdmin};
+  const fresh=v==='admin'||v==='projects';   // these reflect live edits — never serve stale
+  if(L[v]&&(!loaded[v]||fresh)){loaded[v]=true;L[v]();}
 }
+const STATUSES=['Active','Aging','Bid','Paused','Likely Done','Dead','Unknown'];
 const money=n=>'$'+Number(n).toLocaleString(undefined,{maximumFractionDigits:0});
 const BADGE={'Active':'active','Aging':'aging','Bid':'bid','Paused':'paused',
   'Likely Done':'done','Dead':'dead','Unknown':'unknown'};
@@ -790,22 +797,6 @@ function loadLive(){fetch('/api/live').then(r=>r.json()).then(d=>{
   }).join('');
 });}
 
-function loadMargin(){fetch('/api/margin').then(r=>r.json()).then(d=>{
-  const mkTotal=d.markup.reduce((s,m)=>s+m.uplift,0);
-  document.getElementById('marginhead').innerHTML=[
-    ['accent',money(d.recoverable+mkTotal),'Total recoverable'],
-    ['',money(mkTotal),'From thin markup'],
-    ['',money(d.recoverable),'From underpriced lines']
-  ].map(([c,v,k])=>`<div class="metric ${c}"><div class=v>${v}</div><div class=k>${k}</div></div>`).join('');
-  document.getElementById('mkleaks').innerHTML=d.markup.length?d.markup.map(m=>
-    `<div class=prow><span class=pn>${m.name} <small class=j>${m.status} · ${m.markup}% markup</small></span>
-     <span class=pv style="color:#2f6b34;font-weight:600">+${money(m.uplift)}</span></div>`).join('')
-    :'<div class=prow>Every job bid at or above your norm. Clean.</div>';
-  document.getElementById('lineleaks').innerHTML=d.items.map(i=>
-    `<tr><td>${i.item}</td><td class=n>${i.jobs}</td><td class=n>${i.under}%</td>
-     <td class=n style="color:#2f6b34;font-weight:600">${money(i.recoverable)}</td></tr>`).join('');
-});}
-
 let CREW=[];
 function loadCrew(){fetch('/api/crew').then(r=>r.json()).then(c=>{CREW=c;
   const ini=n=>n.split(' ').filter(w=>/[A-Z]/.test(w[0])).slice(0,2).map(w=>w[0]).join('');
@@ -844,11 +835,82 @@ function renderProjects(){
   const list=PROJ.filter(p=>p.name.toLowerCase().includes(f));
   document.getElementById('projcount').textContent=
     `${list.length} shown · ${PROJ.filter(p=>p.status==='Active').length} active now`;
-  document.getElementById('projbody').innerHTML=list.map(p=>
-    `<tr><td>${p.name}</td><td>${p.market||'—'}</td><td>${p.type||'—'}</td>
-     <td><span class="badge ${BADGE[p.status]||'unknown'}">${p.status}</span></td>
+  document.getElementById('projbody').innerHTML=list.map(p=>{
+    const opts=STATUSES.map(s=>`<option ${s===p.status?'selected':''}>${s}</option>`).join('');
+    return `<tr><td>${p.name}</td>
+     <td><input class=editmk value="${p.market||''}" placeholder="—"
+        onchange="saveProj('${p.id}','market',this.value)"></td>
+     <td>${p.type||'—'}</td>
+     <td><select class=editsel onchange="saveProj('${p.id}','status',this.value)">${opts}</select></td>
      <td>${p.last||'—'}</td>
-     <td class=n>${p.value?money(p.value):'—'}</td><td class=n>${p.estimates}</td></tr>`).join('');
+     <td class=n>${p.value?money(p.value):'—'}</td><td class=n>${p.estimates}</td></tr>`;}).join('');
+}
+
+function loadAdmin(){
+  fetch('/api/admin/board').then(r=>r.json()).then(b=>{
+    const h=b.health;
+    const cards=[
+      [h.with_bids+'/'+h.projects,'Projects with bids',h.hollow>20],
+      [money(b.live_value),'Live pipeline',false],
+      [money(b.active_value),'Active book',false],
+      [h.canon_lines.toLocaleString(),'Real line items',false],
+      [h.inflation+'×','Revision inflation',h.inflation>1.5],
+      [h.contaminated_rates,'Contaminated rates',h.contaminated_rates>0],
+      [h.future_dates,'Future-dated',h.future_dates>0],
+      [h.blank_markets,'Blank markets',h.blank_markets>0]];
+    document.getElementById('healthgrid').innerHTML=cards.map(([v,k,w])=>
+      `<div class="hcard ${w?'warn':''}"><div class=hv>${v}</div><div class=hk>${k}</div></div>`).join('');
+    const col={Active:'#2f9e44',Aging:'#d99a2b',Bid:'#0051b8',Paused:'#8a8f96',
+      'Likely Done':'#5b6470',Unknown:'#b0b5bb',Dead:'#cdbfb8'};
+    const tot=b.pipeline.reduce((s,p)=>s+p.count,0)||1;
+    const bar=b.pipeline.map(p=>`<div style="width:${p.count/tot*100}%;background:${col[p.status]||'#ccc'}"></div>`).join('');
+    document.getElementById('pipeline').innerHTML=`<div class=pipebar>${bar}</div>`+
+      b.pipeline.map(p=>`<div class=prow style="padding:8px 0"><span class=pn>${p.status}</span>
+        <span class=pv>${p.count} · ${p.value?money(p.value):'—'}</span></div>`).join('');
+  });
+  fetch('/api/admin/attention').then(r=>r.json()).then(a=>{
+    document.getElementById('attncount').textContent=a.total?
+      `${a.counts.red||0} urgent · ${a.total} open`:'all clear';
+    document.getElementById('attnlist').innerHTML=a.items.length?a.items.map(it=>{
+      const fix=it.field&&it.suggest?
+        `<button class="qbtn fix" onclick="applyFix('${it.entity_id}','${it.field}','${it.suggest}')">${it.field==='status'?'→ '+it.suggest:'Set '+it.suggest}</button>`:'';
+      return `<div class=qrow><span class="sevdot ${it.severity}"></span>
+        <div class=qmsg><div class=qlabel>${it.label}</div><div class=qtext>${it.message}</div>
+          <div class=qact>${it.action}</div></div>
+        <div class=qbtns>${fix}<button class=qbtn onclick="dismissFlag('${it.id}')">Dismiss</button></div></div>`;
+    }).join(''):'<div class=qrow><div class=qmsg>Nothing flagged. The book is clean.</div></div>';
+  });
+  fetch('/api/admin/qb-status').then(r=>r.json()).then(q=>{
+    document.getElementById('qbcard').innerHTML=`<div class=qbcard>
+      <span class="qbstate ${q.configured?'on':'off'}"></span>
+      <div><div style=font-weight:600>${q.configured?'Connected':'Not configured'}</div>
+        <div class=sub style="margin:2px 0 0;font-size:13px">${q.configured?('Ready · '+q.actuals_rows+' actuals on file'):('Missing: '+q.missing.join(', '))}</div>
+        <div class=sub style="margin:4px 0 0;font-size:12px">${q.note}</div></div></div>`;
+  });
+  fetch('/api/admin/audit').then(r=>r.json()).then(log=>{
+    document.getElementById('auditlog').innerHTML=log.length?log.map(e=>
+      `<div class=auditrow><span class=at>${e.ts.replace('T',' ')}</span>
+        <span class=ae><b>${e.label}</b> · ${e.field}: <span class=ao>${e.old||'∅'}</span> → <span class=an>${e.new||'∅'}</span></span>
+        <span class=at>${e.actor}</span></div>`).join('')
+      :'<div class=auditrow><span class=ae>No changes yet.</span></div>';
+  });
+}
+function refreshAdminBadge(){fetch('/api/admin/attention').then(r=>r.json()).then(a=>{
+  const b=document.getElementById('admin-badge'),n=a.counts.red||0;
+  b.textContent=n;b.classList.toggle('show',n>0);});}
+function saveProj(id,field,value){
+  fetch('/api/admin/override',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({entity_type:'project',entity_id:id,field,value})})
+    .then(r=>r.json()).then(()=>{const p=PROJ.find(x=>x.id===id);if(p)p[field]=value;refreshAdminBadge();});
+}
+function dismissFlag(fid){
+  fetch('/api/admin/dismiss',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({flag_id:fid})}).then(()=>{loadAdmin();refreshAdminBadge();});
+}
+function applyFix(id,field,value){
+  fetch('/api/admin/override',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({entity_type:'project',entity_id:id,field,value})})
+    .then(()=>{loaded['projects']=false;loadAdmin();refreshAdminBadge();});
 }
 let SUBS=[];
 function loadSubs(){fetch('/api/subs').then(r=>r.json()).then(s=>{SUBS=s;
@@ -861,6 +923,7 @@ function renderSubs(){
      <td class=n>${x.jobs||'—'}</td><td><small class=j>${x.source}</small></td></tr>`).join('');
 }
 loadSettings();
+refreshAdminBadge();
 nav('home');
 
 function show(id){for(const x of ['input','load','result'])document.getElementById(x).style.display=x==id?'block':'none'}

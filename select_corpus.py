@@ -5,6 +5,7 @@ that is NOT a subcontractor estimate (DSC...), allowance/selection sheet, or a
 material-only quote. We also surface any closing-budget files for the variance check.
 """
 import csv
+import hashlib
 import re
 from pathlib import Path
 
@@ -19,7 +20,13 @@ CLOSING_HINT = re.compile(r"clos(e|ing)|close ?out|final budget", re.I)
 
 
 def slug(s: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")[:80]
+    base = re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
+    if len(base) <= 80:
+        return base
+    # Distinguishing tokens (e.g. ' RV1', ' RDB Working Doc') often sit past char 80.
+    # A bare [:80] truncation collided two file revisions into one id and merged their
+    # line items. Keep it readable but append a stable hash so distinct files never collide.
+    return base[:73] + "-" + hashlib.md5(s.encode()).hexdigest()[:6]
 
 
 def projects(kitchen_only=False):
