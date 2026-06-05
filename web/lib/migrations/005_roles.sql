@@ -6,7 +6,7 @@
 
 ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
 ALTER TABLE users ADD CONSTRAINT users_role_check
-  CHECK (role IN ('admin', 'ceo', 'field', 'estimator', 'sales', 'materials', 'viewer'));
+  CHECK (role IN ('admin', 'ceo', 'field', 'estimator', 'sales', 'materials', 'editor', 'viewer'));
 
 -- Existing users keep their current role. New roles:
 --   ceo        — Rick's cockpit: cash, margins, exceptions, decisions
