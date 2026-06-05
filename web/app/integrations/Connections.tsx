@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 export type ProviderState = {
-  id: "quickbooks" | "gmail";
+  id: "quickbooks" | "gmail" | "microsoft";
   label: string;
   configured: boolean;
   connection: { account: string; expiresAt: string } | null;
@@ -20,6 +20,8 @@ export default function Connections({
   oauthResult: string | null;
 }) {
   const [gmailBox, setGmailBox] = useState("");
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<string | null>(null);
 
   const notice = oauthResult
     ? oauthResult.startsWith("connected")
@@ -89,6 +91,45 @@ export default function Connections({
                   {p.connection ? "Reconnect" : "Connect"}
                 </button>
               </>
+            )}
+
+            {p.configured && p.id === "microsoft" && (
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <a className="btn ghost" href="/api/oauth/microsoft/start">
+                  {p.connection ? "Reconnect" : "Connect"}
+                </a>
+                {p.connection && (
+                  <button
+                    className="btn ghost"
+                    disabled={syncing}
+                    onClick={async () => {
+                      setSyncing(true);
+                      setSyncResult(null);
+                      try {
+                        // Discover channels first, then sync messages.
+                        await fetch("/api/teams/discover");
+                        const res = await fetch("/api/teams/sync", { method: "POST" });
+                        const data = await res.json();
+                        if (data.ok) {
+                          setSyncResult(
+                            `Synced ${data.channels.synced + data.chats.synced} messages, matched ${data.matched} to projects.`,
+                          );
+                        } else {
+                          setSyncResult(`Sync error: ${data.error}`);
+                        }
+                      } catch {
+                        setSyncResult("Sync failed — check console.");
+                      }
+                      setSyncing(false);
+                    }}
+                  >
+                    {syncing ? "Syncing..." : "Sync now"}
+                  </button>
+                )}
+              </div>
+            )}
+            {p.id === "microsoft" && syncResult && (
+              <div className="sd" style={{ marginTop: 4 }}>{syncResult}</div>
             )}
           </div>
         </div>

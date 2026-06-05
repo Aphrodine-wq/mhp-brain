@@ -1,8 +1,9 @@
-# OAuth setup — Sign-in (Google login) + QuickBooks/Gmail (read-only data)
+# OAuth setup — Sign-in (Google login) + QuickBooks/Gmail/Teams (read-only data)
 
-Two unrelated things share this file:
+Three things share this file:
 - **Sign in with Google** (below) — how people *log in*. Public, identity only, mints a session.
 - **QuickBooks + Gmail** — read-only *data connections*, admin-gated, store tokens. Separate creds.
+- **Microsoft Teams** — read-only Teams messages + files, admin-gated.
 
 The flow code for all of it is built; this is just registering apps and pasting values into
 `web/.env.local`.
@@ -78,9 +79,62 @@ For prod, also set the `*_REDIRECT_URI` env vars on Vercel to the `https://` ver
    `gmail.readonly` is a restricted scope — a single test-user box works without Google's full verification;
    a public/at-scale box would need it.
 
+## Microsoft Teams (read-only messages + files)
+
+Pulls channel messages, 1:1 chats, and shared files from Teams via Microsoft Graph API.
+All read-only — the brain never posts to Teams.
+
+1. https://portal.azure.com → **Azure Active Directory → App registrations → New registration**.
+2. Name: `MHP Brain`. Supported account types: **Single tenant** (MHP's own M365).
+3. Redirect URI (Web):
+   - Local: `http://localhost:3000/api/oauth/microsoft/callback`
+   - Prod: `https://mhp-brain.vercel.app/api/oauth/microsoft/callback`
+4. After creation, note the **Application (client) ID** and **Directory (tenant) ID**.
+5. **Certificates & secrets → New client secret** → copy the Value (shown only once).
+6. **API permissions → Add a permission → Microsoft Graph → Delegated:**
+   - `User.Read` (basic profile)
+   - `Chat.Read` (1:1 and group chats)
+   - `ChannelMessage.Read.All` (channel messages)
+   - `Team.ReadBasic.All` (list teams)
+   - `Channel.ReadBasic.All` (list channels)
+   - `Files.Read.All` (files in Teams/OneDrive)
+   - `offline_access` (durable refresh token)
+7. **Grant admin consent** for the tenant (button at the top of the permissions list).
+8. Fill in `web/.env.local`:
+   ```
+   MS_CLIENT_ID=<Application (client) ID>
+   MS_CLIENT_SECRET=<client secret Value>
+   MS_TENANT_ID=<Directory (tenant) ID>
+   MS_REDIRECT_URI=http://localhost:3000/api/oauth/microsoft/callback
+   ```
+
+**Redirect URIs:**
+
+| Env   | Microsoft                                                      |
+|-------|----------------------------------------------------------------|
+| Local | `http://localhost:3000/api/oauth/microsoft/callback`           |
+| Prod  | `https://mhp-brain.vercel.app/api/oauth/microsoft/callback`   |
+
+**Migration:** Run `003_teams.sql` to create the Teams tables:
+```bash
+pnpm -C web exec node scripts/migrate.mjs
+```
+
 ## Connect
 1. Restart dev so it loads the new env: `pnpm -C web exec next dev`.
-2. Sign in (the **Dev sign-in** button works locally), then **Settings → Connections**.
+2. Sign in (the **Dev sign-in** button works locally), then **Integrations**.
 3. **QuickBooks → Connect** → approve. **Gmail →** type the intake box address **→ Connect →** approve.
-4. Status flips to **Connected**. Tokens are stored AES-256-GCM encrypted; access tokens refresh
+4. **Microsoft Teams → Connect** → approve in the Microsoft consent screen.
+5. Click **Sync now** to pull Teams messages. The sync uses delta links, so subsequent syncs only
+   pull new messages.
+6. Status flips to **Connected**. Tokens are stored AES-256-GCM encrypted; access tokens refresh
    automatically from the stored refresh token.
+
+## Teams sync API
+
+Once connected, Teams data is available via API:
+
+- `GET /api/teams/discover` — list and persist all teams + channels
+- `POST /api/teams/sync` — pull new messages from watched channels + chats, match to projects
+- `GET /api/teams/messages?project=<id>&limit=20` — messages linked to a project
+- `GET /api/teams/messages?limit=50` — recent messages across all projects

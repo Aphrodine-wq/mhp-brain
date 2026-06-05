@@ -2,7 +2,7 @@
 // QuickBooks and never writes to (or reads beyond the dedicated box of) anyone's mailbox.
 // Client id/secret/redirect come from env, never the repo.
 
-export type ProviderId = "quickbooks" | "gmail";
+export type ProviderId = "quickbooks" | "gmail" | "microsoft";
 
 export interface ProviderConfig {
   id: ProviderId;
@@ -27,6 +27,7 @@ function need(name: string): string {
 const ENV_KEYS: Record<ProviderId, string[]> = {
   quickbooks: ["QB_CLIENT_ID", "QB_CLIENT_SECRET", "QB_REDIRECT_URI"],
   gmail: ["GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REDIRECT_URI"],
+  microsoft: ["MS_CLIENT_ID", "MS_CLIENT_SECRET", "MS_REDIRECT_URI"],
 };
 
 export function isConfigured(id: ProviderId): boolean {
@@ -59,5 +60,29 @@ export function providerConfig(id: ProviderId): ProviderConfig {
         // no refresh token — the connection would die in an hour. These make it durable.
         extraAuthParams: { access_type: "offline", prompt: "consent", include_granted_scopes: "true" },
       };
+    case "microsoft": {
+      // Microsoft Graph — read-only Teams + OneDrive. Tenant can be "common" for multi-tenant or
+      // a specific tenant ID for single-tenant (MHP's own M365). Read MS_TENANT_ID from env,
+      // default to "common" so the consent screen handles it.
+      const tenant = process.env.MS_TENANT_ID ?? "common";
+      return {
+        id,
+        authorizeUrl: `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize`,
+        tokenUrl: `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/token`,
+        scopes: [
+          "offline_access",           // durable refresh token
+          "User.Read",                // basic profile (match to brain users)
+          "Chat.Read",                // 1:1 and group chats
+          "ChannelMessage.Read.All",  // team channel messages
+          "Team.ReadBasic.All",       // list teams
+          "Channel.ReadBasic.All",    // list channels
+          "Files.Read.All",           // files shared in Teams / OneDrive
+        ],
+        clientId: need("MS_CLIENT_ID"),
+        clientSecret: need("MS_CLIENT_SECRET"),
+        redirectUri: need("MS_REDIRECT_URI"),
+        extraAuthParams: { response_mode: "query" },
+      };
+    }
   }
 }
