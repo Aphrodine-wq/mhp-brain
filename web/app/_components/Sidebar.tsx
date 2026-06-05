@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import type { SessionUser, Role } from "@/lib/auth";
 
 type NavItem = { href: string; label: string; icon: React.ReactNode };
@@ -119,14 +120,23 @@ const ROLE_TITLE: Record<Role, string> = {
 export default function Sidebar({ user }: { user: SessionUser }) {
   const pathname = usePathname();
   const router = useRouter();
+  // Drawer state — only matters on mobile, where the sidebar slides in over the content.
+  const [open, setOpen] = useState(false);
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+
+  // Lock body scroll while the drawer is open (mobile). Closing on navigation is
+  // handled per-link via onClick so we don't have to setState from an effect.
+  useEffect(() => {
+    document.body.classList.toggle("nav-open", open);
+    return () => document.body.classList.remove("nav-open");
+  }, [open]);
 
   const nav = ROLE_NAV[user.role] ?? ROLE_NAV.viewer;
   const foot = ROLE_FOOTER[user.role] ?? ROLE_FOOTER.default;
   const title = ROLE_TITLE[user.role] ?? "MHP Brain";
 
   const link = ({ href, label, icon }: NavItem) => (
-    <Link key={href} href={href} className={`nav${isActive(href) ? " active" : ""}`}>
+    <Link key={href} href={href} className={`nav${isActive(href) ? " active" : ""}`} onClick={() => setOpen(false)}>
       <svg viewBox="0 0 24 24">{icon}</svg>
       {label}
     </Link>
@@ -143,7 +153,21 @@ export default function Sidebar({ user }: { user: SessionUser }) {
   }
 
   return (
-    <aside className="sidebar">
+    <>
+      {/* Mobile-only top bar — hidden on desktop via CSS. Hosts the hamburger. */}
+      <header className="topbar">
+        <button className="hamburger" onClick={() => setOpen(true)} aria-label="Open menu">
+          <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
+        </button>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-light.png" alt="MHP" />
+        <span className="tb-title">{title}</span>
+      </header>
+
+      {/* Backdrop behind the open drawer */}
+      <div className={`scrim${open ? " show" : ""}`} onClick={() => setOpen(false)} />
+
+      <aside className={`sidebar${open ? " open" : ""}`}>
       <div className="brand">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo-light.png" alt="MHP" />
@@ -155,7 +179,7 @@ export default function Sidebar({ user }: { user: SessionUser }) {
         {foot.map(link)}
       </nav>
       <div className="profile-row">
-        <Link href="/settings" className="profile">
+        <Link href="/settings" className="profile" onClick={() => setOpen(false)}>
           <div className="avatar">{initials}</div>
           <div className="pmeta">
             <div className="pname">{user.name}</div>
@@ -170,6 +194,7 @@ export default function Sidebar({ user }: { user: SessionUser }) {
           </svg>
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }
