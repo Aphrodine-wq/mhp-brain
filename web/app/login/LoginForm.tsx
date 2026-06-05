@@ -3,15 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-// Coarse, user-facing copy for the ?error=… reasons the Google callback bounces back with. Kept
-// vague on purpose — enough to act on, nothing that confirms whether an email exists.
 const ERROR_TEXT: Record<string, string> = {
-  not_authorized: "That Google account isn’t set up for MHP yet. Ask an admin to add you.",
-  email_unverified: "Your Google email isn’t verified. Verify it with Google, then try again.",
-  google_failed: "Couldn’t finish Google sign-in. Try again.",
+  not_authorized: "That account isn't set up for MHP yet. Ask an admin to add you.",
+  email_unverified: "Your email isn't verified. Verify it with your provider, then try again.",
+  google_failed: "Couldn't finish Google sign-in. Try again.",
   google_denied: "Google sign-in was cancelled.",
+  microsoft_failed: "Couldn't finish Microsoft sign-in. Try again.",
+  microsoft_denied: "Microsoft sign-in was cancelled.",
+  microsoft_unavailable: "Microsoft sign-in isn't configured yet — use another method.",
   state_mismatch: "That sign-in link expired. Start again.",
-  google_unavailable: "Google sign-in isn’t configured yet — use email and password.",
+  google_unavailable: "Google sign-in isn't configured yet — use email and password.",
 };
 
 function GoogleMark() {
@@ -25,15 +26,28 @@ function GoogleMark() {
   );
 }
 
+function MicrosoftMark() {
+  return (
+    <svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true">
+      <rect fill="#F25022" x="0" y="0" width="8.5" height="8.5" />
+      <rect fill="#7FBA00" x="9.5" y="0" width="8.5" height="8.5" />
+      <rect fill="#00A4EF" x="0" y="9.5" width="8.5" height="8.5" />
+      <rect fill="#FFB900" x="9.5" y="9.5" width="8.5" height="8.5" />
+    </svg>
+  );
+}
+
 export default function LoginForm({
   next,
   dev,
   google,
+  microsoft,
   error,
 }: {
   next: string;
   dev: boolean;
   google: boolean;
+  microsoft: boolean;
   error: string | null;
 }) {
   const router = useRouter();
@@ -42,8 +56,8 @@ export default function LoginForm({
   const [clientError, setClientError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // Client-side errors (network / bad creds) win over the one carried in the URL.
   const shownError = clientError || (error ? ERROR_TEXT[error] ?? "Sign-in failed." : "");
+  const hasOAuth = google || microsoft;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -90,8 +104,8 @@ export default function LoginForm({
           <img className="auth-brand-logo" src="/logo-light.png" alt="MHP" />
         </div>
         <div className="auth-brand-mid">
-          <h2>Estimating intelligence for North Mississippi.</h2>
-          <p>Every bid, every actual, every sub — one source of truth behind your numbers.</p>
+          <h2>The operating system for MHP Construction.</h2>
+          <p>Every bid, every job, every dollar — one source of truth.</p>
         </div>
         <div className="auth-brand-foot">North Mississippi Home Professionals</div>
       </aside>
@@ -105,14 +119,25 @@ export default function LoginForm({
 
           {shownError && <div className="login-err">{shownError}</div>}
 
-          {google && (
+          {/* OAuth buttons */}
+          {hasOAuth && (
             <>
-              <a className="btn-google" href={`/api/auth/google/start?next=${encodeURIComponent(next)}`}>
-                <GoogleMark />
-                Continue with Google
-              </a>
+              <div className="auth-oauth-buttons">
+                {google && (
+                  <a className="btn-oauth" href={`/api/auth/google/start?next=${encodeURIComponent(next)}`}>
+                    <GoogleMark />
+                    Continue with Google
+                  </a>
+                )}
+                {microsoft && (
+                  <a className="btn-oauth btn-oauth-ms" href={`/api/auth/microsoft/start?next=${encodeURIComponent(next)}`}>
+                    <MicrosoftMark />
+                    Continue with Microsoft
+                  </a>
+                )}
+              </div>
               <div className="auth-or">
-                <span>or</span>
+                <span>or sign in with email</span>
               </div>
             </>
           )}
@@ -125,7 +150,7 @@ export default function LoginForm({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="username"
-                autoFocus
+                autoFocus={!hasOAuth}
                 required
               />
             </label>
@@ -140,7 +165,7 @@ export default function LoginForm({
               />
             </label>
             <button className="btn" type="submit" disabled={busy}>
-              {busy ? "Signing in…" : "Sign in"}
+              {busy ? "Signing in..." : "Sign in"}
             </button>
           </form>
 
