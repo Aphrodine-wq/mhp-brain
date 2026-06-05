@@ -10,11 +10,13 @@ import { SESSION_COOKIE } from "@/lib/auth-constants";
 
 export { SESSION_COOKIE };
 
+export type Role = "admin" | "ceo" | "field" | "estimator" | "sales" | "materials" | "editor" | "viewer";
+
 export interface SessionUser {
   id: number;
   name: string;
   email: string;
-  role: "admin" | "editor" | "viewer";
+  role: Role;
   scope: string | null;
 }
 
@@ -26,7 +28,18 @@ const MAX_FAILS = 5; // > 5 failed logins / email / 15 min -> 429
 const FAIL_WINDOW = "15 minutes";
 
 // Role hierarchy: a higher rank satisfies every gate at or below it.
-const RANK: Record<SessionUser["role"], number> = { viewer: 0, editor: 1, admin: 2 };
+// Functional roles (ceo, field, estimator, sales, materials) are all at editor-level for writes.
+// Admin is above everything. Viewer is read-only.
+const RANK: Record<Role, number> = {
+  viewer: 0,
+  materials: 1,
+  sales: 1,
+  field: 1,
+  estimator: 1,
+  editor: 1,  // legacy — maps to generic editor
+  ceo: 2,     // CEO can see and do everything except system config
+  admin: 3,
+};
 
 // --- password hashing (scrypt) ----------------------------------------------------------------
 

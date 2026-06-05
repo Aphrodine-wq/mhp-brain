@@ -5,7 +5,7 @@
 //   SEED_EMAIL=james@mshomepros.com SEED_NAME="James Burge" SEED_PASSWORD='…' SEED_ROLE=admin \
 //     node scripts/seed-users.mjs
 //
-// Roles: admin | editor | viewer.  Optional SEED_SCOPE=materials|financial.
+// Roles: admin | ceo | field | estimator | sales | materials | editor | viewer.
 import { Pool } from "pg";
 import { randomBytes, scrypt as _scrypt } from "node:crypto";
 import { promisify } from "node:util";
@@ -22,8 +22,9 @@ if (!email || !name || !password) {
   console.error("Need SEED_EMAIL, SEED_NAME, SEED_PASSWORD.");
   process.exit(1);
 }
-if (!["admin", "editor", "viewer"].includes(role)) {
-  console.error("SEED_ROLE must be admin | editor | viewer.");
+const VALID_ROLES = ["admin", "ceo", "field", "estimator", "sales", "materials", "editor", "viewer"];
+if (!VALID_ROLES.includes(role)) {
+  console.error(`SEED_ROLE must be one of: ${VALID_ROLES.join(" | ")}`);
   process.exit(1);
 }
 if (!process.env.DATABASE_URL) {
