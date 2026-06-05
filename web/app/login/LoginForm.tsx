@@ -11,6 +11,9 @@ const ERROR_TEXT: Record<string, string> = {
   microsoft_failed: "Microsoft sign-in didn't go through. Try again.",
   microsoft_denied: "Microsoft sign-in was cancelled.",
   microsoft_unavailable: "Microsoft sign-in isn't set up yet.",
+  quickbooks_failed: "QuickBooks sign-in didn't go through. Try again.",
+  quickbooks_denied: "QuickBooks sign-in was cancelled.",
+  quickbooks_unavailable: "QuickBooks sign-in isn't set up yet.",
   state_mismatch: "That link expired. Try again.",
   google_unavailable: "Google sign-in isn't set up yet.",
 };
@@ -37,17 +40,32 @@ function MicrosoftMark() {
   );
 }
 
+function QuickBooksMark() {
+  // Intuit QuickBooks mark — green disc with a centered "qb"-style hole.
+  return (
+    <svg viewBox="0 0 18 18" width="20" height="20" aria-hidden="true">
+      <circle cx="9" cy="9" r="9" fill="#2CA01C" />
+      <path
+        fill="#fff"
+        d="M5.2 5.2a3.8 3.8 0 0 0 0 7.6h.7V11.4h-.7a2.4 2.4 0 0 1 0-4.8h.5v7.9h1.4V5.2H5.2zm6.2 0v1.4h.7a2.4 2.4 0 0 1 0 4.8h-.5V4.1h-1.4v9.5h2.4a3.8 3.8 0 0 0 0-7.6h-.7z"
+      />
+    </svg>
+  );
+}
+
 export default function LoginForm({
   next,
   dev,
   google,
   microsoft,
+  quickbooks,
   error,
 }: {
   next: string;
   dev: boolean;
   google: boolean;
   microsoft: boolean;
+  quickbooks: boolean;
   error: string | null;
 }) {
   const router = useRouter();
@@ -57,7 +75,7 @@ export default function LoginForm({
   const [busy, setBusy] = useState(false);
 
   const shownError = clientError || (error ? ERROR_TEXT[error] ?? "Sign-in failed." : "");
-  const hasOAuth = google || microsoft;
+  const hasOAuth = google || microsoft || quickbooks;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -120,6 +138,12 @@ export default function LoginForm({
               <a className="login-oauth-btn login-oauth-ms" href={`/api/auth/microsoft/start?next=${encodeURIComponent(next)}`}>
                 <MicrosoftMark />
                 Sign in with Microsoft
+              </a>
+            )}
+            {quickbooks && (
+              <a className="login-oauth-btn login-oauth-qb" href={`/api/auth/quickbooks/start?next=${encodeURIComponent(next)}`}>
+                <QuickBooksMark />
+                Sign in with QuickBooks
               </a>
             )}
           </div>

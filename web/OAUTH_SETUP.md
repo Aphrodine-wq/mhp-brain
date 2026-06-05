@@ -34,6 +34,29 @@ GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/google/callback   # prod: htt
 4. Add both redirect URIs (local + prod). Copy **Client ID → `GOOGLE_CLIENT_ID`**, **Secret → `GOOGLE_CLIENT_SECRET`**.
 5. The button only appears once all three `GOOGLE_*` are set; restart dev to load them.
 
+## Sign in with QuickBooks (login)
+
+Adds a **Sign in with QuickBooks** button to `/login`, via Intuit's OpenID Connect ("Sign in with
+Intuit"). Like Google, an Intuit account signs in **only if its verified email already matches an
+active user** — no new-account creation. Reuses the **same `QB_CLIENT_ID` / `QB_CLIENT_SECRET`** as
+the QuickBooks data connection below, but with its **own redirect URI** so the two flows don't clash.
+
+Fill in `web/.env.local`:
+
+```
+QB_AUTH_REDIRECT_URI=http://localhost:3000/api/auth/quickbooks/callback   # prod: https://mhp-brain.vercel.app/api/auth/quickbooks/callback
+# QB_ENV=sandbox   # set this only when using Intuit Development keys, so userinfo hits the sandbox host
+```
+
+1. https://developer.intuit.com → your existing app (the same one used for the data connection).
+2. **Keys & OAuth** tab → **Redirect URIs** → add the `…/api/auth/quickbooks/callback` URLs
+   (local + prod), alongside the existing `…/api/oauth/quickbooks/callback` data-connection ones.
+3. The app must have OpenID scopes enabled (`openid`, `email`, `profile`) — these are standard
+   "Sign in with Intuit" scopes, no Intuit review needed.
+4. With Development keys, also set `QB_ENV=sandbox` so the userinfo lookup uses Intuit's sandbox host.
+5. The button only appears once `QB_CLIENT_ID`, `QB_CLIENT_SECRET`, and `QB_AUTH_REDIRECT_URI` are
+   all set; restart dev to load them.
+
 ---
 
 ## QuickBooks + Gmail (read-only data connections)
