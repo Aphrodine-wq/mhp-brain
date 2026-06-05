@@ -43,25 +43,25 @@ export default async function FieldDashboard({ userName }: { userName: string })
             <div key={pid} className="pcard" style={{ borderLeft: logged ? "3px solid #2e7d32" : hasAction ? "3px solid #e65100" : "3px solid #d8dde3" }}>
               <div className="pc-top">
                 <div className="pc-name">{String(p.name)}</div>
-                {p.current_phase && <span className="badge active" style={{ fontSize: 11 }}>{String(p.current_phase).replace("_", " ")}</span>}
+                {p.current_phase ? <span className="badge active" style={{ fontSize: 11 }}>{String(p.current_phase).replace("_", " ")}</span> : null}
               </div>
 
-              {p.address && <div style={{ fontSize: 12, color: "#5b6470", marginBottom: 8 }}>{String(p.address)}</div>}
+              {p.address ? <div style={{ fontSize: 12, color: "#5b6470", marginBottom: 8 }}>{String(p.address)}</div> : null}
 
-              {hasAction && (
+              {hasAction ? (
                 <div style={{ fontSize: 13, color: "#e65100", fontWeight: 600, marginBottom: 6 }}>
                   Next: {String(p.next_action)}
                 </div>
-              )}
+              ) : null}
 
-              {hasSubs && <div style={{ fontSize: 12, color: "#0b3d91", marginBottom: 4 }}>Sub on site today</div>}
-              {hasInspection && <div style={{ fontSize: 12, color: "#f57f17", marginBottom: 4 }}>Pending inspection</div>}
+              {hasSubs ? <div style={{ fontSize: 12, color: "#0b3d91", marginBottom: 4 }}>Sub on site today</div> : null}
+              {hasInspection ? <div style={{ fontSize: 12, color: "#f57f17", marginBottom: 4 }}>Pending inspection</div> : null}
 
-              {p.last_log && (
+              {p.last_log ? (
                 <div style={{ fontSize: 12, color: "#5b6470", marginTop: 8 }}>
                   Last log ({String(p.last_log_date)}): {String(p.last_log).slice(0, 80)}{String(p.last_log).length > 80 ? "..." : ""}
                 </div>
-              )}
+              ) : null}
 
               <div className="pc-meta">
                 <span>{money(Number(p.bid_value ?? 0))}</span>

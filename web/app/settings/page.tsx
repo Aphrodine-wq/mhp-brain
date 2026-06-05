@@ -1,14 +1,13 @@
 import { stats } from "@/lib/queries";
 import { currentUser } from "@/lib/auth";
+import { ROLE_LABELS } from "@/lib/role-nav";
 import SettingsForm from "./SettingsForm";
 
 export const dynamic = "force-dynamic";
 
-const ROLE_LABEL = { admin: "Admin", editor: "Editor", viewer: "Viewer" } as const;
-
 export default async function SettingsPage() {
   const [s, user] = await Promise.all([stats(), currentUser()]);
-  const signedInAs = user ? `${user.name} · ${ROLE_LABEL[user.role]}${user.scope ? ` · ${user.scope}` : ""}` : "—";
+  const signedInAs = user ? `${user.name} · ${ROLE_LABELS[user.role]}${user.scope ? ` · ${user.scope}` : ""}` : "—";
 
   return (
     <section className="view">
