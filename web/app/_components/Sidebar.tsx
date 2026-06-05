@@ -14,6 +14,7 @@ const NAV: NavItem[] = [
   { href: "/live", label: "Live", icon: (<path d="M3 12h4l2-6 4 14 3-9 2 3h3" />) },
   { href: "/subs", label: "Subs", icon: (<><circle cx="9" cy="8" r="3" /><path d="M3 20c0-3 3-5 6-5s6 2 6 5" /><path d="M16 6a3 3 0 010 6M21 20c0-2.5-2-4-4-4.5" /></>) },
   { href: "/crew", label: "Crew", icon: (<><path d="M4 20a8 8 0 0116 0" /><circle cx="12" cy="7" r="4" /></>) },
+  { href: "/field", label: "Field Log", icon: (<><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" /></>) },
 ];
 
 const FOOT: NavItem[] = [
