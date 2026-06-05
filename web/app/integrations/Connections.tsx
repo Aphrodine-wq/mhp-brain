@@ -9,9 +9,6 @@ export type ProviderState = {
   connection: { account: string; expiresAt: string } | null;
 };
 
-// `oauthResult` is the ?oauth=connected:<p> | error:<reason> the callback bounces back with —
-// passed from the server page (which owns searchParams), so we derive the notice during render
-// instead of setState-in-effect. The effect only scrubs the param from the URL.
 export default function Connections({
   providers,
   oauthResult,
@@ -25,19 +22,31 @@ export default function Connections({
 
   const notice = oauthResult
     ? oauthResult.startsWith("connected")
-      ? { ok: true, text: `Connected ${oauthResult.split(":")[1] ?? ""}.` }
-      : { ok: false, text: `Connection failed: ${oauthResult.replace(/^error:/, "")}` }
+      ? { ok: true, text: `Connected successfully.` }
+      : { ok: false, text: `Connection failed. Try again or check your settings.` }
     : null;
 
   useEffect(() => {
     if (oauthResult) window.history.replaceState({}, "", window.location.pathname);
   }, [oauthResult]);
 
+  const DESCRIPTIONS: Record<string, string> = {
+    quickbooks: "Connect your QuickBooks to see real job costs, payments, and margins.",
+    gmail: "Connect a dedicated email to automatically capture invoices.",
+    microsoft: "Connect Microsoft Teams to pull in job conversations and files.",
+  };
+
+  const NOT_READY: Record<string, string> = {
+    quickbooks: "QuickBooks connection needs to be set up by your admin.",
+    gmail: "Gmail connection needs to be set up by your admin.",
+    microsoft: "Teams connection needs to be set up by your admin.",
+  };
+
   return (
     <div className="panel" style={{ marginTop: 18 }}>
-      <h3>Connections</h3>
+      <h3>Connected Services</h3>
       <div className="sd" style={{ marginBottom: 6 }}>
-        Read-only links to the company books and the invoice intake mailbox. Tokens are encrypted at rest.
+        Link your company accounts so the system can pull in real numbers automatically. All connections are read-only — nothing gets changed in your other systems.
       </div>
       {notice && <div className={notice.ok ? "conn-ok" : "conn-err"}>{notice.text}</div>}
 
@@ -47,19 +56,19 @@ export default function Connections({
             <div className="sl">{p.label}</div>
             <div className="sd">
               {!p.configured ? (
-                "Add credentials in .env.local — see OAUTH_SETUP.md."
+                NOT_READY[p.id]
               ) : p.connection ? (
                 <>
                   Connected · <b>{p.connection.account}</b>
                 </>
               ) : (
-                "Configured, not connected yet."
+                DESCRIPTIONS[p.id]
               )}
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {!p.configured ? (
-              <span className="badge aging">Needs credentials</span>
+              <span className="badge aging">Not set up</span>
             ) : p.connection ? (
               <span className="badge active">Connected</span>
             ) : (
@@ -76,7 +85,7 @@ export default function Connections({
               <>
                 <input
                   className="mk"
-                  placeholder="intake@box.com"
+                  placeholder="invoices@company.com"
                   value={gmailBox}
                   onChange={(e) => setGmailBox(e.target.value)}
                   style={{ width: 170 }}
@@ -106,31 +115,31 @@ export default function Connections({
                       setSyncing(true);
                       setSyncResult(null);
                       try {
-                        // Discover channels first, then sync messages.
                         await fetch("/api/teams/discover");
                         const res = await fetch("/api/teams/sync", { method: "POST" });
                         const data = await res.json();
                         if (data.ok) {
+                          const total = data.channels.synced + data.chats.synced;
                           setSyncResult(
-                            `Synced ${data.channels.synced + data.chats.synced} messages, matched ${data.matched} to projects.`,
+                            `Pulled ${total} message${total !== 1 ? "s" : ""}, linked ${data.matched} to jobs.`,
                           );
                         } else {
-                          setSyncResult(`Sync error: ${data.error}`);
+                          setSyncResult("Sync had a problem. Try again.");
                         }
                       } catch {
-                        setSyncResult("Sync failed — check console.");
+                        setSyncResult("Couldn't connect. Check your internet.");
                       }
                       setSyncing(false);
                     }}
                   >
-                    {syncing ? "Syncing..." : "Sync now"}
+                    {syncing ? "Pulling..." : "Pull latest"}
                   </button>
                 )}
               </div>
             )}
-            {p.id === "microsoft" && syncResult && (
+            {p.id === "microsoft" && syncResult ? (
               <div className="sd" style={{ marginTop: 4 }}>{syncResult}</div>
-            )}
+            ) : null}
           </div>
         </div>
       ))}
