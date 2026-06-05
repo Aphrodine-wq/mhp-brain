@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const ERROR_TEXT: Record<string, string> = {
@@ -168,6 +169,11 @@ export default function LoginForm({
             {busy ? "Signing in..." : "Sign in"}
           </button>
         </form>
+
+        <div className="login-links">
+          <Link href="/forgot">Forgot password?</Link>
+          <Link href="/signup">Create account</Link>
+        </div>
 
         {dev && (
           <button type="button" className="login-dev" onClick={devLogin} disabled={busy}>

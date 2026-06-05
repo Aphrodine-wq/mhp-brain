@@ -9,18 +9,46 @@ import { money } from "@/lib/format";
 // 4. What happened today? (crew activity, logged events)
 
 export default async function CeoDashboard() {
-  // Active jobs with values
-  const projects = (await db.execute(`
-    SELECT p.id, p.name, p.status, p.current_phase, p.contract_value,
-           (SELECT MAX(e.sum_sov_total) FROM estimates e WHERE e.project_id = p.id AND e.sum_sov_total > 0) AS bid_value,
-           (SELECT COALESCE(SUM(pay.amount), 0) FROM payments pay WHERE pay.project_id = p.id) AS collected,
-           (SELECT COUNT(*) FROM change_orders co WHERE co.project_id = p.id AND co.approved = 0) AS pending_cos,
-           (SELECT COUNT(*) FROM callbacks cb WHERE cb.project_id = p.id AND cb.resolved_date IS NULL) AS open_callbacks,
-           (SELECT COUNT(*) FROM job_events je WHERE je.project_id = p.id AND je.event_date = CURRENT_DATE::text) AS events_today
-    FROM projects p
-    WHERE p.status IN ('Active', 'active', 'Aging')
-    ORDER BY COALESCE(p.contract_value, 0) DESC NULLS LAST
-  `)).rows;
+  // All four reads are independent, so fire them concurrently — one round-trip's worth of latency
+  // for the whole cockpit instead of four in series.
+  const [projects, recentPayments, inspections, todayEvents] = await Promise.all([
+    // Active jobs with values
+    db.execute(`
+      SELECT p.id, p.name, p.status, p.current_phase, p.contract_value,
+             (SELECT MAX(e.sum_sov_total) FROM estimates e WHERE e.project_id = p.id AND e.sum_sov_total > 0) AS bid_value,
+             (SELECT COALESCE(SUM(pay.amount), 0) FROM payments pay WHERE pay.project_id = p.id) AS collected,
+             (SELECT COUNT(*) FROM change_orders co WHERE co.project_id = p.id AND co.approved = 0) AS pending_cos,
+             (SELECT COUNT(*) FROM callbacks cb WHERE cb.project_id = p.id AND cb.resolved_date IS NULL) AS open_callbacks,
+             (SELECT COUNT(*) FROM job_events je WHERE je.project_id = p.id AND je.event_date = CURRENT_DATE::text) AS events_today
+      FROM projects p
+      WHERE p.status IN ('Active', 'active', 'Aging')
+      ORDER BY COALESCE(p.contract_value, 0) DESC NULLS LAST
+    `).then((r) => r.rows),
+    // Recent payments (last 7 days)
+    db.execute(`
+      SELECT pay.amount, pay.payment_date, pay.method, pay.payment_type, p.name AS project_name
+      FROM payments pay JOIN projects p ON pay.project_id = p.id
+      WHERE pay.payment_date >= (CURRENT_DATE - INTERVAL '7 days')::text
+      ORDER BY pay.payment_date DESC
+      LIMIT 10
+    `).then((r) => r.rows),
+    // Upcoming inspections
+    db.execute(`
+      SELECT pm.permit_type, pm.inspection_date, p.name AS project_name
+      FROM permits pm JOIN projects p ON pm.project_id = p.id
+      WHERE pm.inspection_result = 'pending' AND pm.inspection_date IS NOT NULL
+      ORDER BY pm.inspection_date
+      LIMIT 5
+    `).then((r) => r.rows),
+    // Today's logged events (most recent)
+    db.execute(`
+      SELECT je.event_type, je.summary, je.logged_by, p.name AS project_name
+      FROM job_events je JOIN projects p ON je.project_id = p.id
+      WHERE je.event_date = CURRENT_DATE::text
+      ORDER BY je.created_at DESC
+      LIMIT 10
+    `).then((r) => r.rows),
+  ]);
 
   // Portfolio totals
   const totalBid = projects.reduce((s, p) => s + Number(p.bid_value ?? 0), 0);
@@ -29,33 +57,6 @@ export default async function CeoDashboard() {
   const totalOpenCallbacks = projects.reduce((s, p) => s + Number(p.open_callbacks ?? 0), 0);
   const jobsLoggedToday = projects.filter((p) => Number(p.events_today) > 0).length;
   const jobsNotLogged = projects.filter((p) => Number(p.events_today) === 0).length;
-
-  // Recent payments (last 7 days)
-  const recentPayments = (await db.execute(`
-    SELECT pay.amount, pay.payment_date, pay.method, pay.payment_type, p.name AS project_name
-    FROM payments pay JOIN projects p ON pay.project_id = p.id
-    WHERE pay.payment_date >= (CURRENT_DATE - INTERVAL '7 days')::text
-    ORDER BY pay.payment_date DESC
-    LIMIT 10
-  `)).rows;
-
-  // Upcoming inspections
-  const inspections = (await db.execute(`
-    SELECT pm.permit_type, pm.inspection_date, p.name AS project_name
-    FROM permits pm JOIN projects p ON pm.project_id = p.id
-    WHERE pm.inspection_result = 'pending' AND pm.inspection_date IS NOT NULL
-    ORDER BY pm.inspection_date
-    LIMIT 5
-  `)).rows;
-
-  // Today's logged events (most recent)
-  const todayEvents = (await db.execute(`
-    SELECT je.event_type, je.summary, je.logged_by, p.name AS project_name
-    FROM job_events je JOIN projects p ON je.project_id = p.id
-    WHERE je.event_date = CURRENT_DATE::text
-    ORDER BY je.created_at DESC
-    LIMIT 10
-  `)).rows;
 
   // Jobs at risk: high bid but nothing collected, or pending COs
   const atRisk = projects.filter(

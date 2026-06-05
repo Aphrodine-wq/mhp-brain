@@ -8,23 +8,27 @@ export default async function FieldDashboard({ userName }: { userName: string })
   const today = new Date().toISOString().slice(0, 10);
   const firstName = userName.split(" ")[0];
 
-  const projects = (await db.execute(`
-    SELECT p.id, p.name, p.current_phase, p.address,
-           (SELECT MAX(e.sum_sov_total) FROM estimates e WHERE e.project_id = p.id AND e.sum_sov_total > 0) AS bid_value,
-           (SELECT je.summary FROM job_events je WHERE je.project_id = p.id ORDER BY je.event_date DESC, je.created_at DESC LIMIT 1) AS last_log,
-           (SELECT je.event_date FROM job_events je WHERE je.project_id = p.id ORDER BY je.event_date DESC, je.created_at DESC LIMIT 1) AS last_log_date,
-           (SELECT je.action_items FROM job_events je WHERE je.project_id = p.id AND je.action_items IS NOT NULL ORDER BY je.event_date DESC LIMIT 1) AS next_action,
-           (SELECT COUNT(*) FROM permits pm WHERE pm.project_id = p.id AND pm.inspection_result = 'pending') AS pending_inspections,
-           (SELECT COUNT(*) FROM sub_assignments sa WHERE sa.project_id = p.id AND sa.scheduled_date = '${today}') AS subs_today
-    FROM projects p
-    WHERE p.status IN ('Active', 'active', 'Aging')
-    ORDER BY p.name
-  `)).rows;
-
-  const loggedToday = (await db.execute({
-    sql: `SELECT project_id FROM job_events WHERE event_date = ? GROUP BY project_id`,
-    args: [today],
-  })).rows.map((r) => String(r.project_id));
+  // Both reads are independent — run them concurrently.
+  const [projects, loggedRows] = await Promise.all([
+    db.execute({
+      sql: `SELECT p.id, p.name, p.current_phase, p.address,
+             (SELECT MAX(e.sum_sov_total) FROM estimates e WHERE e.project_id = p.id AND e.sum_sov_total > 0) AS bid_value,
+             (SELECT je.summary FROM job_events je WHERE je.project_id = p.id ORDER BY je.event_date DESC, je.created_at DESC LIMIT 1) AS last_log,
+             (SELECT je.event_date FROM job_events je WHERE je.project_id = p.id ORDER BY je.event_date DESC, je.created_at DESC LIMIT 1) AS last_log_date,
+             (SELECT je.action_items FROM job_events je WHERE je.project_id = p.id AND je.action_items IS NOT NULL ORDER BY je.event_date DESC LIMIT 1) AS next_action,
+             (SELECT COUNT(*) FROM permits pm WHERE pm.project_id = p.id AND pm.inspection_result = 'pending') AS pending_inspections,
+             (SELECT COUNT(*) FROM sub_assignments sa WHERE sa.project_id = p.id AND sa.scheduled_date = ?) AS subs_today
+      FROM projects p
+      WHERE p.status IN ('Active', 'active', 'Aging')
+      ORDER BY p.name`,
+      args: [today],
+    }).then((r) => r.rows),
+    db.execute({
+      sql: `SELECT project_id FROM job_events WHERE event_date = ? GROUP BY project_id`,
+      args: [today],
+    }).then((r) => r.rows),
+  ]);
+  const loggedToday = loggedRows.map((r) => String(r.project_id));
 
   return (
     <section className="view">

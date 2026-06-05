@@ -276,12 +276,37 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .login-submit:disabled{opacity:.55;cursor:default}
 .login-err{background:#fbe9e4;border:1px solid #e6c4b8;color:var(--warn);font-size:13px;
   padding:10px 14px;border-radius:10px;margin-bottom:16px;text-align:left}
+.login-ok{background:#eaf5ec;border:1px solid #bfe0c6;color:#1f6b34;font-size:13px;
+  padding:12px 14px;border-radius:10px;margin-bottom:16px;text-align:left;line-height:1.45}
+/* forgot-password / create-account links under the sign-in form */
+.login-links{display:flex;justify-content:space-between;gap:12px;margin-top:14px;font-size:13px;font-weight:600}
+.login-links a{color:var(--navy)}
+.login-links a:hover{text-decoration:underline}
+/* "Already have an account? Sign in" style helper line on the auth sub-pages */
+.login-alt{margin-top:18px;font-size:13px;color:var(--muted)}
+.login-alt a{color:var(--navy);font-weight:600}
+.login-alt a:hover{text-decoration:underline}
 .login-dev{margin-top:14px;width:100%;background:0;border:1px dashed var(--line);color:var(--muted);padding:10px;
   border-radius:10px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:all var(--t)}
 .login-dev:hover{border-color:var(--navy);color:var(--navy)}
 .login-footer{margin-top:28px;font-size:11px;color:var(--muted);letter-spacing:.4px;text-transform:uppercase}
-@media(max-width:440px){.login-box{padding:32px 24px;border-radius:12px}.login-logo{height:56px}}
 .login-dev:disabled{opacity:.6;cursor:default}
+/* Mobile: tighten the whole card so it fits comfortably on a phone without scrolling.
+   Smaller padding, logo, type, and inter-field gaps — the screen reads compact, not cramped. */
+@media(max-width:440px){
+  .login-page{padding:14px;align-items:flex-start}
+  .login-box{padding:24px 18px;border-radius:12px}
+  .login-logo{height:44px;margin-bottom:10px}
+  .login-title{font-size:20px}
+  .login-subtitle{font-size:13px;margin-bottom:18px}
+  .login-oauth{gap:8px}
+  .login-oauth-btn{padding:11px 14px;font-size:14px}
+  .login-divider{margin:16px 0}
+  .login-form{gap:11px}
+  .login-form input{padding:11px 12px;font-size:16px}  /* 16px keeps iOS from zooming on focus */
+  .login-submit{padding:12px;font-size:15px}
+  .login-footer{margin-top:20px}
+}
 /* sidebar profile row + logout */
 .profile-row{display:flex;align-items:stretch;border-top:1px solid rgba(255,255,255,.1)}
 .profile-row .profile{flex:1;border-top:0}

@@ -1,44 +1,45 @@
-import Link from "next/link";
 import { db } from "@/lib/db";
 import { money } from "@/lib/format";
 
 // Todd's screen. Leads, follow-ups, conversion tracking.
 
 export default async function SalesDashboard() {
-  // Pipeline by phase
-  const pipeline = (await db.execute(`
-    SELECT current_phase, COUNT(*) AS cnt,
-           COALESCE(SUM(contract_value), 0) + COALESCE(SUM(
-             (SELECT MAX(e.sum_sov_total) FROM estimates e WHERE e.project_id = p.id AND e.sum_sov_total > 0)
-           ), 0) AS value
-    FROM projects p
-    WHERE status IN ('Active', 'active', 'Aging')
-    GROUP BY current_phase
-    ORDER BY CASE current_phase
-      WHEN 'lead' THEN 1 WHEN 'quoted' THEN 2 WHEN 'scheduled' THEN 3
-      WHEN 'in_progress' THEN 4 WHEN 'complete' THEN 5 WHEN 'paid' THEN 6
-      ELSE 7 END
-  `)).rows;
-
-  // Recent leads (newest projects)
-  const recentLeads = (await db.execute(`
-    SELECT id, name, type, lead_source, current_phase, client_name, client_phone,
-           (SELECT MAX(e.sum_sov_total) FROM estimates e WHERE e.project_id = p.id AND e.sum_sov_total > 0) AS bid_value
-    FROM projects p
-    WHERE status IN ('Active', 'active', 'Aging')
-    ORDER BY COALESCE(actual_start, '9999') DESC
-    LIMIT 15
-  `)).rows;
-
-  // Win/loss stats
-  const stats = (await db.execute(`
-    SELECT
-      COUNT(*) FILTER (WHERE status IN ('Active', 'active')) AS active,
-      COUNT(*) FILTER (WHERE status = 'Dead') AS dead,
-      COUNT(*) FILTER (WHERE lead_source IS NOT NULL) AS with_source,
-      COUNT(*) FILTER (WHERE lost_reason IS NOT NULL) AS with_reason
-    FROM projects
-  `)).rows[0];
+  // Three independent reads — run them concurrently.
+  const [pipeline, recentLeads, statsRows] = await Promise.all([
+    // Pipeline by phase
+    db.execute(`
+      SELECT current_phase, COUNT(*) AS cnt,
+             COALESCE(SUM(contract_value), 0) + COALESCE(SUM(
+               (SELECT MAX(e.sum_sov_total) FROM estimates e WHERE e.project_id = p.id AND e.sum_sov_total > 0)
+             ), 0) AS value
+      FROM projects p
+      WHERE status IN ('Active', 'active', 'Aging')
+      GROUP BY current_phase
+      ORDER BY CASE current_phase
+        WHEN 'lead' THEN 1 WHEN 'quoted' THEN 2 WHEN 'scheduled' THEN 3
+        WHEN 'in_progress' THEN 4 WHEN 'complete' THEN 5 WHEN 'paid' THEN 6
+        ELSE 7 END
+    `).then((r) => r.rows),
+    // Recent leads (newest projects)
+    db.execute(`
+      SELECT id, name, type, lead_source, current_phase, client_name, client_phone,
+             (SELECT MAX(e.sum_sov_total) FROM estimates e WHERE e.project_id = p.id AND e.sum_sov_total > 0) AS bid_value
+      FROM projects p
+      WHERE status IN ('Active', 'active', 'Aging')
+      ORDER BY COALESCE(actual_start, '9999') DESC
+      LIMIT 15
+    `).then((r) => r.rows),
+    // Win/loss stats
+    db.execute(`
+      SELECT
+        COUNT(*) FILTER (WHERE status IN ('Active', 'active')) AS active,
+        COUNT(*) FILTER (WHERE status = 'Dead') AS dead,
+        COUNT(*) FILTER (WHERE lead_source IS NOT NULL) AS with_source,
+        COUNT(*) FILTER (WHERE lost_reason IS NOT NULL) AS with_reason
+      FROM projects
+    `).then((r) => r.rows),
+  ]);
+  const stats = statsRows[0];
 
   return (
     <section className="view">
