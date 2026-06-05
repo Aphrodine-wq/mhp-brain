@@ -4,3 +4,9 @@ __pycache__/
 mhp.db.bak-*
 *.bak-*
 .backups/
+
+# QuickBooks OAuth tokens — NEVER commit (refresh token = months-long key to the books)
+.qb_tokens.json
+
+# QuickBooks exported data — local working copy, not for git
+qb_data/
