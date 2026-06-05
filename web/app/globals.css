@@ -258,6 +258,7 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
   box-shadow:var(--shadow-sm);transition:all var(--t)}
 .login-oauth-btn:hover{border-color:#b0b8c4;box-shadow:var(--shadow);background:#fafbfc;transform:translateY(-1px)}
 .login-oauth-ms:hover{border-color:#0078d4;background:#f6faff}
+.login-oauth-qb:hover{border-color:#2CA01C;background:#f4fbf3}
 .login-divider{display:flex;align-items:center;gap:14px;margin:22px 0;color:var(--muted);font-size:12px;
   text-transform:uppercase;letter-spacing:.5px}
 .login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--line)}
