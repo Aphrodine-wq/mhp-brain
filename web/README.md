@@ -20,6 +20,49 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Authentication: sign-up, sign-in, password reset
+
+Sign-in is at `/login` (email + password, plus Google / Microsoft / QuickBooks). Three self-service
+screens back it:
+
+- **`/signup` — create account.** New accounts are created **inactive ("pending admin approval")**
+  with the `viewer` role. They cannot sign in until an admin activates them, so registration never
+  grants access to company data on its own. The form always reports the same success (it never
+  reveals whether an email is already registered).
+
+  Approve a pending user (set `active = 1`, optionally bump their role):
+
+  ```sql
+  -- see who's waiting
+  SELECT id, name, email, created_at FROM users WHERE active = 0 ORDER BY created_at;
+  -- activate (and optionally promote)
+  UPDATE users SET active = 1, role = 'field' WHERE email = 'them@example.com';
+  ```
+
+- **`/forgot` — request a reset.** Emails a single-use, 1-hour reset link to active accounts. Always
+  reports the same success (no account enumeration).
+
+- **`/reset?token=…` — set a new password.** Validates the token, rotates the password, and
+  invalidates all of that user's existing sessions.
+
+### Email (SMTP)
+
+Reset emails go out over SMTP, configured entirely from env. **Until these are set, the reset flow
+still works** — the link is written to the server logs (`[forgot-password] … Reset link: …`) so an
+admin can retrieve it. Set them to send real email:
+
+| Var          | Notes                                                            |
+| ------------ | ---------------------------------------------------------------- |
+| `SMTP_HOST`  | e.g. `smtp.gmail.com`, `smtp.sendgrid.net`                       |
+| `SMTP_PORT`  | `587` (STARTTLS, default) or `465` (implicit TLS)               |
+| `SMTP_USER`  | login / API-key username                                         |
+| `SMTP_PASS`  | password / app-password / API key                               |
+| `SMTP_FROM`  | optional, e.g. `MHP Construction <no-reply@mshomepros.com>`      |
+| `SMTP_SECURE`| optional, `1` to force implicit TLS                              |
+| `APP_URL`    | optional, base for reset links (otherwise derived from request) |
+
+Run `node scripts/migrate.mjs` after deploying to create the `password_resets` table.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

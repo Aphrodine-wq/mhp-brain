@@ -16,6 +16,13 @@ const PUBLIC = new Set([
   "/api/dev-login",
   "/api/auth/google/start",
   "/api/auth/google/callback",
+  // Self-service auth — these run before any session exists, so they must be reachable signed-out.
+  "/signup",
+  "/forgot",
+  "/reset",
+  "/api/auth/signup",
+  "/api/auth/forgot",
+  "/api/auth/reset",
 ]);
 
 export function proxy(request: NextRequest) {
