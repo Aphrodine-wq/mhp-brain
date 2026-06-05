@@ -1,8 +1,5 @@
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
-import { googleAuthConfigured } from "@/lib/google-auth";
-import { msAuthConfigured } from "@/lib/ms-auth";
-import { quickbooksAuthConfigured } from "@/lib/quickbooks-auth";
 import LoginForm from "./LoginForm";
 
 export const metadata = { title: "Sign in — MHP Brain" };
@@ -20,9 +17,6 @@ export default async function LoginPage({
     <LoginForm
       next={dest}
       dev={showBypass}
-      google={googleAuthConfigured()}
-      microsoft={msAuthConfigured()}
-      quickbooks={quickbooksAuthConfigured()}
       error={error ?? null}
     />
   );

@@ -56,16 +56,10 @@ function QuickBooksMark() {
 export default function LoginForm({
   next,
   dev,
-  google,
-  microsoft,
-  quickbooks,
   error,
 }: {
   next: string;
   dev: boolean;
-  google: boolean;
-  microsoft: boolean;
-  quickbooks: boolean;
   error: string | null;
 }) {
   const router = useRouter();
@@ -75,7 +69,6 @@ export default function LoginForm({
   const [busy, setBusy] = useState(false);
 
   const shownError = clientError || (error ? ERROR_TEXT[error] ?? "Sign-in failed." : "");
-  const hasOAuth = google || microsoft || quickbooks;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -125,35 +118,28 @@ export default function LoginForm({
 
         {shownError && <div className="login-err">{shownError}</div>}
 
-        {/* OAuth buttons */}
-        {hasOAuth && (
-          <div className="login-oauth">
-            {google && (
-              <a className="login-oauth-btn" href={`/api/auth/google/start?next=${encodeURIComponent(next)}`}>
-                <GoogleMark />
-                Sign in with Google
-              </a>
-            )}
-            {microsoft && (
-              <a className="login-oauth-btn login-oauth-ms" href={`/api/auth/microsoft/start?next=${encodeURIComponent(next)}`}>
-                <MicrosoftMark />
-                Sign in with Microsoft
-              </a>
-            )}
-            {quickbooks && (
-              <a className="login-oauth-btn login-oauth-qb" href={`/api/auth/quickbooks/start?next=${encodeURIComponent(next)}`}>
-                <QuickBooksMark />
-                Sign in with QuickBooks
-              </a>
-            )}
-          </div>
-        )}
+        {/* OAuth buttons — always rendered. Each provider's /start route degrades
+            gracefully (bounces back to /login?error=*_unavailable) when its creds
+            aren't set, so a not-yet-configured provider shows a friendly message
+            instead of being silently hidden. */}
+        <div className="login-oauth">
+          <a className="login-oauth-btn" href={`/api/auth/google/start?next=${encodeURIComponent(next)}`}>
+            <GoogleMark />
+            Sign in with Google
+          </a>
+          <a className="login-oauth-btn login-oauth-ms" href={`/api/auth/microsoft/start?next=${encodeURIComponent(next)}`}>
+            <MicrosoftMark />
+            Sign in with Microsoft
+          </a>
+          <a className="login-oauth-btn login-oauth-qb" href={`/api/auth/quickbooks/start?next=${encodeURIComponent(next)}`}>
+            <QuickBooksMark />
+            Sign in with QuickBooks
+          </a>
+        </div>
 
-        {hasOAuth && (
-          <div className="login-divider">
-            <span>or</span>
-          </div>
-        )}
+        <div className="login-divider">
+          <span>or</span>
+        </div>
 
         <form className="login-form" onSubmit={submit}>
           <label>
@@ -164,7 +150,6 @@ export default function LoginForm({
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@company.com"
               autoComplete="username"
-              autoFocus={!hasOAuth}
               required
             />
           </label>
