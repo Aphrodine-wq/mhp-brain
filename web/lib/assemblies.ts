@@ -36,6 +36,13 @@ export interface Assembly {
 const r0 = (n: number) => Math.round(n);
 const perimeter = (sqft: number) => 4 * Math.sqrt(Math.max(sqft, 0)); // rough footing lft
 
+// ground-up geometry derived from the footprint (matches the worked full-house estimate)
+const underRoof = (i: Record<string, number>) => (i.heatedSqft || 0) + (i.garageSqft || 0);
+const perimFt = (i: Record<string, number>) => r0(1.1 * perimeter(underRoof(i))); // L-shape factor
+const roofSquares = (i: Record<string, number>) => r0((underRoof(i) * 1.3) / 100); // 1.3 pitch factor
+const wallArea = (i: Record<string, number>) => r0(perimFt(i) * 10 * 0.85); // 10ft walls less openings
+const showers = (i: Record<string, number>) => Math.max(1, r0(i.baths || 0));
+
 const ALWAYS: AssemblyLineDef[] = [
   { desc: "General Conditions", qty: () => 1 },
   { desc: "Project Coordination (Supervision)", qty: () => 1 },
@@ -132,6 +139,85 @@ export const ASSEMBLIES: Record<string, Assembly> = {
       { desc: "Electrical Material", qty: (i) => r0(i.sqft) },
       { desc: "Electrical Labor", qty: (i) => r0(i.sqft) },
       { desc: "Plumbing Material & Labor", qty: () => 2 },
+    ],
+  },
+
+  // New Construction — full ground-up house. Quantities derived from the footprint
+  // (perimeter, roof squares, wall area) + bed/bath counts. Validated bottom-up against
+  // the Custom Home Tiers $/SF sheets (converges within ~2% at the 25% target markup).
+  "new-construction": {
+    key: "new-construction",
+    label: "New Construction (Full House)",
+    blurb: "Ground-up custom home — foundation to finishes. Bottom-up from proven rates.",
+    inputs: [
+      { key: "heatedSqft", label: "Heated area (sqft)", placeholder: "2400", default: 2400 },
+      { key: "garageSqft", label: "Garage (sqft)", placeholder: "440", default: 440 },
+      { key: "beds", label: "Bedrooms", placeholder: "3", default: 3 },
+      { key: "baths", label: "Bathrooms", placeholder: "2", default: 2 },
+    ],
+    lines: [
+      // general / sitework
+      { desc: "General Conditions", qty: () => 1 },
+      { desc: "Project Coordination (Supervision)", qty: () => 4 },
+      { desc: "Architectural Plans", qty: () => 1 },
+      { desc: "Construction Staking", qty: (i) => underRoof(i) },
+      { desc: "Termite Pre-Treat", qty: (i) => underRoof(i) },
+      // foundation
+      { desc: "Footing Material", qty: (i) => perimFt(i) },
+      { desc: "Footing Labor", qty: (i) => perimFt(i) },
+      { desc: "Concrete Forming Material (Includes Reinforcement)", qty: (i) => underRoof(i) },
+      { desc: "Slab Material", qty: (i) => r0((underRoof(i) * 0.333) / 27) + 3 },
+      { desc: "Slab Labor", qty: (i) => underRoof(i) },
+      // shell
+      { desc: "Framing Material", qty: (i) => underRoof(i) },
+      { desc: "Framing Labor", qty: (i) => underRoof(i) },
+      { desc: "Trusses & Trim Joists", qty: (i) => underRoof(i) },
+      { desc: "Shingle Roofing Material", qty: (i) => roofSquares(i) },
+      { desc: "Shingle Roofing Labor", qty: (i) => roofSquares(i) },
+      { desc: "Gutter Material", qty: (i) => r0(perimFt(i) * 0.8) },
+      { desc: "Gutter Labor", qty: (i) => r0(perimFt(i) * 0.8) },
+      // exterior envelope
+      { desc: "Siding Material", qty: (i) => wallArea(i) },
+      { desc: "Siding Labor", qty: (i) => wallArea(i) },
+      { desc: "Windows ", qty: (i) => r0(i.heatedSqft / 160) },
+      { desc: "Exterior Doors", qty: () => 3 },
+      { desc: "Exterior Trim Material", qty: (i) => r0(i.heatedSqft * 0.79) },
+      { desc: "Exterior Trim Labor", qty: (i) => r0(i.heatedSqft * 0.79) },
+      { desc: "Exterior Paint Material", qty: (i) => wallArea(i) },
+      { desc: "Exterior Paint Labor", qty: (i) => wallArea(i) },
+      // mechanicals
+      { desc: "Electrical Material", qty: (i) => underRoof(i) },
+      { desc: "Electrical Labor", qty: (i) => underRoof(i) },
+      { desc: "Electrical Meter (Permanent Power)", qty: () => 1 },
+      { desc: "Plumbing Material & Labor", qty: (i) => r0(i.baths * 3 + 4) },
+      { desc: "Plumbing Fixtures", qty: (i) => r0(i.baths) + 1 },
+      { desc: "Plumbing Gas Materials And Labor", qty: () => 2 },
+      { desc: "HVAC Material", qty: (i) => Math.max(1, r0(i.heatedSqft / 800)) },
+      // interior
+      { desc: "Insulation Material", qty: (i) => i.heatedSqft },
+      { desc: "Insulation Labor", qty: (i) => i.heatedSqft },
+      { desc: "Drywall", qty: (i) => r0(i.heatedSqft * 3.0) },
+      { desc: "Interior Paint Material", qty: (i) => i.heatedSqft },
+      { desc: "Interior Paint Labor", qty: (i) => i.heatedSqft },
+      { desc: "Interior Trim Material", qty: (i) => i.heatedSqft },
+      { desc: "Interior Trim Labor", qty: (i) => i.heatedSqft },
+      { desc: "Interior Doors", qty: (i) => r0(i.beds + i.baths + 6) },
+      { desc: "Door Hardware", qty: (i) => r0(i.beds + i.baths + 6) },
+      { desc: "LVT Flooring - Materials", qty: (i) => r0(i.heatedSqft - i.baths * 90 - 180) },
+      { desc: "LVT Flooring - Labor", qty: (i) => r0(i.heatedSqft - i.baths * 90 - 180) },
+      { desc: "Floor Tile", qty: (i) => r0(i.baths * 90 + 180) },
+      { desc: "Floor Tile Labor", qty: (i) => r0(i.baths * 90 + 180) },
+      { desc: "Shower Tile", qty: (i) => showers(i) * 60 },
+      { desc: "Shower Labor", qty: (i) => showers(i) * 60 },
+      { desc: "Shower Door (Included Material & Labor)", qty: (i) => showers(i) },
+      // cabinetry
+      { desc: "Kitchen Cabinets", qty: () => 25 },
+      { desc: "Cabinet & Drawer Hardware", qty: () => 1 },
+      { desc: "Countertop Material", qty: () => 55 },
+      { desc: "Countertop Labor", qty: () => 55 },
+      { desc: "Backsplash Material", qty: () => 30 },
+      { desc: "Backsplash Labor", qty: () => 30 },
+      { desc: "Laundry Cabinets", qty: () => 8 },
     ],
   },
 
