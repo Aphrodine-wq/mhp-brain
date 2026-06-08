@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { money } from "@/lib/format";
-import { isAllowance, scopeOfServices, CONTRACT_TERMS } from "@/lib/documents";
+import { isAllowance, scopeOfServices, buildContractArticles, MHP_CONTRACTOR } from "@/lib/documents";
 import { ESTIMATE_SCOPE } from "@/lib/line-detail";
 
 export interface PacketLine {
@@ -109,17 +109,19 @@ export default function ClientPacket({
             <li key={i}><b>{s.division}.</b> {s.summary}</li>
           ))}
         </ul>
-        <h3 className="doc-sub">Agreement</h3>
-        {CONTRACT_TERMS.map((t, i) => (
+        <h3 className="doc-sub">Professional Services Construction Contract Agreement</h3>
+        {buildContractArticles({ total: grand, allowanceTotal, clientName: client.clientName, address: client.address }).map((t, i) => (
           <div className="clause" key={i}>
             <b>{t.heading}</b>
             <p>{t.body}</p>
           </div>
         ))}
         <div className="sign">
-          <div><div className="sign-line" /><span>Owner</span><span className="sign-date">Date</span></div>
-          <div><div className="sign-line" /><span>MHP Construction</span><span className="sign-date">Date</span></div>
+          <div><div className="sign-line" /><span>{client.clientName || "Owner"}</span><span className="sign-date">Date</span></div>
+          <div><div className="sign-line" /><span>{MHP_CONTRACTOR.signers[0]}</span><span className="sign-date">Date</span></div>
+          <div><div className="sign-line" /><span>{MHP_CONTRACTOR.signers[1]}</span><span className="sign-date">Date</span></div>
         </div>
+        <p className="contract-foot">{MHP_CONTRACTOR.entity} · {MHP_CONTRACTOR.address} · {MHP_CONTRACTOR.license}</p>
       </article>
 
       {/* ── 3. PROJECT ALLOWANCES ── */}

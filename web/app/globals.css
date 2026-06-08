@@ -86,6 +86,8 @@ textarea:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
 .sign-line{border-bottom:1px solid var(--ink);height:34px}
 .sign>div span{display:inline-block;font-size:11px;color:var(--muted);margin-top:5px;margin-right:24px}
 .sign-date{float:right;margin-right:0}
+.sign{flex-wrap:wrap;gap:28px 32px}
+.contract-foot{margin-top:26px;font-size:11px;color:var(--muted);text-align:center}
 .doc-table{width:100%;border-collapse:collapse;margin-top:8px}
 .doc-table th{background:var(--paper);font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:9px 12px;text-align:left;border-bottom:1px solid var(--line)}
 .doc-table td{padding:9px 12px;border-bottom:1px solid var(--line-2);font-size:13.5px;vertical-align:top}
