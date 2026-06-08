@@ -11,7 +11,8 @@ const NAV: NavItem[] = [
   { href: "/estimate-builder", label: "Estimate Builder", icon: (<><rect x="6" y="3" width="12" height="18" rx="2" /><path d="M9 7h6M9 11h6M9 15h6" /></>) },
   { href: "/estimates", label: "Estimates", icon: (<><path d="M6 2h9l5 5v15H6z" /><path d="M14 2v6h6" /><path d="M9 13h6M9 17h6" /></>) },
   { href: "/projects", label: "Projects", icon: (<path d="M3 7h6l2 2h10v11H3z" />) },
-  { href: "/live", label: "Live", icon: (<path d="M3 12h4l2-6 4 14 3-9 2 3h3" />) },
+  // Live tab delisted for now — route + LiveBoard kept at app/live/; restore this line to re-enable:
+  // { href: "/live", label: "Live", icon: (<path d="M3 12h4l2-6 4 14 3-9 2 3h3" />) },
   { href: "/subs", label: "Subs", icon: (<><circle cx="9" cy="8" r="3" /><path d="M3 20c0-3 3-5 6-5s6 2 6 5" /><path d="M16 6a3 3 0 010 6M21 20c0-2.5-2-4-4-4.5" /></>) },
   { href: "/crew", label: "Crew", icon: (<><path d="M4 20a8 8 0 0116 0" /><circle cx="12" cy="7" r="4" /></>) },
 ];
