@@ -5,6 +5,7 @@ import type { CatalogRow } from "@/lib/queries";
 import { money } from "@/lib/format";
 import { ASSEMBLY_LIST } from "@/lib/assemblies";
 import { detailFor, divisionDetailFor, ESTIMATE_SCOPE } from "@/lib/line-detail";
+import ClientPacket, { type ClientInfo } from "./ClientPacket";
 
 interface Line {
   key: number;
@@ -40,7 +41,9 @@ const PLACEHOLDER =
   "e.g. Gut and remodel a 300 sqft kitchen in Oxford. Demo existing, new framing, drywall, 70 linear feet of custom cabinets, quartz countertops, LVT flooring, repaint, new electrical and plumbing fixtures, tile backsplash.";
 
 export default function Estimator({ catalog }: { catalog: CatalogRow[] }) {
-  const [view, setView] = useState<"input" | "load" | "result">("input");
+  const [view, setView] = useState<"input" | "load" | "result" | "packet">("input");
+  const [client, setClient] = useState<ClientInfo>({ project: "", clientName: "", address: "", date: "", preparedBy: "MHP Construction" });
+  const setC = (k: keyof ClientInfo, v: string) => setClient((c) => ({ ...c, [k]: v }));
   const [desc, setDesc] = useState("");
   const [files, setFiles] = useState<FileList | null>(null);
   const [lines, setLines] = useState<Line[]>([]);
@@ -235,14 +238,34 @@ export default function Estimator({ catalog }: { catalog: CatalogRow[] }) {
     );
   }
 
+  if (view === "packet") {
+    const packetLines = lines.map((l) => ({
+      description: l.description,
+      detail: l.detail,
+      division: l.division,
+      jobs: l.jobs,
+      qty: parseFloat(l.qty) || 0,
+      rate: parseFloat(l.rate) || 0,
+    }));
+    return <ClientPacket lines={packetLines} markup={markup} client={client} onBack={() => setView("result")} />;
+  }
+
   return (
     <section className="view">
       <div className="row" style={{ justifyContent: "space-between" }}>
-        <h2 style={{ margin: 0 }}>Estimate — editable</h2>
+        <h2 style={{ margin: 0 }}>Full Line Estimate — working</h2>
         <div>
           <button className="btn ghost" onClick={() => setView("input")}>← New</button>{" "}
-          <button className="btn" onClick={exportx}>Export to Excel</button>
+          <button className="btn ghost" onClick={exportx}>Export to Excel</button>{" "}
+          <button className="btn" onClick={() => setView("packet")}>Client Packet →</button>
         </div>
+      </div>
+
+      <div className="client-bar">
+        <label>Project<input value={client.project} placeholder="Lora Hunter — Bonus Room" onChange={(e) => setC("project", e.target.value)} /></label>
+        <label>Client<input value={client.clientName} placeholder="Lora Hunter" onChange={(e) => setC("clientName", e.target.value)} /></label>
+        <label>Address<input value={client.address} placeholder="Oxford, MS" onChange={(e) => setC("address", e.target.value)} /></label>
+        <label>Date<input value={client.date} placeholder="June 8, 2026" onChange={(e) => setC("date", e.target.value)} /></label>
       </div>
       {notes.length > 0 && <div className="notes">{notes.map((n, i) => <div key={i}>• {n}</div>)}</div>}
 
