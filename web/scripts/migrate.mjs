@@ -12,5 +12,7 @@ for (const f of files) {
   await pool.query(readFileSync(join(dir, f), "utf8")); // multi-statement DDL, no params
   console.log("applied", f);
 }
-console.log("migrations done ->", process.env.DATABASE_URL);
+// mask credentials in the connection string before logging (never print user:pass)
+const masked = String(process.env.DATABASE_URL ?? "").replace(/\/\/[^@/]*@/, "//***:***@");
+console.log("migrations done ->", masked);
 await pool.end();
