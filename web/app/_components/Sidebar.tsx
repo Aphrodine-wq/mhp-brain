@@ -30,12 +30,6 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
     { href: "/", label: "Cockpit", icon: i("home") },
     { href: "/projects", label: "Projects", icon: i("projects") },
   ],
-  field: [
-    { href: "/", label: "My Jobs", icon: i("home") },
-    { href: "/projects", label: "Projects", icon: i("projects") },
-    { href: "/subs", label: "Subs", icon: i("subs") },
-    { href: "/crew", label: "Crew", icon: i("crew") },
-  ],
   estimator: [
     { href: "/requests", label: "Requests", icon: i("requests") },
     { href: "/estimate-builder", label: "Estimate Builder", icon: i("estimator") },
@@ -89,7 +83,6 @@ const ROLE_FOOTER: Record<string, NavItem[]> = {
 const ROLE_LABEL: Record<Role, string> = {
   admin: "Admin",
   ceo: "CEO",
-  field: "Field / Super",
   estimator: "Estimator",
   sales: "Sales",
   materials: "Materials",
@@ -100,7 +93,6 @@ const ROLE_LABEL: Record<Role, string> = {
 const ROLE_TITLE: Record<Role, string> = {
   admin: "MHP Brain",
   ceo: "MHP Cockpit",
-  field: "MHP Field",
   estimator: "MHP Estimator",
   sales: "MHP Sales",
   materials: "MHP Materials",

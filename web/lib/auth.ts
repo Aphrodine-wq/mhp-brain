@@ -11,7 +11,7 @@ import { SESSION_COOKIE } from "@/lib/auth-constants";
 
 export { SESSION_COOKIE };
 
-export type Role = "admin" | "ceo" | "field" | "estimator" | "sales" | "materials" | "editor" | "viewer";
+export type Role = "admin" | "ceo" | "estimator" | "sales" | "materials" | "editor" | "viewer";
 
 export interface SessionUser {
   id: number;
@@ -30,13 +30,12 @@ const FAIL_WINDOW = "15 minutes";
 const RESET_TTL_MS = 60 * 60 * 1000; // password-reset token lifetime: 1h
 
 // Role hierarchy: a higher rank satisfies every gate at or below it.
-// Functional roles (ceo, field, estimator, sales, materials) are all at editor-level for writes.
+// Functional roles (ceo, estimator, sales, materials) are all at editor-level for writes.
 // Admin is above everything. Viewer is read-only.
 const RANK: Record<Role, number> = {
   viewer: 0,
   materials: 1,
   sales: 1,
-  field: 1,
   estimator: 1,
   editor: 1,  // legacy — maps to generic editor
   ceo: 2,     // CEO can see and do everything except system config

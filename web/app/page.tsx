@@ -5,7 +5,6 @@ import { dashboardForRole } from "@/lib/role-nav";
 import { stats, projectsList } from "@/lib/queries";
 import { money } from "@/lib/format";
 import CeoDashboard from "./_dashboards/CeoDashboard";
-import FieldDashboard from "./_dashboards/FieldDashboard";
 import SalesDashboard from "./_dashboards/SalesDashboard";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +17,6 @@ export default async function Home() {
 
   // Role-specific dashboards
   if (dashboard === "ceo") return <CeoDashboard />;
-  if (dashboard === "field") return <FieldDashboard userName={user.name} />;
   if (dashboard === "sales") return <SalesDashboard />;
 
   // Default dashboard (admin, editor, viewer, estimator, materials)

@@ -14,11 +14,6 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
     { href: "/", label: "Cockpit" },
     { href: "/projects", label: "Projects" },
   ],
-  field: [
-    { href: "/projects", label: "Projects" },
-    { href: "/subs", label: "Subs" },
-    { href: "/crew", label: "Crew" },
-  ],
   estimator: [
     { href: "/estimate-builder", label: "Estimate Builder" },
     { href: "/estimates", label: "Estimates" },
@@ -63,7 +58,6 @@ export function navForRole(role: Role): NavItem[] {
 export const ROLE_LABELS: Record<Role, string> = {
   admin: "Admin",
   ceo: "CEO",
-  field: "Field / Super",
   estimator: "Estimator",
   sales: "Sales",
   materials: "Materials",
@@ -72,12 +66,11 @@ export const ROLE_LABELS: Record<Role, string> = {
 };
 
 // Which home screen component to render per role.
-export type DashboardType = "ceo" | "field" | "estimator" | "sales" | "materials" | "default";
+export type DashboardType = "ceo" | "estimator" | "sales" | "materials" | "default";
 
 export function dashboardForRole(role: Role): DashboardType {
   switch (role) {
     case "ceo": return "ceo";
-    case "field": return "field";
     case "estimator": return "estimator";
     case "sales": return "sales";
     case "materials": return "materials";
