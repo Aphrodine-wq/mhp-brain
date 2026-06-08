@@ -4,10 +4,12 @@ import { useRef, useState } from "react";
 import type { CatalogRow } from "@/lib/queries";
 import { money } from "@/lib/format";
 import { ASSEMBLY_LIST } from "@/lib/assemblies";
+import { detailFor } from "@/lib/line-detail";
 
 interface Line {
   key: number;
   description: string;
+  detail: string | null;
   unit: string | null;
   division: string;
   item_no: string;
@@ -22,6 +24,7 @@ interface Line {
 // a line as returned by /api/estimate (qty/rate may be null)
 interface SeedResult {
   description: string;
+  detail: string | null;
   unit: string | null;
   division: string;
   item_no: string;
@@ -64,6 +67,7 @@ export default function Estimator({ catalog }: { catalog: CatalogRow[] }) {
       sorted.map((l) => ({
         key: nextKey(),
         description: l.description,
+        detail: l.detail,
         unit: l.unit,
         division: l.division,
         item_no: l.item_no,
@@ -119,7 +123,7 @@ export default function Estimator({ catalog }: { catalog: CatalogRow[] }) {
     if (!c) return;
     setLines((ls) => [
       ...ls,
-      { key: nextKey(), description: c.description, unit: c.unit, division: c.division, item_no: c.item_no, jobs: c.jobs, p25: null, p75: null, kind: "added", qty: "", rate: c.rate == null ? "" : String(c.rate) },
+      { key: nextKey(), description: c.description, detail: detailFor(c.description), unit: c.unit, division: c.division, item_no: c.item_no, jobs: c.jobs, p25: null, p75: null, kind: "added", qty: "", rate: c.rate == null ? "" : String(c.rate) },
     ]);
   };
 
@@ -260,7 +264,10 @@ export default function Estimator({ catalog }: { catalog: CatalogRow[] }) {
                       return (
                         <tr key={l.key} className={l.kind === "missing" ? "miss" : undefined}>
                           <td>{l.item_no || ""}</td>
-                          <td>{l.description}</td>
+                          <td>
+                            {l.description}
+                            {l.detail && <div className="line-detail">{l.detail}</div>}
+                          </td>
                           <td className="n">
                             <input className="cell" type="number" value={l.qty} onChange={(e) => update(l.key, "qty", e.target.value)} />
                           </td>

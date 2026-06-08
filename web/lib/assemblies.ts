@@ -218,6 +218,8 @@ export const ASSEMBLIES: Record<string, Assembly> = {
       { desc: "Backsplash Material", qty: () => 30 },
       { desc: "Backsplash Labor", qty: () => 30 },
       { desc: "Laundry Cabinets", qty: () => 8 },
+      // equipment (allowance — no proven history; see lib/catalog ALLOWANCES)
+      { desc: "Appliances", qty: () => 1 },
     ],
   },
 
