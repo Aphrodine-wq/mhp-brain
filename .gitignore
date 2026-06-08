@@ -4,3 +4,6 @@ __pycache__/
 mhp.db.bak-*
 *.bak-*
 .backups/
+
+# client-financials data dump — kept local, regenerated from source (not in git history)
+export/
