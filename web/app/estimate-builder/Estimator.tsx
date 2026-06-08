@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import type { CatalogRow } from "@/lib/queries";
 import { money } from "@/lib/format";
 import { ASSEMBLY_LIST } from "@/lib/assemblies";
-import { detailFor } from "@/lib/line-detail";
+import { detailFor, divisionDetailFor, ESTIMATE_SCOPE } from "@/lib/line-detail";
 
 interface Line {
   key: number;
@@ -323,15 +323,43 @@ export default function Estimator({ catalog }: { catalog: CatalogRow[] }) {
           </div>
         </div>
       </div>
+
+      <div className="scope">
+        <h3>Scope, assumptions &amp; terms</h3>
+        <div className="scope-grid">
+          <div>
+            <h4>Included</h4>
+            <ul>{ESTIMATE_SCOPE.included.map((s, i) => <li key={i}>{s}</li>)}</ul>
+          </div>
+          <div>
+            <h4>Not included</h4>
+            <ul>{ESTIMATE_SCOPE.excluded.map((s, i) => <li key={i}>{s}</li>)}</ul>
+          </div>
+          <div>
+            <h4>Assumptions</h4>
+            <ul>{ESTIMATE_SCOPE.assumptions.map((s, i) => <li key={i}>{s}</li>)}</ul>
+          </div>
+          <div>
+            <h4>Terms</h4>
+            <ul>{ESTIMATE_SCOPE.terms.map((s, i) => <li key={i}>{s}</li>)}</ul>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
 
 // division header row + its lines (a <tbody> can't hold a fragment with a header <tr> cleanly via map keys otherwise)
 function FragmentGroup({ division, children }: { division: string; children: React.ReactNode }) {
+  const dd = divisionDetailFor(division);
   return (
     <>
-      <tr className="div"><td colSpan={8}>{division}</td></tr>
+      <tr className="div">
+        <td colSpan={8}>
+          {division}
+          {dd && <span className="div-detail">{dd}</span>}
+        </td>
+      </tr>
       {children}
     </>
   );

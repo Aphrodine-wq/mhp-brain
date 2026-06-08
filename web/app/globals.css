@@ -54,6 +54,15 @@ textarea:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
 .or-sep::before,.or-sep::after{content:'';flex:1;height:1px;background:var(--line)}
 /* per-line scope detail under the item name */
 .line-detail{margin-top:3px;font-size:11.5px;line-height:1.4;color:var(--muted);max-width:46ch}
+/* division phase summary in the division header row */
+.div-detail{display:block;margin-top:2px;font-size:11px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--muted)}
+/* document-level scope / terms block */
+.scope{margin-top:22px;padding:22px 24px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--card);box-shadow:var(--shadow-sm)}
+.scope h3{margin:0 0 14px;font-family:var(--disp);font-size:16px}
+.scope-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px 28px}
+.scope-grid h4{margin:0 0 7px;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--navy)}
+.scope-grid ul{margin:0;padding-left:16px}
+.scope-grid li{font-size:12.5px;line-height:1.5;color:var(--muted);margin-bottom:4px}
 /* buttons: refined from chunky to crisp — subtle elevation, press feedback, one focus ring */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1;
   background:var(--navy);color:#fff;border:0;padding:11px 20px;font-size:14px;font-weight:600;
