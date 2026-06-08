@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { db } from "@/lib/db";
 import { money } from "@/lib/format";
 
@@ -33,7 +32,7 @@ export default async function FieldDashboard({ userName }: { userName: string })
   return (
     <section className="view">
       <h2>Hey {firstName}</h2>
-      <div className="sub">{projects.length} active jobs. <Link href="/field/daily" style={{ color: "#0b3d91", fontWeight: 600 }}>Start end-of-day log →</Link></div>
+      <div className="sub">{projects.length} active jobs.</div>
 
       <div className="proj-cards">
         {projects.map((p) => {
@@ -75,11 +74,6 @@ export default async function FieldDashboard({ userName }: { userName: string })
             </div>
           );
         })}
-      </div>
-
-      <div style={{ marginTop: 24, display: "flex", gap: 12 }}>
-        <Link className="btn" href="/field">Quick log</Link>
-        <Link className="btn ghost" href="/field/daily">Daily log call</Link>
       </div>
     </section>
   );

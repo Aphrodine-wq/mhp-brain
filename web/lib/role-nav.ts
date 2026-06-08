@@ -13,12 +13,8 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
   ceo: [
     { href: "/", label: "Cockpit" },
     { href: "/projects", label: "Projects" },
-    { href: "/live", label: "Live" },
-    { href: "/field/daily", label: "Daily Logs" },
   ],
   field: [
-    { href: "/field", label: "Field Log" },
-    { href: "/field/daily", label: "Daily Log Call" },
     { href: "/projects", label: "Projects" },
     { href: "/subs", label: "Subs" },
     { href: "/crew", label: "Crew" },
@@ -44,17 +40,13 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
     { href: "/estimate-builder", label: "Estimate Builder" },
     { href: "/estimates", label: "Estimates" },
     { href: "/projects", label: "Projects" },
-    { href: "/live", label: "Live" },
     { href: "/subs", label: "Subs" },
     { href: "/crew", label: "Crew" },
-    { href: "/field", label: "Field Log" },
-    { href: "/field/daily", label: "Daily Log Call" },
   ],
   editor: [
     { href: "/", label: "Home" },
     { href: "/projects", label: "Projects" },
     { href: "/estimates", label: "Estimates" },
-    { href: "/field", label: "Field Log" },
   ],
   viewer: [
     { href: "/", label: "Home" },

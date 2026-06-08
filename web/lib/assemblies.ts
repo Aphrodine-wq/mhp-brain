@@ -43,6 +43,11 @@ const roofSquares = (i: Record<string, number>) => r0((underRoof(i) * 1.3) / 100
 const wallArea = (i: Record<string, number>) => r0(perimFt(i) * 10 * 0.85); // 10ft walls less openings
 const showers = (i: Record<string, number>) => Math.max(1, r0(i.baths || 0));
 
+// single-input geometry — derive wall area / roofing squares / slab yards from one footprint
+const wallFt = (sqft: number) => r0(1.1 * perimeter(sqft) * 10 * 0.85); // wall sqft (L-shape, 10ft walls less openings)
+const roofSq = (sqft: number) => r0((sqft * 1.3) / 100);                // roofing squares (1.3 pitch factor)
+const slabYards = (sqft: number) => r0((sqft * 0.333) / 27) + 2;        // concrete yds for a 4" slab
+
 const ALWAYS: AssemblyLineDef[] = [
   { desc: "General Conditions", qty: () => 1 },
   { desc: "Project Coordination (Supervision)", qty: () => 1 },
@@ -240,6 +245,160 @@ export const ASSEMBLIES: Record<string, Assembly> = {
       { desc: "Framing Labor", qty: (i) => r0(i.sqft) },
       { desc: "Porch Material", qty: (i) => r0(i.sqft) },
       { desc: "Porch Labor", qty: (i) => r0(i.sqft) },
+    ],
+  },
+
+  // Detached garage — slab-on-grade shell. (No proven garage-door line in the catalog;
+  // the estimator adds that one by hand.)
+  garage: {
+    key: "garage",
+    label: "Detached Garage",
+    blurb: "Slab-on-grade detached garage — foundation, shell, roof, siding, power.",
+    inputs: [
+      { key: "sqft", label: "Garage area (sqft)", placeholder: "480", default: 480 },
+    ],
+    lines: [
+      ...ALWAYS,
+      { desc: "Footing Material", qty: (i) => r0(perimeter(i.sqft)) },
+      { desc: "Footing Labor", qty: (i) => r0(perimeter(i.sqft)) },
+      { desc: "Slab Material", qty: (i) => slabYards(i.sqft) },
+      { desc: "Slab Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Framing Material", qty: (i) => r0(i.sqft) },
+      { desc: "Framing Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Trusses & Trim Joists", qty: (i) => r0(i.sqft) },
+      { desc: "Shingle Roofing Material", qty: (i) => roofSq(i.sqft) },
+      { desc: "Shingle Roofing Labor", qty: (i) => roofSq(i.sqft) },
+      { desc: "Siding Material", qty: (i) => wallFt(i.sqft) },
+      { desc: "Siding Labor", qty: (i) => wallFt(i.sqft) },
+      { desc: "Exterior Paint Material", qty: (i) => wallFt(i.sqft) },
+      { desc: "Exterior Paint Labor", qty: (i) => wallFt(i.sqft) },
+      { desc: "Windows ", qty: () => 2 },
+      { desc: "Exterior Doors", qty: () => 1 },
+      { desc: "Electrical Material", qty: (i) => r0(i.sqft) },
+      { desc: "Electrical Labor", qty: (i) => r0(i.sqft) },
+    ],
+  },
+
+  // Ground-level slab addition tied into an existing house. Per-bath lines resolve to 0
+  // (and drop out) when baths = 0, so the same template covers a plain bonus room.
+  "room-addition": {
+    key: "room-addition",
+    label: "Room Addition",
+    blurb: "Ground-level slab addition tied into the existing house — full envelope and finishes.",
+    inputs: [
+      { key: "floorSqft", label: "Floor area (sqft)", placeholder: "400", default: 400 },
+      { key: "baths", label: "Bathrooms", placeholder: "0", default: 0 },
+    ],
+    lines: [
+      ...ALWAYS,
+      { desc: "Footing Material", qty: (i) => r0(perimeter(i.floorSqft)) },
+      { desc: "Footing Labor", qty: (i) => r0(perimeter(i.floorSqft)) },
+      { desc: "Slab Material", qty: (i) => slabYards(i.floorSqft) },
+      { desc: "Slab Labor", qty: (i) => r0(i.floorSqft) },
+      { desc: "Framing Material", qty: (i) => r0(i.floorSqft) },
+      { desc: "Framing Labor", qty: (i) => r0(i.floorSqft) },
+      { desc: "Trusses & Trim Joists", qty: (i) => r0(i.floorSqft) },
+      { desc: "Shingle Roofing Material", qty: (i) => roofSq(i.floorSqft) },
+      { desc: "Shingle Roofing Labor", qty: (i) => roofSq(i.floorSqft) },
+      { desc: "Siding Material", qty: (i) => wallFt(i.floorSqft) },
+      { desc: "Siding Labor", qty: (i) => wallFt(i.floorSqft) },
+      { desc: "Exterior Paint Material", qty: (i) => wallFt(i.floorSqft) },
+      { desc: "Exterior Paint Labor", qty: (i) => wallFt(i.floorSqft) },
+      { desc: "Insulation Material", qty: (i) => r0(i.floorSqft) },
+      { desc: "Insulation Labor", qty: (i) => r0(i.floorSqft) },
+      { desc: "Drywall", qty: (i) => r0(i.floorSqft * 3.0) },
+      { desc: "Interior Paint Material", qty: (i) => r0(i.floorSqft) },
+      { desc: "Interior Paint Labor", qty: (i) => r0(i.floorSqft) },
+      { desc: "Interior Trim Material", qty: (i) => r0(i.floorSqft) },
+      { desc: "Interior Trim Labor", qty: (i) => r0(i.floorSqft) },
+      { desc: "Electrical Material", qty: (i) => r0(i.floorSqft) },
+      { desc: "Electrical Labor", qty: (i) => r0(i.floorSqft) },
+      { desc: "LVT Flooring - Materials", qty: (i) => r0(i.floorSqft * 0.95 - i.baths * 50) },
+      { desc: "LVT Flooring - Labor", qty: (i) => r0(i.floorSqft * 0.95 - i.baths * 50) },
+      { desc: "Interior Doors", qty: (i) => r0(1 + i.baths) },
+      { desc: "Door Hardware", qty: (i) => r0(1 + i.baths) },
+      { desc: "Windows ", qty: () => 2 },
+      { desc: "HVAC Material", qty: () => 1 },
+      { desc: "Plumbing Material & Labor", qty: (i) => r0(i.baths * 3) },
+      { desc: "Plumbing Fixtures", qty: (i) => r0(i.baths) },
+      { desc: "Shower Tile", qty: (i) => r0(i.baths * 60) },
+      { desc: "Floor Tile", qty: (i) => r0(i.baths * 50) },
+      { desc: "Floor Tile Labor", qty: (i) => r0(i.baths * 50) },
+      { desc: "Shower Door (Included Material & Labor)", qty: (i) => r0(i.baths) },
+    ],
+  },
+
+  // Tear-off and re-roof. Squares from the footprint, gutters from the perimeter.
+  reroof: {
+    key: "reroof",
+    label: "Roof Replacement",
+    blurb: "Tear-off and re-roof — shingles and gutters off proven roofing rates.",
+    inputs: [
+      { key: "sqft", label: "Roof footprint (sqft)", placeholder: "2000", default: 2000 },
+    ],
+    lines: [
+      ...ALWAYS,
+      { desc: "Shingle Roofing Material", qty: (i) => roofSq(i.sqft) },
+      { desc: "Shingle Roofing Labor", qty: (i) => roofSq(i.sqft) },
+      { desc: "Gutter Material", qty: (i) => r0(perimeter(i.sqft) * 0.8) },
+      { desc: "Gutter Labor", qty: (i) => r0(perimeter(i.sqft) * 0.8) },
+    ],
+  },
+
+  // Re-side the exterior — siding, exterior trim, repaint.
+  siding: {
+    key: "siding",
+    label: "Siding Replacement",
+    blurb: "Re-side the exterior — siding, exterior trim, and repaint.",
+    inputs: [
+      { key: "sqft", label: "Heated area (sqft)", placeholder: "2000", default: 2000 },
+    ],
+    lines: [
+      ...ALWAYS,
+      { desc: "Siding Material", qty: (i) => wallFt(i.sqft) },
+      { desc: "Siding Labor", qty: (i) => wallFt(i.sqft) },
+      { desc: "Exterior Trim Material", qty: (i) => r0(i.sqft * 0.79) },
+      { desc: "Exterior Trim Labor", qty: (i) => r0(i.sqft * 0.79) },
+      { desc: "Exterior Paint Material", qty: (i) => wallFt(i.sqft) },
+      { desc: "Exterior Paint Labor", qty: (i) => wallFt(i.sqft) },
+    ],
+  },
+
+  // Cosmetic interior refresh — repaint, new floors, trim. Light drywall for patching.
+  "interior-refresh": {
+    key: "interior-refresh",
+    label: "Interior Refresh",
+    blurb: "Repaint, new flooring, and trim across an occupied home — no structural work.",
+    inputs: [
+      { key: "sqft", label: "Floor area (sqft)", placeholder: "1500", default: 1500 },
+    ],
+    lines: [
+      ...ALWAYS,
+      { desc: "Interior Paint Material", qty: (i) => r0(i.sqft) },
+      { desc: "Interior Paint Labor", qty: (i) => r0(i.sqft) },
+      { desc: "LVT Flooring - Materials", qty: (i) => r0(i.sqft) },
+      { desc: "LVT Flooring - Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Interior Trim Material", qty: (i) => r0(i.sqft) },
+      { desc: "Interior Trim Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Drywall", qty: (i) => r0(i.sqft * 0.3) },
+    ],
+  },
+
+  // Pull-and-replace flooring — LVT throughout, optional tile areas carved out.
+  flooring: {
+    key: "flooring",
+    label: "Flooring Replacement",
+    blurb: "Pull and replace flooring — LVT throughout with optional tile areas.",
+    inputs: [
+      { key: "sqft", label: "Total floor area (sqft)", placeholder: "1200", default: 1200 },
+      { key: "tileSqft", label: "Tile area (sqft)", placeholder: "0", default: 0 },
+    ],
+    lines: [
+      ...ALWAYS,
+      { desc: "LVT Flooring - Materials", qty: (i) => r0(i.sqft - i.tileSqft) },
+      { desc: "LVT Flooring - Labor", qty: (i) => r0(i.sqft - i.tileSqft) },
+      { desc: "Floor Tile", qty: (i) => r0(i.tileSqft) },
+      { desc: "Floor Tile Labor", qty: (i) => r0(i.tileSqft) },
     ],
   },
 };
