@@ -20,6 +20,13 @@ const PUBLIC = new Set([
   // The handler does its own hardening (validation, honeypot, per-IP rate limit,
   // CORS allowlist) and is insert-only, so it's safe to run un-gated.
   "/api/estimate-requests",
+  // Self-service auth — these run before any session exists, so they must be reachable signed-out.
+  "/signup",
+  "/forgot",
+  "/reset",
+  "/api/auth/signup",
+  "/api/auth/forgot",
+  "/api/auth/reset",
 ]);
 
 export function proxy(request: NextRequest) {

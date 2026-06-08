@@ -1,10 +1,27 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { currentUser } from "@/lib/auth";
+import { dashboardForRole } from "@/lib/role-nav";
 import { stats, projectsList } from "@/lib/queries";
 import { money } from "@/lib/format";
+import CeoDashboard from "./_dashboards/CeoDashboard";
+import FieldDashboard from "./_dashboards/FieldDashboard";
+import SalesDashboard from "./_dashboards/SalesDashboard";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
+  const user = await currentUser();
+  if (!user) redirect("/login");
+
+  const dashboard = dashboardForRole(user.role);
+
+  // Role-specific dashboards
+  if (dashboard === "ceo") return <CeoDashboard />;
+  if (dashboard === "field") return <FieldDashboard userName={user.name} />;
+  if (dashboard === "sales") return <SalesDashboard />;
+
+  // Default dashboard (admin, editor, viewer, estimator, materials)
   const [s, projects] = await Promise.all([stats(), projectsList()]);
   const active = projects.filter((p) => p.status === "Active");
 

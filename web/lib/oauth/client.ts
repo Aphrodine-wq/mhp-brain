@@ -25,18 +25,27 @@ interface TokenResponse {
   scope?: string;
 }
 
-// Both Intuit and Google accept client_secret_basic (creds in the Authorization header) + a
-// form-encoded body. One code path covers both.
+// Intuit and Google accept client_secret_basic (creds in the Authorization header).
+// Microsoft requires client_secret_post (creds in the body). Handle both.
 async function tokenRequest(provider: ProviderId, body: Record<string, string>): Promise<TokenResponse> {
   const cfg = providerConfig(provider);
-  const basic = Buffer.from(`${cfg.clientId}:${cfg.clientSecret}`).toString("base64");
+  const headers: Record<string, string> = {
+    "Content-Type": "application/x-www-form-urlencoded",
+    Accept: "application/json",
+  };
+
+  // Microsoft's v2.0 token endpoint requires client_id + client_secret in the POST body,
+  // not in the Authorization header. QB and Google accept basic auth.
+  if (provider === "microsoft") {
+    body.client_id = cfg.clientId;
+    body.client_secret = cfg.clientSecret;
+  } else {
+    headers.Authorization = `Basic ${Buffer.from(`${cfg.clientId}:${cfg.clientSecret}`).toString("base64")}`;
+  }
+
   const res = await fetch(cfg.tokenUrl, {
     method: "POST",
-    headers: {
-      Authorization: `Basic ${basic}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-      Accept: "application/json",
-    },
+    headers,
     body: new URLSearchParams(body).toString(),
   });
   if (!res.ok) throw new Error(`${provider} token endpoint ${res.status}: ${await res.text()}`);

@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
-import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
+import { cache } from "react";
+import { createHash, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import { db } from "@/lib/db";
 import { SESSION_COOKIE } from "@/lib/auth-constants";
@@ -10,11 +11,13 @@ import { SESSION_COOKIE } from "@/lib/auth-constants";
 
 export { SESSION_COOKIE };
 
+export type Role = "admin" | "ceo" | "field" | "estimator" | "sales" | "materials" | "editor" | "viewer";
+
 export interface SessionUser {
   id: number;
   name: string;
   email: string;
-  role: "admin" | "editor" | "viewer";
+  role: Role;
   scope: string | null;
 }
 
@@ -24,9 +27,21 @@ const SALT_BYTES = 16;
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12h
 const MAX_FAILS = 5; // > 5 failed logins / email / 15 min -> 429
 const FAIL_WINDOW = "15 minutes";
+const RESET_TTL_MS = 60 * 60 * 1000; // password-reset token lifetime: 1h
 
 // Role hierarchy: a higher rank satisfies every gate at or below it.
-const RANK: Record<SessionUser["role"], number> = { viewer: 0, editor: 1, admin: 2 };
+// Functional roles (ceo, field, estimator, sales, materials) are all at editor-level for writes.
+// Admin is above everything. Viewer is read-only.
+const RANK: Record<Role, number> = {
+  viewer: 0,
+  materials: 1,
+  sales: 1,
+  field: 1,
+  estimator: 1,
+  editor: 1,  // legacy — maps to generic editor
+  ceo: 2,     // CEO can see and do everything except system config
+  admin: 3,
+};
 
 // --- password hashing (scrypt) ----------------------------------------------------------------
 
@@ -93,7 +108,10 @@ export async function tooManyAttempts(email: string): Promise<boolean> {
 
 // The single identity source: the sid cookie -> a live session -> the active user. Read-only, safe
 // to call from any server component / route handler (incl. the root layout).
-export async function currentUser(): Promise<SessionUser | null> {
+//
+// Wrapped in React.cache so the (cookie-stable) lookup runs ONCE per request even though the root
+// layout and the page both call it — one DB round-trip per navigation instead of two.
+export const currentUser = cache(async (): Promise<SessionUser | null> => {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!token) return null;
   const row = (
@@ -112,7 +130,7 @@ export async function currentUser(): Promise<SessionUser | null> {
     role: row.role as SessionUser["role"],
     scope: row.scope === null ? null : String(row.scope),
   };
-}
+});
 
 // Authenticated-only gate (any role). Returns the user or null; the caller answers 401. Completes
 // the require* family — read routes use this, write routes use requireRole, oauth uses requireAdmin.
@@ -130,4 +148,98 @@ export async function requireRole(min: SessionUser["role"]): Promise<SessionUser
 // Connecting QuickBooks or Gmail mints a months-long key to the company's books/mailbox — admin only.
 export async function requireAdmin(): Promise<SessionUser | null> {
   return requireRole("admin");
+}
+
+// --- self-registration -------------------------------------------------------------------------
+
+// Create a self-registered account. New sign-ups land as active=0 ("pending admin approval") with
+// the lowest role — they can't sign in (every login + OAuth path filters active=1) until an admin
+// activates them. Idempotent on email: an existing address is left untouched and we report false,
+// so the route can answer with the SAME generic message either way (no account enumeration).
+export async function createPendingUser(name: string, email: string, password: string): Promise<boolean> {
+  const { hash, salt } = await hashPassword(password);
+  const res = await db.execute({
+    sql: `INSERT INTO users (name, email, role, pass_hash, salt, scope, active)
+            VALUES (?, ?, 'viewer', ?, ?, NULL, 0)
+          ON CONFLICT (email) DO NOTHING
+          RETURNING id`,
+    args: [name, email, hash, salt],
+  });
+  return res.rows.length > 0;
+}
+
+// --- password reset ----------------------------------------------------------------------------
+
+// Tokens are random and handed out raw (in the emailed link); only their SHA-256 hash is stored, so
+// a DB read can't be replayed to reset an account. Lower-cased hex keeps lookups deterministic.
+function hashToken(raw: string): string {
+  return createHash("sha256").update(raw).digest("hex");
+}
+
+// Look up an ACTIVE user by email (reset is for people who can actually sign in). Returns id or null.
+export async function activeUserIdByEmail(email: string): Promise<number | null> {
+  const row = (
+    await db.execute({ sql: `SELECT id FROM users WHERE email = ? AND active = 1`, args: [email] })
+  ).rows[0];
+  return row ? Number(row.id) : null;
+}
+
+// Mint a single-use reset token for a user and return the RAW token (goes in the link, never stored).
+// Any older tokens for that user are dropped first so only the newest link works.
+export async function createPasswordReset(userId: number): Promise<string> {
+  const raw = randomBytes(32).toString("base64url");
+  const expiresAt = new Date(Date.now() + RESET_TTL_MS).toISOString();
+  await db.execute({ sql: `DELETE FROM password_resets WHERE user_id = ?`, args: [userId] });
+  await db.execute({
+    sql: `INSERT INTO password_resets (token_hash, user_id, expires_at) VALUES (?, ?, ?)`,
+    args: [hashToken(raw), userId, expiresAt],
+  });
+  return raw;
+}
+
+// Validate a raw reset token WITHOUT consuming it (drives the reset page's "is this link still good?"
+// check). Returns the user id, or null if unknown/expired/already used.
+export async function checkPasswordReset(raw: string): Promise<number | null> {
+  if (!raw) return null;
+  const row = (
+    await db.execute({
+      sql: `SELECT user_id FROM password_resets
+             WHERE token_hash = ? AND used = 0 AND expires_at::timestamptz > now()`,
+      args: [hashToken(raw)],
+    })
+  ).rows[0];
+  return row ? Number(row.user_id) : null;
+}
+
+// Consume a reset token + set the new password atomically: mark the token used, rotate the password
+// hash, and kill every existing session for that user (so a leaked old cookie dies on reset). All
+// or nothing — a failure rolls the whole thing back. Returns true on success, false if the token is
+// no longer valid (unknown/expired/used), which the route surfaces as an expired-link message.
+export async function resetPasswordWithToken(raw: string, newPassword: string): Promise<boolean> {
+  if (!raw) return false;
+  const { hash, salt } = await hashPassword(newPassword);
+  const tx = await db.transaction("write");
+  try {
+    const claimed = await tx.execute({
+      sql: `UPDATE password_resets SET used = 1
+             WHERE token_hash = ? AND used = 0 AND expires_at::timestamptz > now()
+           RETURNING user_id`,
+      args: [hashToken(raw)],
+    });
+    const userId = claimed.rows[0]?.user_id;
+    if (userId == null) {
+      await tx.rollback();
+      return false;
+    }
+    await tx.execute({
+      sql: `UPDATE users SET pass_hash = ?, salt = ? WHERE id = ?`,
+      args: [hash, salt, Number(userId)],
+    });
+    await tx.execute({ sql: `DELETE FROM sessions WHERE user_id = ?`, args: [Number(userId)] });
+    await tx.commit();
+    return true;
+  } catch (e) {
+    await tx.rollback();
+    throw e;
+  }
 }

@@ -8,7 +8,7 @@ import { requireAdmin } from "@/lib/auth";
 //   quickbooks -> realmId comes back on the callback.
 //   gmail      -> pass ?account=<dedicated box address>; we carry it across the round-trip.
 
-const PROVIDERS = new Set<ProviderId>(["quickbooks", "gmail"]);
+const PROVIDERS = new Set<ProviderId>(["quickbooks", "gmail", "microsoft"]);
 const STATE_TTL = 600; // seconds — the consent screen round-trip is short-lived
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ provider: string }> }) {
@@ -36,6 +36,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ prov
       return NextResponse.json({ error: "gmail requires ?account=<box address>" }, { status: 400 });
     }
     jar.set("oauth_account_gmail", account, cookieOpts);
+  }
+
+  // Microsoft: account is the tenant ID (or "common" if multi-tenant). We carry it through via cookie
+  // so the callback can persist the connection keyed on the tenant.
+  if (provider === "microsoft") {
+    const tenant = process.env.MS_TENANT_ID ?? "common";
+    jar.set("oauth_account_microsoft", tenant, cookieOpts);
   }
 
   return NextResponse.redirect(getAuthorizeUrl(provider as ProviderId, state));
