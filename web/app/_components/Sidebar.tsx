@@ -8,6 +8,7 @@ type NavItem = { href: string; label: string; icon: React.ReactNode };
 
 const NAV: NavItem[] = [
   { href: "/", label: "Home", icon: (<><path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" /></>) },
+  { href: "/requests", label: "Requests", icon: (<><path d="M4 4h16v12H7l-3 3z" /><path d="M8 9h8M8 12h5" /></>) },
   { href: "/estimate-builder", label: "Estimate Builder", icon: (<><rect x="6" y="3" width="12" height="18" rx="2" /><path d="M9 7h6M9 11h6M9 15h6" /></>) },
   { href: "/estimates", label: "Estimates", icon: (<><path d="M6 2h9l5 5v15H6z" /><path d="M14 2v6h6" /><path d="M9 13h6M9 17h6" /></>) },
   { href: "/projects", label: "Projects", icon: (<path d="M3 7h6l2 2h10v11H3z" />) },

@@ -40,9 +40,17 @@ interface SeedResult {
 const PLACEHOLDER =
   "e.g. Gut and remodel a 300 sqft kitchen in Oxford. Demo existing, new framing, drywall, 70 linear feet of custom cabinets, quartz countertops, LVT flooring, repaint, new electrical and plumbing fixtures, tile backsplash.";
 
-export default function Estimator({ catalog }: { catalog: CatalogRow[] }) {
+export default function Estimator({
+  catalog,
+  initialDesc = "",
+  initialClientName = "",
+}: {
+  catalog: CatalogRow[];
+  initialDesc?: string;
+  initialClientName?: string;
+}) {
   const [view, setView] = useState<"input" | "load" | "result" | "packet">("input");
-  const [client, setClient] = useState<ClientInfo>({ project: "", clientName: "", address: "", date: "", preparedBy: "MHP Construction" });
+  const [client, setClient] = useState<ClientInfo>({ project: "", clientName: initialClientName, address: "", date: "", preparedBy: "MHP Construction" });
   const setC = (k: keyof ClientInfo, v: string) => setClient((c) => ({ ...c, [k]: v }));
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
@@ -67,7 +75,7 @@ export default function Estimator({ catalog }: { catalog: CatalogRow[] }) {
       setSaveState("error");
     }
   }
-  const [desc, setDesc] = useState("");
+  const [desc, setDesc] = useState(initialDesc);
   const [files, setFiles] = useState<FileList | null>(null);
   const [lines, setLines] = useState<Line[]>([]);
   const [notes, setNotes] = useState<string[]>([]);
