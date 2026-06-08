@@ -53,6 +53,7 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
   ],
   sales: [
     { href: "/", label: "Pipeline", icon: i("pipeline") },
+    { href: "/requests", label: "Requests", icon: i("requests") },
     { href: "/projects", label: "Projects", icon: i("projects") },
     { href: "/estimates", label: "Estimates", icon: i("estimates") },
     { href: "/field", label: "Log a Call", icon: i("field") },
