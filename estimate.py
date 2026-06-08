@@ -54,8 +54,12 @@ def price_scope(unit, lump, scope, markup=DEFAULT_MARKUP):
     for s in scope:
         cd = canon(s["description"])
         qty = s.get("qty", 1)
-        if cd in unit:
-            h = unit[cd]
+        u, lp = unit.get(cd), lump.get(cd)
+        # When an item exists as both a unit rate and a whole-job lump, trust the
+        # better-backed one (more jobs). Without this, a $175 per-each "plumbing
+        # fixtures" allowance beats the 62-job $2,350 whole-house lump.
+        if u is not None and (lp is None or u["jobs"] >= lp["jobs"]):
+            h = u
             item_total = round(h["median"] * qty, 2)
             lines.append({"kind": "unit", "item_no": h["item_no"], "division": h["division"],
                           "description": s["description"], "unit": h["unit"], "qty": qty,
@@ -63,8 +67,8 @@ def price_scope(unit, lump, scope, markup=DEFAULT_MARKUP):
                           "sov_total": round(item_total * markup, 2), "jobs": h["jobs"],
                           "p25": h["p25"], "p75": h["p75"],
                           "contingency": contingency(h["p25"], h["p75"], h["median"])})
-        elif cd in lump:
-            h = lump[cd]
+        elif lp is not None:
+            h = lp
             item_total = round(h["median"] * qty, 2)
             lines.append({"kind": "lump", "item_no": h["item_no"], "division": h["division"],
                           "description": s["description"], "unit": "lump", "qty": qty,
