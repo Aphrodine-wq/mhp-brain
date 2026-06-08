@@ -16,6 +16,10 @@ const PUBLIC = new Set([
   "/api/dev-login",
   "/api/auth/google/start",
   "/api/auth/google/callback",
+  // Public homeowner intake from the marketing site — submitters have no session.
+  // The handler does its own hardening (validation, honeypot, per-IP rate limit,
+  // CORS allowlist) and is insert-only, so it's safe to run un-gated.
+  "/api/estimate-requests",
 ]);
 
 export function proxy(request: NextRequest) {
