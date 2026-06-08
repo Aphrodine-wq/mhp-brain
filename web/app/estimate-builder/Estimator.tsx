@@ -44,6 +44,29 @@ export default function Estimator({ catalog }: { catalog: CatalogRow[] }) {
   const [view, setView] = useState<"input" | "load" | "result" | "packet">("input");
   const [client, setClient] = useState<ClientInfo>({ project: "", clientName: "", address: "", date: "", preparedBy: "MHP Construction" });
   const setC = (k: keyof ClientInfo, v: string) => setClient((c) => ({ ...c, [k]: v }));
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  async function saveProject() {
+    setSaveState("saving");
+    try {
+      const r = await fetch("/api/estimates/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          project: client.project,
+          clientName: client.clientName,
+          address: client.address,
+          estDate: client.date,
+          markup,
+          total: lines.reduce((s, l) => s + (parseFloat(l.qty) || 0) * (parseFloat(l.rate) || 0), 0) * (1 + (markup || 0) / 100),
+          lines: lines.map((l) => ({ description: l.description, qty: l.qty, rate: l.rate, division: l.division, item_no: l.item_no, unit: l.unit })),
+        }),
+      });
+      setSaveState(r.ok ? "saved" : "error");
+    } catch {
+      setSaveState("error");
+    }
+  }
   const [desc, setDesc] = useState("");
   const [files, setFiles] = useState<FileList | null>(null);
   const [lines, setLines] = useState<Line[]>([]);
@@ -257,6 +280,9 @@ export default function Estimator({ catalog }: { catalog: CatalogRow[] }) {
         <div>
           <button className="btn ghost" onClick={() => setView("input")}>← New</button>{" "}
           <button className="btn ghost" onClick={exportx}>Export to Excel</button>{" "}
+          <button className="btn ghost" onClick={saveProject} disabled={saveState === "saving"}>
+            {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved ✓" : saveState === "error" ? "Retry save" : "Save as Project"}
+          </button>{" "}
           <button className="btn" onClick={() => setView("packet")}>Client Packet →</button>
         </div>
       </div>
