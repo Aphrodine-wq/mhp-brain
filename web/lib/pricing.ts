@@ -31,7 +31,11 @@ export async function buildLines(
   for (const desc of descriptions) {
     const cd = canon(desc);
     const u = unit.get(cd);
-    if (u) {
+    const l = lump.get(cd);
+    // When an item exists as both a unit rate and a whole-job lump, trust the
+    // better-backed one (more jobs) — mirrors estimate.price_scope. Without this a
+    // $175 per-each "plumbing fixtures" allowance beats the 62-job $2,350 lump.
+    if (u && (!l || u.jobs >= l.jobs)) {
       // Python: h.get("unit", "lump") returns the stored unit (which may be null) — only
       // defaults to "lump" on a MISSING key, not a null value. Keep null as null.
       const uu = u.unit;
@@ -50,7 +54,6 @@ export async function buildLines(
       });
       continue;
     }
-    const l = lump.get(cd);
     if (l) {
       out.push({
         description: desc,
