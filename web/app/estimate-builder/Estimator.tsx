@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import type { CatalogRow } from "@/lib/queries";
 import { money } from "@/lib/format";
+import { ASSEMBLY_LIST } from "@/lib/assemblies";
 
 interface Line {
   key: number;
@@ -18,6 +19,20 @@ interface Line {
   rate: string;
 }
 
+// a line as returned by /api/estimate (qty/rate may be null)
+interface SeedResult {
+  description: string;
+  unit: string | null;
+  division: string;
+  item_no: string;
+  jobs: number;
+  p25: number | null;
+  p75: number | null;
+  kind: string;
+  qty: number | null;
+  rate: number | null;
+}
+
 const PLACEHOLDER =
   "e.g. Gut and remodel a 300 sqft kitchen in Oxford. Demo existing, new framing, drywall, 70 linear feet of custom cabinets, quartz countertops, LVT flooring, repaint, new electrical and plumbing fixtures, tile backsplash.";
 
@@ -29,8 +44,50 @@ export default function Estimator({ catalog }: { catalog: CatalogRow[] }) {
   const [notes, setNotes] = useState<string[]>([]);
   const [markup, setMarkup] = useState(18);
   const [pick, setPick] = useState(0);
+  const [asmKey, setAsmKey] = useState<string>("");
+  const [asmInputs, setAsmInputs] = useState<Record<string, number>>({});
   const keyRef = useRef(0);
   const nextKey = () => ++keyRef.current;
+
+  const selectAssembly = (key: string) => {
+    setAsmKey(key);
+    const a = ASSEMBLY_LIST.find((x) => x.key === key);
+    setAsmInputs(Object.fromEntries((a?.inputs ?? []).map((d) => [d.key, d.default ?? 0])));
+  };
+
+  // shared: populate the editable table from an /api/estimate response
+  function applyResult(d: { lines: SeedResult[]; notes: string[]; markup: number }) {
+    setMarkup(d.markup);
+    setNotes(d.notes);
+    const sorted = [...d.lines].sort((a, b) => (a.division || "").localeCompare(b.division || ""));
+    setLines(
+      sorted.map((l) => ({
+        key: nextKey(),
+        description: l.description,
+        unit: l.unit,
+        division: l.division,
+        item_no: l.item_no,
+        jobs: l.jobs,
+        p25: l.p25,
+        p75: l.p75,
+        kind: l.kind,
+        qty: l.qty == null ? "" : String(l.qty),
+        rate: l.rate == null ? "" : String(l.rate),
+      })),
+    );
+    setView("result");
+  }
+
+  async function buildAssembly() {
+    if (!asmKey) return;
+    setView("load");
+    const r = await fetch("/api/estimate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ assembly: asmKey, inputs: asmInputs }),
+    });
+    applyResult(await r.json());
+  }
 
   async function readFiles() {
     const docs: { name: string; text?: string }[] = [];
@@ -51,26 +108,7 @@ export default function Estimator({ catalog }: { catalog: CatalogRow[] }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ description: desc, docs }),
     });
-    const d = await r.json();
-    setMarkup(d.markup);
-    setNotes(d.notes);
-    const sorted = [...d.lines].sort((a, b) => (a.division || "").localeCompare(b.division || ""));
-    setLines(
-      sorted.map((l) => ({
-        key: nextKey(),
-        description: l.description,
-        unit: l.unit,
-        division: l.division,
-        item_no: l.item_no,
-        jobs: l.jobs,
-        p25: l.p25,
-        p75: l.p75,
-        kind: l.kind,
-        qty: l.qty == null ? "" : String(l.qty),
-        rate: l.rate == null ? "" : String(l.rate),
-      })),
-    );
-    setView("result");
+    applyResult(await r.json());
   }
 
   const update = (key: number, field: "qty" | "rate", value: string) =>
@@ -124,8 +162,45 @@ export default function Estimator({ catalog }: { catalog: CatalogRow[] }) {
   }
 
   if (view === "input") {
+    const asm = ASSEMBLY_LIST.find((a) => a.key === asmKey);
     return (
       <section className="view">
+        <h2>Quick start — pick a job type</h2>
+        <div className="sub">
+          Pick a template and enter a couple dimensions — we build the full scope with quantities derived
+          from MHP&apos;s job history. Or describe it free-form below.
+        </div>
+        <div className="asm-grid">
+          {ASSEMBLY_LIST.map((a) => (
+            <button
+              key={a.key}
+              className={`asm-card${asmKey === a.key ? " active" : ""}`}
+              onClick={() => selectAssembly(a.key)}
+            >
+              <b>{a.label}</b>
+              <span>{a.blurb}</span>
+            </button>
+          ))}
+        </div>
+        {asm && (
+          <div className="asm-inputs">
+            {asm.inputs.map((d) => (
+              <label key={d.key}>
+                {d.label}
+                <input
+                  type="number"
+                  value={asmInputs[d.key] ?? ""}
+                  placeholder={d.placeholder}
+                  onChange={(e) => setAsmInputs((s) => ({ ...s, [d.key]: Number(e.target.value) }))}
+                />
+              </label>
+            ))}
+            <button className="btn" onClick={buildAssembly}>Build from template →</button>
+          </div>
+        )}
+
+        <div className="or-sep"><span>or describe it</span></div>
+
         <h2>Describe the job</h2>
         <div className="sub">
           Type everything you know — scope, rooms, square footage, finishes. The more detail, the better the

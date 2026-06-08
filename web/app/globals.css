@@ -34,6 +34,24 @@ textarea:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
   padding:9px 16px;margin-right:12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--paper);
   color:var(--navy);cursor:pointer;transition:border-color var(--t),background var(--t)}
 .upload input[type=file]::file-selector-button:hover{border-color:var(--navy);background:#fff}
+/* assembly quick-start picker */
+.asm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:16px}
+.asm-card{display:flex;flex-direction:column;gap:4px;text-align:left;padding:14px 16px;
+  border:1px solid var(--line);border-radius:var(--r);background:var(--card);cursor:pointer;
+  font-family:var(--sans);transition:border-color var(--t),box-shadow var(--t),background var(--t)}
+.asm-card:hover{border-color:var(--navy);box-shadow:var(--shadow-sm)}
+.asm-card.active{border-color:var(--navy);box-shadow:var(--ring);background:var(--paper)}
+.asm-card b{font-size:14px;color:var(--ink)}
+.asm-card span{font-size:12px;color:var(--muted);line-height:1.35}
+.asm-inputs{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-top:16px;padding:16px 20px;
+  border:1px solid var(--line);border-radius:var(--r);background:var(--paper)}
+.asm-inputs label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--ink)}
+.asm-inputs input{width:120px;padding:9px 12px;border:1px solid var(--line);border-radius:var(--r-sm);
+  font-family:var(--sans);font-size:14px;background:#fff}
+.asm-inputs input:focus-visible{outline:none;box-shadow:var(--ring);border-color:var(--navy)}
+.or-sep{display:flex;align-items:center;gap:12px;margin:24px 0 4px;color:var(--muted);font-size:12px;
+  text-transform:uppercase;letter-spacing:.6px}
+.or-sep::before,.or-sep::after{content:'';flex:1;height:1px;background:var(--line)}
 /* buttons: refined from chunky to crisp — subtle elevation, press feedback, one focus ring */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1;
   background:var(--navy);color:#fff;border:0;padding:11px 20px;font-size:14px;font-weight:600;

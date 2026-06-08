@@ -17,9 +17,15 @@ export interface SeedLine {
   kind: string;
 }
 
-export async function buildLines(descriptions: string[], detected: Detected): Promise<SeedLine[]> {
+export async function buildLines(
+  descriptions: string[],
+  detected: Detected,
+  qtyByCanon?: Map<string, number>,
+): Promise<SeedLine[]> {
   const { unit, lump } = await loadCatalog();
   const out: SeedLine[] = [];
+  // assembly-driven qty (explicit per line) wins over the single-dimension guess
+  const seeded = (cd: string, fallback: number | null) => qtyByCanon?.get(cd) ?? fallback;
   for (const desc of descriptions) {
     const cd = canon(desc);
     const u = unit.get(cd);
@@ -29,7 +35,7 @@ export async function buildLines(descriptions: string[], detected: Detected): Pr
       const uu = u.unit;
       out.push({
         description: desc,
-        qty: qtyFor(uu, desc, detected),
+        qty: seeded(cd, qtyFor(uu, desc, detected)),
         rate: u.median,
         unit: uu,
         division: u.division ?? "",
@@ -45,7 +51,7 @@ export async function buildLines(descriptions: string[], detected: Detected): Pr
     if (l) {
       out.push({
         description: desc,
-        qty: qtyFor("lump", desc, detected),
+        qty: seeded(cd, qtyFor("lump", desc, detected)),
         rate: l.median,
         unit: "lump",
         division: l.division ?? "",
