@@ -70,9 +70,28 @@ def cols(con, table):
     return [r[1] for r in con.execute(f"PRAGMA table_info({table})")]
 
 
-def write_sheet(ws, con, table):
+# Rows that must never reach a consumer (catalog already excludes them; this keeps
+# the flat exports honest too). SUBTOTAL = a roll-up row normalize labeled but that
+# isn't a real line item — leaving it in line_items.csv double-counts every bid and
+# was the parse bug that read Utilities as half of MHP's spend. COALESCE so rows not
+# yet normalized (NULL price_kind) are never dropped by accident.
+ROW_FILTER = {
+    "line_items": "COALESCE(price_kind,'') != 'SUBTOTAL'",
+}
+
+
+def select(con, table):
     columns = cols(con, table)
-    rows = con.execute(f"SELECT {', '.join(columns)} FROM {table}").fetchall()
+    where = ROW_FILTER.get(table)
+    sql = f"SELECT {', '.join(columns)} FROM {table}"
+    if where:
+        sql += f" WHERE {where}"
+    return columns, sql
+
+
+def write_sheet(ws, con, table):
+    columns, sql = select(con, table)
+    rows = con.execute(sql).fetchall()
     money = MONEY.get(table, set())
 
     # header
@@ -164,11 +183,11 @@ def main():
 
     # --- per-table CSVs ---
     for table, _ in TABLES:
-        columns = cols(con, table)
+        columns, sql = select(con, table)
         with open(OUT / "csv" / f"{table}.csv", "w", newline="") as f:
             w = csv.writer(f)
             w.writerow(columns)
-            w.writerows(con.execute(f"SELECT {', '.join(columns)} FROM {table}"))
+            w.writerows(con.execute(sql))
 
     # --- bundle reports ---
     copied = []

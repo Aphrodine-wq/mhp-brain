@@ -7,3 +7,7 @@ mhp.db.bak-*
 
 # client-financials data dump — kept local, regenerated from source (not in git history)
 export/
+
+# QuickBooks tokens + key — NEVER commit
+.qb_tokens.enc
+.qb_key

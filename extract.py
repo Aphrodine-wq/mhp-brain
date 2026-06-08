@@ -26,8 +26,12 @@ def norm(v) -> str:
     return re.sub(r"\s+", " ", str(v)).strip().lower() if v is not None else ""
 
 
-# Aggregate roll-up rows that ride along in the template but are NOT line items.
-AGGREGATE_ROWS = {"all subtotals", "subtotal", "subtotals", "grand total"}
+# Aggregate roll-up rows that ride along in the template but are NOT line items —
+# they equal Σ of the real lines, so ingesting one double-counts the whole bid.
+# Kept in lockstep with normalize.SUBTOTAL_DESCS (the second line of defense that
+# labels any that slip past this exact-match drop). "total" is included here too so
+# a bare grand-total row can't reach the db in the first place.
+AGGREGATE_ROWS = {"all subtotals", "subtotal", "subtotals", "grand total", "total"}
 
 
 def num(v):

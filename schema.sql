@@ -45,3 +45,23 @@ CREATE TABLE IF NOT EXISTS actuals (
     source_file   TEXT,
     closing_total REAL
 );
+
+-- Transaction-level actuals from QuickBooks (per QB_JOBCOST_SPEC.md). The `actuals`
+-- table above keeps closeout *totals*; this keeps the line-level feed with full
+-- provenance back to a QB transaction, so every per-job P&L number is traceable.
+-- Populated read-only by qb_connect.py once QuickBooks is connected.
+CREATE TABLE IF NOT EXISTS actuals_txn (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id  TEXT REFERENCES projects(id),
+    qb_txn_id   TEXT NOT NULL,          -- provenance anchor (the QB transaction id)
+    qb_type     TEXT,                   -- Bill / Invoice / Payment / TimeActivity
+    kind        TEXT,                   -- cost | revenue | labor
+    division    TEXT,                   -- mapped to CSI where known
+    amount      REAL,
+    txn_date    TEXT,
+    tagged      INTEGER,                -- 1 = QB-tagged to Customer:Job, 0 = matcher-assigned
+    match_conf  TEXT,                   -- exact / high / review / untagged
+    pulled_at   TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_actuals_txn_project ON actuals_txn(project_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_actuals_txn_qb ON actuals_txn(qb_txn_id, kind);
