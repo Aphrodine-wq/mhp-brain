@@ -39,7 +39,9 @@ SCOPES = "com.intuit.quickbooks.accounting"
 # Intuit endpoints
 AUTH_URL = "https://appcenter.intuit.com/connect/oauth2"
 TOKEN_URL = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
-API_BASE = "https://quickbooks.api.intuit.com/v3/company"
+QB_ENV = os.environ.get("QB_ENV", "production")
+API_BASE = ("https://quickbooks.api.intuit.com/v3/company" if QB_ENV == "production"
+            else "https://sandbox-quickbooks.api.intuit.com/v3/company")
 MINOR_VERSION = 73  # latest stable
 
 # ---------------------------------------------------------------------------
@@ -73,6 +75,17 @@ def load_tokens():
         print(f"ERROR: No tokens found ({TOKEN_FILE.name}). Run: python qb_export.py auth")
         sys.exit(1)
     return json.loads(TOKEN_FILE.read_text())
+
+
+def connected_tokens():
+    """Single source of truth for the QB connection: reuse qb_connect's ENCRYPTED token store
+    (.qb_tokens.enc), which already handles the QuotaGuard static-IP proxy, Intuit discovery
+    endpoints, the production HTTPS redirect, and invalid_grant -> reconnect. qb_export is a pure
+    puller now — connect once via `qb_connect.py --auth-url` / `--callback`. The legacy plaintext
+    .qb_tokens.json + localhost flow below is retired (localhost is invalid for production anyway)."""
+    import qb_connect
+    access_token, realm_id = qb_connect.refresh()  # refreshes through the proxy, raises/exits on invalid_grant
+    return {"access_token": access_token, "realm_id": realm_id}
 
 
 def refresh_if_needed(tokens, cid, secret):
@@ -297,9 +310,7 @@ REPORTS = [
 
 
 def do_pull(full=False):
-    cid, secret = get_creds()
-    tokens = load_tokens()
-    tokens = refresh_if_needed(tokens, cid, secret)
+    tokens = connected_tokens()  # qb_connect's encrypted store + proxy + discovery + prod redirect
 
     DATA_DIR.mkdir(exist_ok=True)
 
@@ -438,7 +449,13 @@ def main():
     cmd = sys.argv[1].lower()
 
     if cmd == "auth":
-        do_auth()
+        # Retired: the localhost OAuth flow is invalid for production. Connect via the single
+        # production-ready connector instead; qb_export reads its encrypted token store.
+        print("qb_export 'auth' is retired (localhost is invalid for production).\n"
+              "Connect once with the shared connector:\n"
+              "  ./qb.sh qb_connect.py --auth-url     (then --callback)\n"
+              "Then: ./qb.sh qb_export.py pull")
+        sys.exit(1)
     elif cmd == "pull":
         full = "--full" in sys.argv
         do_pull(full=full)
