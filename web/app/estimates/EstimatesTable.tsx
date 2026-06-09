@@ -56,13 +56,23 @@ export default function EstimatesTable({ estimates }: { estimates: EstimateRow[]
                   <td>{e.project}</td>
                   <td>{e.date || "—"}</td>
                   <td>
-                    <small
-                      className="j"
-                      title={e.source}
-                      style={{ display: "inline-block", maxWidth: 240, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", verticalAlign: "bottom" }}
-                    >
-                      {e.source || "—"}
-                    </small>
+                    {e.hasDoc ? (
+                      <a
+                        href={`/api/estimates/${e.id}/document`}
+                        title={`Download original: ${e.source}`}
+                        style={{ display: "inline-block", maxWidth: 240, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", verticalAlign: "bottom" }}
+                      >
+                        {e.source || "Document"} ↓
+                      </a>
+                    ) : (
+                      <small
+                        className="j"
+                        title={e.source}
+                        style={{ display: "inline-block", maxWidth: 240, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", verticalAlign: "bottom" }}
+                      >
+                        {e.source || "—"}
+                      </small>
+                    )}
                   </td>
                   <td className="n">{e.lineItems}</td>
                   <td className="n">{e.total ? money(e.total) : "—"}</td>

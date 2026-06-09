@@ -514,6 +514,7 @@ export interface EstimateRow {
   lineItems: number;
   total: number;
   confidence: string;
+  hasDoc: boolean; // true if the original .xlsx is stored; the URL stays server-side (gated download)
 }
 
 // Every parsed estimate on file, newest first — the index behind the Estimates tab.
@@ -523,7 +524,8 @@ export async function estimatesList(): Promise<EstimateRow[]> {
     rows = (
       await db.execute(`
         SELECT e.id, e.project_id, e.source_file, e.line_item_count,
-               e.sum_sov_total, e.sum_item_total, e.stated_total, e.parse_confidence, e.est_date, p.name
+               e.sum_sov_total, e.sum_item_total, e.stated_total, e.parse_confidence, e.est_date,
+               e.source_url, p.name
         FROM estimates e JOIN projects p ON p.id = e.project_id
         WHERE e.parse_confidence != 'FAILED'
         ORDER BY e.est_date DESC NULLS LAST, p.name`)
@@ -548,6 +550,8 @@ export async function estimatesList(): Promise<EstimateRow[]> {
       lineItems: Number(r.line_item_count ?? 0),
       total: pyRound(total ?? 0),
       confidence: (r.parse_confidence as string | null) ?? "",
+      hasDoc: Boolean(r.source_url), // raw blob URL never leaves the server
+
     };
   });
 }
