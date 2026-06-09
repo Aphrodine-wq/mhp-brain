@@ -150,10 +150,12 @@ async function tokenRequest(provider: ProviderId, body: Record<string, string>):
   const res = await fetchWithRetry(tokenUrl, init);
   if (!res.ok) {
     const text = await res.text();
+    // Capture Intuit's per-request trace id — it's what their support team asks for to find the call.
+    const tid = res.headers.get("intuit_tid") ?? "n/a";
     // invalid_grant = the refresh token is expired/revoked (or the auth code was bad/replayed).
     // No retry recovers this — surface it as a reconnect, not a generic failure.
     if (res.status === 400 && /invalid_grant/i.test(text)) throw new ReconnectRequiredError(provider);
-    throw new Error(`${provider} token endpoint ${res.status}: ${text}`);
+    throw new Error(`${provider} token endpoint ${res.status} (intuit_tid=${tid}): ${text}`);
   }
   return (await res.json()) as TokenResponse;
 }
@@ -249,7 +251,10 @@ async function revokeToken(provider: ProviderId, token: string): Promise<void> {
     const dispatcher = qbDispatcher("quickbooks");
     if (dispatcher) init.dispatcher = dispatcher;
     const res = await fetchWithRetry((await intuitEndpoints()).revoke, init);
-    if (!res.ok) throw new Error(`quickbooks revoke ${res.status}: ${await res.text()}`);
+    if (!res.ok) {
+      const tid = res.headers.get("intuit_tid") ?? "n/a";
+      throw new Error(`quickbooks revoke ${res.status} (intuit_tid=${tid}): ${await res.text()}`);
+    }
   } else if (provider === "gmail") {
     const res = await fetch(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(token)}`, {
       method: "POST",

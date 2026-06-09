@@ -209,11 +209,14 @@ def qb_get(tokens, endpoint, params=None):
         "Accept": "application/json",
     })
 
+    # intuit_tid is Intuit's per-request trace id — capture it so any error we log carries the id
+    # their support team needs to find the call on their side.
+    tid = resp.headers.get("intuit_tid", "n/a")
     if resp.status_code == 401:
-        print(f"  401 on {endpoint} — token may have expired mid-pull. Re-run with: python qb_export.py pull")
+        print(f"  401 on {endpoint} (intuit_tid={tid}) — token may have expired mid-pull. Re-run with: python qb_export.py pull")
         sys.exit(1)
     if resp.status_code != 200:
-        print(f"  WARNING: {endpoint} returned {resp.status_code}: {resp.text[:200]}")
+        print(f"  WARNING: {endpoint} returned {resp.status_code} (intuit_tid={tid}): {resp.text[:200]}")
         return None
 
     return resp.json()

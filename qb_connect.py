@@ -136,12 +136,13 @@ def refresh():
         # invalid_grant = the refresh token is expired/revoked (100-day life, or disconnected in QB).
         # No retry recovers it — clear the dead token file and tell James to reconnect, rather than
         # crashing with a stack trace or looping on a key that will never work again.
+        tid = e.headers.get("intuit_tid", "n/a")  # Intuit trace id for support tickets
         detail = e.read().decode(errors="replace") if e.fp else ""
         if e.code == 400 and "invalid_grant" in detail:
             TOKEN_FILE.unlink(missing_ok=True)
             sys.exit("QuickBooks authorization expired (invalid_grant) — reconnect:\n"
                      "  python3 qb_connect.py --auth-url   (then --callback)")
-        raise
+        sys.exit(f"QuickBooks token refresh failed: HTTP {e.code} (intuit_tid={tid})\n{detail[:300]}")
     # Intuit rotates the refresh token too — save both.
     save_tokens(d["access_token"], d.get("refresh_token", t["refresh_token"]), t["realm_id"])
     return d["access_token"], t["realm_id"]
