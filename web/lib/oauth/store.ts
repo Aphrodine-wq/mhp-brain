@@ -55,6 +55,28 @@ export async function loadConnection(provider: ProviderId, account: string): Pro
   };
 }
 
+// Accounts currently connected for a provider (QB usually has exactly one realm). Drives disconnect,
+// which must revoke + forget every connection for the provider, not assume a single account.
+export async function accountsForProvider(provider: ProviderId): Promise<string[]> {
+  const rows = (
+    await db.execute({
+      sql: `SELECT account FROM oauth_connections WHERE provider = ?`,
+      args: [provider],
+    })
+  ).rows;
+  return rows.map((r) => String(r.account));
+}
+
+// Forget a stored connection. The token should be revoked at the provider first (see client.disconnect);
+// this is the local half that guarantees the UI reads "Not connected" afterward.
+export async function deleteConnection(provider: ProviderId, account: string): Promise<void> {
+  await db.execute({
+    sql: `DELETE FROM oauth_connections WHERE provider = ? AND account = ?`,
+    args: [provider, account],
+  });
+  await audit(provider, account, "disconnect", "connection removed");
+}
+
 // Token lifecycle goes to the existing app audit_log (entity_type='oauth'), so the provenance trail
 // the QB spec promises starts at the connection, not just at the data pulls.
 export async function audit(provider: string, account: string, action: string, detail: string): Promise<void> {

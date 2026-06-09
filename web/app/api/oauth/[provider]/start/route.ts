@@ -45,5 +45,5 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ prov
     jar.set("oauth_account_microsoft", tenant, cookieOpts);
   }
 
-  return NextResponse.redirect(getAuthorizeUrl(provider as ProviderId, state));
+  return NextResponse.redirect(await getAuthorizeUrl(provider as ProviderId, state));
 }

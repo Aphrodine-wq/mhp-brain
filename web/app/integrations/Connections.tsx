@@ -23,7 +23,9 @@ export default function Connections({
   const notice = oauthResult
     ? oauthResult.startsWith("connected")
       ? { ok: true, text: `Connected successfully.` }
-      : { ok: false, text: `Connection failed. Try again or check your settings.` }
+      : oauthResult.startsWith("disconnected")
+        ? { ok: true, text: `Disconnected.` }
+        : { ok: false, text: `Connection failed. Try again or check your settings.` }
     : null;
 
   useEffect(() => {
@@ -140,6 +142,12 @@ export default function Connections({
             {p.id === "microsoft" && syncResult ? (
               <div className="sd" style={{ marginTop: 4 }}>{syncResult}</div>
             ) : null}
+
+            {p.configured && p.connection && (
+              <a className="btn ghost" href={`/api/oauth/${p.id}/disconnect`}>
+                Disconnect
+              </a>
+            )}
           </div>
         </div>
       ))}

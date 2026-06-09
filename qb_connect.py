@@ -34,6 +34,7 @@ import base64
 import json
 import os
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -128,8 +129,19 @@ def refresh():
     req = urllib.request.Request(TOKEN_URL, data=body, headers={
         "Authorization": f"Basic {auth}", "Accept": "application/json",
         "Content-Type": "application/x-www-form-urlencoded"})
-    with urllib.request.urlopen(req, timeout=30) as r:
-        d = json.loads(r.read())
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            d = json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        # invalid_grant = the refresh token is expired/revoked (100-day life, or disconnected in QB).
+        # No retry recovers it — clear the dead token file and tell James to reconnect, rather than
+        # crashing with a stack trace or looping on a key that will never work again.
+        detail = e.read().decode(errors="replace") if e.fp else ""
+        if e.code == 400 and "invalid_grant" in detail:
+            TOKEN_FILE.unlink(missing_ok=True)
+            sys.exit("QuickBooks authorization expired (invalid_grant) — reconnect:\n"
+                     "  python3 qb_connect.py --auth-url   (then --callback)")
+        raise
     # Intuit rotates the refresh token too — save both.
     save_tokens(d["access_token"], d.get("refresh_token", t["refresh_token"]), t["realm_id"])
     return d["access_token"], t["realm_id"]

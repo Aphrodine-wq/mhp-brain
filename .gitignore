@@ -13,5 +13,9 @@ export/
 .qb_key
 .qb_tokens.json
 
+# Local env: QB client creds + QuotaGuard proxy password — NEVER commit
+.env
+.vercel
+
 # QuickBooks exported data — local working copy, not for git
 qb_data/

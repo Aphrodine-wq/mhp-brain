@@ -27,6 +27,9 @@ const PUBLIC = new Set([
   "/api/auth/signup",
   "/api/auth/forgot",
   "/api/auth/reset",
+  // Public legal pages — Intuit (and anyone) must read these signed-out; linked from the QB app listing.
+  "/eula",
+  "/privacy",
 ]);
 
 export function proxy(request: NextRequest) {

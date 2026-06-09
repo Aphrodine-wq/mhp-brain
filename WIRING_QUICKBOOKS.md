@@ -43,7 +43,10 @@ in the right direction — the brain stays one thing.
 ## Prerequisites (what James provides)
 
 1. **QuickBooks Online access.** An admin authorizes the app, or an accountant-user with read-only
-   access does. Either works for the read-only accounting scope.
+   access does. Either works for the read-only accounting scope. The MHP company **realm ID is
+   `9341457244559426`** — captured automatically on the OAuth callback and stored with the tokens;
+   recorded here only to verify you connected to the right book (`--status` / the DB `realm_id` should
+   match this).
 2. **Labor: confirmed in QB.** Payroll runs through QuickBooks (confirmed 2026-06-03), so direct
    labor is captured in job cost. The cost side is complete on day one — no labor-allocation pre-work.
    The completeness guard stays in the code anyway (the next contractor may not run payroll in QB).
@@ -318,6 +321,28 @@ fed in. Bad data corrupts the moat; the loop refuses to learn from noise.
 - [ ] Email intake reads a **dedicated forward-only box**, never a personal inbox; `gmail.readonly`.
 - [ ] Email and QB views of the same invoice **linked, counted once** (vendor + amount + date + PO).
 - [ ] Unparseable invoices **held in the review queue**, never silently committed.
+
+---
+
+## Production egress: the static-IP allowlist
+
+Intuit's **production** app profile asks for the IP address(es) your app calls their API from. The
+web app runs on Vercel (rotating Lambda IPs — no static egress below Enterprise), and the Python
+pulls run from a residential/dynamic IP. Neither is allowlistable as-is. The fix is a **static-IP
+forward proxy** that both callers egress through, so Intuit sees one fixed IP.
+
+1. Provision a static-IP proxy (e.g. QuotaGuard Static — it gives a proxy URL with embedded creds
+   and 1–2 fixed IPs). Note the IP(s).
+2. **Web app (Vercel):** set env `QB_EGRESS_PROXY=<proxy url>` (production). The OAuth token
+   exchange / refresh / revoke calls in `web/lib/oauth/client.ts` route through it automatically
+   (wired as an undici `ProxyAgent` dispatcher — Node's global `fetch` ignores `HTTPS_PROXY`, so it
+   must be explicit). Unset → direct, no proxy (sandbox / local).
+3. **Python pulls:** `urllib`/`requests` honor `HTTPS_PROXY`, so just run with
+   `HTTPS_PROXY=<proxy url>` in the environment — no code change.
+4. Enter the proxy's fixed IP(s) in the Intuit app profile's IP allowlist.
+
+This is a **production-keys** gate only. Sandbox testing on Development keys does **not** need it —
+defer until going live against the real book.
 
 ---
 
