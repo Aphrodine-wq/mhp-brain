@@ -11,7 +11,7 @@ const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
 const DDL = {
   projects: `CREATE TABLE projects (id TEXT PRIMARY KEY, name TEXT, type TEXT, market TEXT, status TEXT, last_activity TEXT)`,
-  estimates: `CREATE TABLE estimates (id TEXT PRIMARY KEY, project_id TEXT, source_file TEXT, source_type TEXT, sheet TEXT, line_item_count INTEGER, sum_item_total DOUBLE PRECISION, sum_sov_total DOUBLE PRECISION, stated_total DOUBLE PRECISION, parse_confidence TEXT, flags TEXT, est_date TEXT, source_url TEXT)`,
+  estimates: `CREATE TABLE estimates (id TEXT PRIMARY KEY, project_id TEXT, source_file TEXT, source_type TEXT, sheet TEXT, line_item_count INTEGER, sum_item_total DOUBLE PRECISION, sum_sov_total DOUBLE PRECISION, stated_total DOUBLE PRECISION, parse_confidence TEXT, flags TEXT, est_date TEXT)`,
   line_items: `CREATE TABLE line_items (id BIGINT, estimate_id TEXT, division TEXT, item_no TEXT, description TEXT, qty DOUBLE PRECISION, unit TEXT, unit_price DOUBLE PRECISION, material DOUBLE PRECISION, labor DOUBLE PRECISION, sub_bid DOUBLE PRECISION, item_total DOUBLE PRECISION, sov_total DOUBLE PRECISION, sub_name TEXT, norm_unit TEXT, price_kind TEXT, canon_desc TEXT)`,
   actuals: `CREATE TABLE actuals (project_id TEXT, source_file TEXT, closing_total DOUBLE PRECISION)`,
   unit_costs: `CREATE TABLE unit_costs (item_no TEXT, canon_desc TEXT, division TEXT, description TEXT, unit TEXT, n_lines INTEGER, n_jobs INTEGER, median_unit_price DOUBLE PRECISION, p25 DOUBLE PRECISION, p75 DOUBLE PRECISION, min_price DOUBLE PRECISION, max_price DOUBLE PRECISION, kind TEXT)`,

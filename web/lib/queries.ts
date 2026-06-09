@@ -525,8 +525,9 @@ export async function estimatesList(): Promise<EstimateRow[]> {
       await db.execute(`
         SELECT e.id, e.project_id, e.source_file, e.line_item_count,
                e.sum_sov_total, e.sum_item_total, e.stated_total, e.parse_confidence, e.est_date,
-               e.source_url, p.name
+               (ef.source_file IS NOT NULL) AS has_doc, p.name
         FROM estimates e JOIN projects p ON p.id = e.project_id
+        LEFT JOIN estimate_files ef ON ef.source_file = e.source_file
         WHERE e.parse_confidence != 'FAILED'
         ORDER BY e.est_date DESC NULLS LAST, p.name`)
     ).rows;
@@ -550,7 +551,7 @@ export async function estimatesList(): Promise<EstimateRow[]> {
       lineItems: Number(r.line_item_count ?? 0),
       total: pyRound(total ?? 0),
       confidence: (r.parse_confidence as string | null) ?? "",
-      hasDoc: Boolean(r.source_url), // raw blob URL never leaves the server
+      hasDoc: Boolean(r.has_doc), // original file stored in private estimate_files (Postgres)
 
     };
   });
