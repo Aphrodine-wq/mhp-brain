@@ -51,7 +51,13 @@ AUTH_URL = "https://appcenter.intuit.com/connect/oauth2"
 TOKEN_URL = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
 API_BASE = ("https://quickbooks.api.intuit.com" if QB_ENV == "production"
             else "https://sandbox-quickbooks.api.intuit.com")
-REDIRECT_URI = "http://localhost:8770/qb/callback"
+# Intuit rejects localhost redirect URIs in PRODUCTION (HTTPS required). Prod points at the deployed
+# HTTPS landing page (app/api/oauth/manual-callback) which just shows the code to paste back here;
+# sandbox/dev keeps the zero-deps localhost flow. Both must be registered as redirect URIs in the
+# matching (Production / Development) section of the Intuit app.
+REDIRECT_URI = ("https://mhp-brain.vercel.app/api/oauth/manual-callback"
+                if QB_ENV == "production"
+                else "http://localhost:8770/qb/callback")
 SCOPE = "com.intuit.quickbooks.accounting"     # read-only accounting
 
 

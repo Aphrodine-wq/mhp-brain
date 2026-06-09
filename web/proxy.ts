@@ -30,6 +30,9 @@ const PUBLIC = new Set([
   // Public legal pages — Intuit (and anyone) must read these signed-out; linked from the QB app listing.
   "/eula",
   "/privacy",
+  // CLI connect landing — Intuit's prod redirect lands here with a single-use code; must load
+  // without a session so the operator can copy the URL. It only echoes the requester's own query.
+  "/api/oauth/manual-callback",
 ]);
 
 export function proxy(request: NextRequest) {
