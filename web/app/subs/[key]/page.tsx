@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { subsList } from "@/lib/queries";
 import { listDocuments } from "@/lib/documents-store";
-import SubDocs from "./SubDocs";
+import EntityDocs from "../../_components/EntityDocs";
 
 export const dynamic = "force-dynamic";
 
@@ -55,7 +55,17 @@ export default async function SubDetailPage({ params }: { params: Promise<{ key:
         </div>
       </div>
 
-      <SubDocs subKey={sub.key} subName={sub.name} docs={docs} />
+      <EntityDocs
+        entityType="sub"
+        entityId={sub.key}
+        entityLabel={sub.name}
+        docs={docs}
+        slots={[
+          { category: "W-9", required: true },
+          { category: "Insurance (COI)", required: true },
+          { category: "Other", required: false, hint: "Anything else worth keeping on this sub." },
+        ]}
+      />
     </section>
   );
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { crewList } from "@/lib/queries";
 import { initials } from "@/lib/format";
 
@@ -10,8 +11,8 @@ export default async function CrewPage() {
       <h2>Crew</h2>
       <div className="sub">The MHP team — roles and contacts from the personnel directory.</div>
       <div className="crew-grid">
-        {crew.map((m, i) => (
-          <div key={i} className="crew-card">
+        {crew.map((m) => (
+          <Link key={m.key} href={`/crew/${encodeURIComponent(m.key)}`} className="crew-card" style={{ display: "block" }}>
             <div className="crew-top">
               <div className="crew-av">{initials(m.name)}</div>
               <div>
@@ -21,9 +22,9 @@ export default async function CrewPage() {
             </div>
             <div className="crew-meta">
               {m.phone && <div>{m.phone}</div>}
-              {m.email && <div><a href={`mailto:${m.email}`}>{m.email}</a></div>}
+              {m.email && <div>{m.email}</div>}
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </section>

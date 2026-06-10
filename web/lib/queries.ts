@@ -154,26 +154,46 @@ export async function estimateDocsList(): Promise<EstimateDocRow[]> {
 
 export interface CrewRow {
   name: string;
+  key: string;
   role: string;
   rate: string | null;
   phone: string | null;
   email: string | null;
+  // app-owned profile extras (overrides overlay, entity_type "crew")
+  hireDate: string;
+  address: string;
+  emergencyContact: string;
+  certifications: string;
+  notes: string;
 }
 
 export async function crewList(): Promise<CrewRow[]> {
   let rows;
+  let ov;
   try {
+    ov = await loadOverrides("crew");
     rows = (await db.execute("SELECT name,role,rate,phone,email FROM crew")).rows;
   } catch {
     return [];
   }
-  return rows.map((r) => ({
-    name: String(r.name),
-    role: String(r.role),
-    rate: r.rate as string | null,
-    phone: r.phone as string | null,
-    email: r.email as string | null,
-  }));
+  return rows.map((r) => {
+    const name = String(r.name);
+    const k = subKey(name);
+    const o = ov.get(k) ?? {};
+    return {
+      name,
+      key: k,
+      role: o.role ?? String(r.role),
+      rate: o.rate ?? (r.rate as string | null),
+      phone: o.phone ?? (r.phone as string | null),
+      email: o.email ?? (r.email as string | null),
+      hireDate: o.hire_date ?? "",
+      address: o.address ?? "",
+      emergencyContact: o.emergency_contact ?? "",
+      certifications: o.certifications ?? "",
+      notes: o.notes ?? "",
+    };
+  });
 }
 
 export interface CatalogRow {
