@@ -1,84 +1,98 @@
-# Tomorrow — Get QuickBooks Connected (see the real numbers)
+# Next Session — Connect Everything (QuickBooks + the rest)
 
-The goal: connect MHP's QuickBooks read-only so the system can pull real per-job cost and produce
-the profit/loss numbers. Most of this is ~1 hour of your time; once I have access, the build is mine.
-Full plan lives in `QB_JOBCOST_SPEC.md` — this is just the do-list.
+The build is done. Every connection below has working code behind it — what's left is portal
+clicks and one Authorize from the right human. QuickBooks is the main event; the others are
+gravy that can happen the same day or later.
 
----
-
-## STEP 0 — the one question that decides the whole path  ⬅ check this first
-
-- [ ] **Is MHP on QuickBooks _Online_ or QuickBooks _Desktop_?**
-  - **Online** → everything below applies. Clean API path. Go.
-  - **Desktop** (Contractor/Premier installed on a PC) → *stop and tell me.* No cloud API; we go a
-    different route (QB Web Connector, or you export the job-cost reports and I ingest those). Don't
-    do the developer-app steps — they won't apply.
-
-*(Quick check: if your brother logs into QuickBooks in a web browser, it's Online. If it's an app
-installed on a specific computer, it's Desktop.)*
+**Already handled, don't redo:** Intuit app registered, Production keys + static-IP proxy in
+`.env`, the full pull→match→P&L→dashboard pipeline (`./qb_refresh.sh`), the HTTPS OAuth landing
+page (live at `mhp-brain.vercel.app/api/oauth/manual-callback`), and `cryptography` for token
+storage. The localhost-redirect instructions from the old version of this file are dead —
+production uses the HTTPS landing page now.
 
 ---
 
-## STEP 1 — who has the keys
+## PART 1 — QuickBooks (the main event, ~15 min with the admin)
 
-- [ ] Find out **who is the QuickBooks admin** for MHP's company. Your brother enters the bills, so
-      it's likely him or the accountant. You need an admin (or accountant-user) to authorize the
-      connection — read-only, so it's safe, but it has to be someone with access.
-- [ ] Give them a heads-up you'll need ~10 minutes of their time to click "Authorize."
+This is the one that unlocks per-job P&L, the loss list, and Margin Radar.
 
----
+### Before the call
 
-## STEP 2 — create the Intuit app (James, ~20 min)
+- [ ] **Verify the Production redirect URI is registered.** developer.intuit.com → the MHP app →
+      Keys & OAuth → **Production** section → Redirect URIs must include exactly:
+      `https://mhp-brain.vercel.app/api/oauth/manual-callback`
+      (If it's missing, add it. This is the one thing I can't check from here.)
+- [ ] **Line up the QB admin** — whoever has admin (or accountant-user) access to MHP's company.
+      Ten minutes of their time, one Authorize click, read-only scope.
 
-- [ ] Go to **developer.intuit.com** → sign in with the Intuit account.
-- [ ] **Create an app** → choose the **Accounting** scope.
-- [ ] Use **Production** keys (not just sandbox) — sandbox is fake data; you want real numbers.
-      Connecting your *own* company doesn't require Intuit's app-store review, so production keys
-      work directly.
-- [ ] Set the **Redirect URI** to: `http://localhost:8771/callback`
-- [ ] Copy the **Client ID** and **Client Secret** somewhere safe (NOT into git, NOT a text on your
-      phone — hand them to me in the session and I'll keep them out of the repo).
+### The connect (together, on a machine where they can log in to QB)
 
----
+- [ ] Run: `./qb.sh qb_connect.py --auth-url` — open the URL it prints.
+- [ ] QB admin signs in and clicks **Authorize** (read-only accounting scope).
+- [ ] Intuit lands on the mhp-brain page showing the full redirect URL. Copy it.
+- [ ] Run: `./qb.sh qb_connect.py --callback "<that full URL>"` — tokens stored encrypted,
+      gitignored.
+- [ ] Confirm: `./qb.sh qb_connect.py --status` then `--test`. The realm ID must be
+      **9341457244559426** (MHP's company — wrong number means wrong book, disconnect and redo).
 
-## STEP 3 — connect (James + me, ~10 min, together)
+### Then it's my build (no action from you)
 
-- [ ] Hand me the **Client ID + Client Secret**.
-- [ ] I run the OAuth helper; it opens a QuickBooks "Authorize" page.
-- [ ] The QB admin clicks **Authorize** (read-only) for MHP's company.
-- [ ] Intuit returns the tokens + the company ID (realmId). I store them encrypted, gitignored.
-- [ ] **We're connected.** From here it's my build.
+`./qb_refresh.sh --full` — pulls the live book through the allowlisted IP, matches transactions
+to the 149 projects, computes per-job P&L, syncs to the dashboards. Output: the job→project map
+for your review, then the loss list, worst-first, every number traceable to a QB transaction.
 
----
+### Two answers to collect while you have them (admin/accountant/brother)
 
-## STEP 4 — two answers I'll need (the accountant/brother can tell us)
-
-- [ ] **Does the bookkeeper tag bills to a Customer:Job** in QuickBooks? (Decides how much matching I
-      do — tagged is nearly automatic; untagged runs through the matcher.)
-- [ ] For the litigation: **which contract values / bank records** should the numbers reconcile
-      against? Get those from the accountant so the P&L cross-checks to authoritative records, not
-      just QB.
+- [ ] **Does the bookkeeper tag bills to Customer:Job?** Tagged = near-automatic matching;
+      untagged = the matcher works harder. Either way works — I just need to know.
+- [ ] **For the litigation:** which signed contract values / bank records should the P&L
+      reconcile against? Get those from the accountant so numbers cross-check to authoritative
+      records, not just QB.
 
 ---
 
-## What I do once connected (no action from you)
+## PART 2 — The web app's connections (Integrations page)
 
-1. **Map** QuickBooks jobs → your 149 projects. I hand you the matches and the ones that don't line
-   up (we already know some are mis-filed — Molly Moore under Ken Williams, etc.).
-2. **Pull** bills, invoices, payments, and labor (payroll's in QB — confirmed — so cost is complete).
-3. **Compute** per-job profit/loss with a completeness score on each.
-4. **Hand you the loss list** — worst-first, every number traceable to a QB transaction.
+A `vercel env pull` wiped the OAuth scaffold out of `web/.env.local`, so these need their keys
+re-added. Each one is "register in a portal, paste two-to-four values." Full detail per provider
+lives in `web/OAUTH_SETUP.md` — this is the order and the owner.
 
-That's the answer to "which jobs did we lose money on," for real, and the 2025 performance backfill,
-and the live cockpit — all off this one connection.
+### 2a. Re-seed the wiped env (done locally — Vercel half remains)
+
+- [x] `OAUTH_ENC_KEY` regenerated + all `*_REDIRECT_URI` lines re-added to `web/.env.local`;
+      QB creds copied in from the root `.env`. (Done 2026-06-10.)
+- [ ] Same values into **Vercel project env** (durable copy — so the next env pull can't wipe us
+      back to zero; redirect URIs there use the `https://mhp-brain.vercel.app` versions). Needs
+      your Vercel login: `vercel env add` or the dashboard.
+
+### 2b. Google sign-in + Gmail intake (you, ~20 min, one Google Cloud project)
+
+- [ ] console.cloud.google.com → OAuth client (Web) → redirect URIs from `OAUTH_SETUP.md` →
+      paste **`GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`** (currently empty in `.env.local`).
+- [ ] Enable the **Gmail API**, add the intake mailbox as a test user → paste
+      **`GMAIL_CLIENT_ID` / `GMAIL_CLIENT_SECRET`** (can reuse the same OAuth client).
+
+### 2c. Microsoft Teams (you + MHP's M365 admin, ~20 min)
+
+- [ ] portal.azure.com → App registration (`MHP Brain`, single tenant) → client secret →
+      Graph delegated permissions per `OAUTH_SETUP.md` → **admin consent** (this is the step
+      that needs whoever owns MHP's Microsoft 365).
+- [ ] Paste `MS_CLIENT_ID` / `MS_CLIENT_SECRET` / `MS_TENANT_ID` / `MS_REDIRECT_URI`.
+- [ ] I run the Teams migration: `pnpm -C web exec node scripts/migrate.mjs`.
+
+### 2d. Flip them on (together, 5 min)
+
+- [ ] Restart dev, sign in → **Integrations** → Connect QuickBooks, Gmail, Teams → approve each.
+- [ ] **Sync now** — status flips to Connected, tokens stored AES-256-GCM encrypted,
+      auto-refreshing from there.
 
 ---
 
-## Realistic expectation for tomorrow
+## Realistic expectation
 
-Tomorrow gets us **connected + the job-to-project map** (Step A). The full per-job P&L follows right
-after — fast, because the matcher's already written and labor's already in QB. The blocker was never
-the build. It's been getting me into the books. Tomorrow we do that.
+Part 1 alone is the day's win: connected + job→project map same session, full per-job P&L right
+behind it. Parts 2b/2c can ride along if the admins are reachable, or slot into any later day —
+nothing in Part 1 waits on them. The blocker was never the build. It's the Authorize click.
 
-*Created 2026-06-03 for tomorrow. Spine: build the connector in Python inside `mhp-brain` (reuses the
-QB OAuth pattern from FairTradeWorker; MHP connects to its own company/realm).*
+*Rewritten 2026-06-10 against the production flow (HTTPS landing, static-IP egress, unified
+connector). Supersedes the 2026-06-03 localhost-flow version.*
