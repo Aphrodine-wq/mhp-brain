@@ -480,17 +480,24 @@ export interface EstimateRow {
   total: number;
   confidence: string;
   hasDoc: boolean; // true if the original .xlsx is stored; the URL stays server-side (gated download)
+  category: "Residential" | "Commercial";
 }
+
+// Project type strings tag commercial work explicitly — "Commercial (Bank)", "Storage / Commercial".
+// Everything else MHP does is residential.
+const categoryOf = (type: string): "Residential" | "Commercial" =>
+  /commercial/i.test(type) ? "Commercial" : "Residential";
 
 // the SELECT columns every estimate-row consumer needs (estimatesList, estimateDetail, projectDetail)
 const EST_ROW_SQL = `
   SELECT e.id, e.project_id, e.source_file, e.line_item_count,
          e.sum_sov_total, e.sum_item_total, e.stated_total, e.parse_confidence, e.est_date,
-         (ef.source_file IS NOT NULL) AS has_doc, p.name
+         (ef.source_file IS NOT NULL) AS has_doc, p.name, p.type AS project_type
   FROM estimates e JOIN projects p ON p.id = e.project_id
   LEFT JOIN estimate_files ef ON ef.source_file = e.source_file`;
 
-function mapEstimateRow(r: Record<string, unknown>): EstimateRow {
+// typeOverride: the corrected project type from the overrides overlay, when one exists
+function mapEstimateRow(r: Record<string, unknown>, typeOverride?: string): EstimateRow {
   const sov = r.sum_sov_total as number | null;
   const item = r.sum_item_total as number | null;
   const stated = r.stated_total as number | null;
@@ -508,13 +515,16 @@ function mapEstimateRow(r: Record<string, unknown>): EstimateRow {
     total: pyRound(total ?? 0),
     confidence: (r.parse_confidence as string | null) ?? "",
     hasDoc: Boolean(r.has_doc), // original file stored in private estimate_files (Postgres)
+    category: categoryOf(typeOverride ?? ((r.project_type as string | null) ?? "")),
   };
 }
 
 // Every parsed estimate on file, newest first — the index behind the Estimates tab.
 export async function estimatesList(): Promise<EstimateRow[]> {
   let rows;
+  let ov;
   try {
+    ov = await loadOverrides("project");
     rows = (
       await db.execute(`${EST_ROW_SQL}
         WHERE e.parse_confidence != 'FAILED'
@@ -523,7 +533,7 @@ export async function estimatesList(): Promise<EstimateRow[]> {
   } catch {
     return [];
   }
-  return rows.map(mapEstimateRow);
+  return rows.map((r) => mapEstimateRow(r, ov.get(String(r.project_id))?.type ?? undefined));
 }
 
 export interface EstimateLineItem {
@@ -550,6 +560,7 @@ export async function estimateDetail(id: string): Promise<EstimateDetail | null>
     const rows = (await db.execute({ sql: `${EST_ROW_SQL} WHERE e.id = ?`, args: [id] })).rows;
     if (!rows.length) return null;
     const head = rows[0];
+    const ov = await loadOverrides("project");
     const lrows = (
       await db.execute({
         sql: `SELECT division, item_no, description, qty, unit, unit_price, item_total, sov_total, sub_name
@@ -558,7 +569,7 @@ export async function estimateDetail(id: string): Promise<EstimateDetail | null>
       })
     ).rows;
     return {
-      ...mapEstimateRow(head),
+      ...mapEstimateRow(head, ov.get(String(head.project_id))?.type ?? undefined),
       sumItemTotal: pyRound((head.sum_item_total as number | null) ?? 0),
       sumSovTotal: pyRound((head.sum_sov_total as number | null) ?? 0),
       lines: lrows.map((l) => ({
@@ -607,7 +618,7 @@ export async function projectDetail(id: string): Promise<ProjectDetail | null> {
         args: [id],
       })
     ).rows;
-    const ests = erows.map(mapEstimateRow);
+    const ests = erows.map((r) => mapEstimateRow(r, o?.type ?? undefined));
     return {
       id: String(p.id),
       name: String(p.name),

@@ -20,6 +20,8 @@ export default function EstimatesTable({ estimates }: { estimates: EstimateRow[]
     (e) => e.project.toLowerCase().includes(q) || e.source.toLowerCase().includes(q),
   );
   const total = list.reduce((s, e) => s + e.total, 0);
+  const residential = list.filter((e) => e.category === "Residential");
+  const commercial = list.filter((e) => e.category === "Commercial");
 
   return (
     <>
@@ -29,7 +31,21 @@ export default function EstimatesTable({ estimates }: { estimates: EstimateRow[]
           {list.length} estimates · {money(total)} total
         </span>
       </div>
-      <div className="card">
+      <CategorySection title="Residential" rows={residential} />
+      <CategorySection title="Commercial" rows={commercial} />
+    </>
+  );
+}
+
+function CategorySection({ title, rows }: { title: string; rows: EstimateRow[] }) {
+  const total = rows.reduce((s, e) => s + e.total, 0);
+  return (
+    <>
+      <div className="sec-h" style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+        {title}
+        <small className="j">{rows.length} estimate{rows.length === 1 ? "" : "s"} · {money(total)}</small>
+      </div>
+      <div className="card" style={{ marginTop: 12 }}>
         <table className="dtable">
           <thead>
             <tr>
@@ -42,17 +58,16 @@ export default function EstimatesTable({ estimates }: { estimates: EstimateRow[]
             </tr>
           </thead>
           <tbody>
-            {list.length === 0 ? (
+            {rows.length === 0 ? (
               <tr>
                 <td colSpan={6}>
-                  <div className="empty">
-                    <div className="big">No estimates yet</div>
-                    Build one in the Estimate Builder and it shows up here.
+                  <div className="empty" style={{ padding: "32px 20px" }}>
+                    No {title.toLowerCase()} estimates match.
                   </div>
                 </td>
               </tr>
             ) : (
-              list.map((e) => (
+              rows.map((e) => (
                 <tr key={e.id}>
                   <td><Link href={`/estimates/${e.id}`} className="cell-link">{e.project}</Link></td>
                   <td>{e.date || "—"}</td>
