@@ -319,6 +319,17 @@ small.j{color:var(--muted);font-size:11px}
 .doc-bar{position:sticky;top:14px;z-index:30;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
   max-width:880px;margin:0 auto 22px;background:var(--ink-navy);color:#fff;border-radius:var(--r-lg);
   padding:10px 14px;box-shadow:var(--shadow-lg)}
+.doc-bar-warn{margin-left:auto;background:#c0392b;color:#fff;font-size:11px;font-weight:700;
+  letter-spacing:.4px;text-transform:uppercase;padding:5px 11px;border-radius:var(--r-pill);white-space:nowrap}
+.doc-bar-warn + .doc-bar-bid{margin-left:0}
+/* Bid Guard — under-baseline warnings (internal; never prints) */
+.warn-panel{max-width:880px;margin:0 auto 22px;background:#fdf0ee;border:1px solid #ecc4bc;
+  border-left:4px solid #c0392b;border-radius:var(--r-lg);padding:14px 18px}
+.warn-h{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#c0392b;margin-bottom:8px}
+.warn-row{font-size:13.5px;color:var(--ink);padding:3px 0}
+.warn-row b{color:#9c2f23}
+.warn-div{display:flex;justify-content:space-between;gap:16px;border-top:1px solid #f0d8d2;padding:7px 0 5px}
+.warn-div b{font-variant-numeric:tabular-nums;white-space:nowrap}
 .doc-bar-bid{margin-left:auto;display:flex;align-items:baseline;gap:9px;padding:0 8px}
 .doc-bar-bid span{font-size:10px;text-transform:uppercase;letter-spacing:.7px;font-weight:700;color:rgba(255,255,255,.6)}
 .doc-bar-bid b{font-family:var(--disp);font-size:21px;font-weight:650;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
@@ -369,8 +380,10 @@ small.j{color:var(--muted);font-size:11px}
 .sheet input.cell:hover{border-bottom-color:var(--line)}
 .sheet input.cell:focus{outline:none;border-bottom:1px solid var(--navy);background:#f6f9ff}
 .sl-rate{text-align:right}
+.sheet input.cell.low{border-bottom:1.5px solid #c0392b;color:#9c2f23;font-weight:600}
 .sheet .rate-hint{opacity:0;transition:opacity var(--t)}
 .sheet-line:hover .rate-hint,.sheet-line:focus-within .rate-hint{opacity:1}
+.sheet .rate-hint.low{opacity:1;color:#c0392b;font-weight:600}
 .sl-total{text-align:right;font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums}
 .sheet-line .x{opacity:0;transition:opacity var(--t),background var(--t)}
 .sheet-line:hover .x,.sheet-line:focus-within .x{opacity:1}

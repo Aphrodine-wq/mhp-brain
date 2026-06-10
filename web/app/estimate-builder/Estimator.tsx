@@ -207,6 +207,29 @@ export default function Estimator({
   const cont = prefs.cont ? sub * (prefs.contPct / 100) : 0;
   const bid = sub * mk;
 
+  // Bid Guard (MARGIN_GUARD.md, Engine 2 — the slice the builder's data supports today):
+  // p25 of MHP's own job history is the baseline; any line priced under it is flagged
+  // with the exact dollars short, rolled up by division. Warns loudly, never blocks —
+  // underpricing a loyalty client is a choice, not an error.
+  const lineShort = (l: Line) => {
+    const qty = parseFloat(l.qty) || 0;
+    const rate = parseFloat(l.rate);
+    if (l.p25 == null || qty <= 0 || !Number.isFinite(rate) || rate >= l.p25) return 0;
+    return (l.p25 - rate) * qty;
+  };
+  const isUnder = (l: Line) => lineShort(l) > 0;
+  const shortByDiv = new Map<string, { count: number; short: number }>();
+  for (const l of lines) {
+    const s = lineShort(l);
+    if (s <= 0) continue;
+    const d = l.division || "Other";
+    const cur = shortByDiv.get(d) ?? { count: 0, short: 0 };
+    shortByDiv.set(d, { count: cur.count + 1, short: cur.short + s });
+  }
+  const totalShort = [...shortByDiv.values()].reduce((s, d) => s + d.short, 0);
+  // markup is not margin — show what the chosen markup actually nets (on direct cost)
+  const marginPct = markup > 0 ? (markup / (100 + markup)) * 100 : 0;
+
   // group consecutive lines by division for header rows
   const groups: { division: string; lines: Line[] }[] = [];
   for (const l of lines) {
@@ -309,9 +332,35 @@ export default function Estimator({
         <button className="btn ghost sm" onClick={saveProject} disabled={saveState === "saving"}>
           {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved ✓" : saveState === "error" ? "Retry save" : "Save as Project"}
         </button>
+        {totalShort > 0 && <span className="doc-bar-warn" title="Lines priced under MHP's historical baseline">{money(totalShort)} under baseline</span>}
         <div className="doc-bar-bid"><span>Bid</span><b>{money(bid)}</b></div>
         <button className="btn sm" onClick={() => setView("packet")}>Client Packet →</button>
       </div>
+
+      {(totalShort > 0 || markup <= 0) && (
+        <div className="warn-panel no-print">
+          <div className="warn-h">Bid Guard — this estimate is priced to lose money</div>
+          {markup <= 0 && (
+            <div className="warn-row">
+              <b>No margin.</b> Markup is {markup || 0}% — the bid covers cost at best. Anything goes wrong, MHP pays for it.
+            </div>
+          )}
+          {totalShort > 0 && (
+            <>
+              <div className="warn-row">
+                <b>{money(totalShort)} under MHP baselines.</b> These categories are priced below the
+                lowest rate MHP has ever done this work for — raise them to stay profitable:
+              </div>
+              {[...shortByDiv.entries()].sort((a, b) => b[1].short - a[1].short).map(([d, v]) => (
+                <div className="warn-row warn-div" key={d}>
+                  <span>{d} — {v.count} line{v.count === 1 ? "" : "s"} under baseline</span>
+                  <b>raise by {money(v.short)}</b>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      )}
 
       <div className="sheet">
         <header className="sheet-head">
@@ -365,8 +414,16 @@ export default function Estimator({
                     <small>{l.unit || ""}</small>
                   </span>
                   <span className="sl-rate">
-                    <input className="cell" type="number" step="any" value={l.rate} onChange={(e) => update(l.key, "rate", e.target.value)} />
-                    {prefs.bands && (l.p25 != null ? (
+                    <input
+                      className={`cell${isUnder(l) ? " low" : ""}`}
+                      type="number"
+                      step="any"
+                      value={l.rate}
+                      onChange={(e) => update(l.key, "rate", e.target.value)}
+                    />
+                    {isUnder(l) ? (
+                      <div className="rate-hint low">below ${l.p25} baseline · {l.jobs} jobs</div>
+                    ) : prefs.bands && (l.p25 != null ? (
                       <div className="rate-hint">${l.p25}–${l.p75} · {l.jobs} jobs</div>
                     ) : l.jobs > 0 ? (
                       <div className="rate-hint">{l.jobs} jobs</div>
@@ -393,7 +450,10 @@ export default function Estimator({
           <div><span>Subtotal cost</span><b>{money(sub)}</b></div>
           {prefs.cont && <div><span>Contingency ({prefs.contPct}%)</span><b>{money(cont)}</b></div>}
           <div>
-            <span>Markup <input className="mk" type="number" value={markup} style={{ width: 52 }} onChange={(e) => setMarkup(Number(e.target.value))} /> %</span>
+            <span>
+              Markup <input className="mk" type="number" value={markup} style={{ width: 52 }} onChange={(e) => setMarkup(Number(e.target.value))} /> %
+              <small className="j"> = {marginPct.toFixed(1)}% margin</small>
+            </span>
             <b>{money(bid - sub)}</b>
           </div>
           <div className="grand"><span>Bid</span><b>{money(bid)}</b></div>
