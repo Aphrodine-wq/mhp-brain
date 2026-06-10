@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { EstimateRow } from "@/lib/queries";
 import { money } from "@/lib/format";
+import CollapseSection from "../_components/CollapseSection";
 
 // parse_confidence -> badge color (unknown values fall back to grey)
 const CONF: Record<string, string> = {
@@ -31,22 +32,21 @@ export default function EstimatesTable({ estimates }: { estimates: EstimateRow[]
           {list.length} estimates · {money(total)} total
         </span>
       </div>
-      <CategorySection title="Residential" rows={residential} />
-      <CategorySection title="Commercial" rows={commercial} />
+      <CategorySection title="Residential" rows={residential} filtering={q !== ""} />
+      <CategorySection title="Commercial" rows={commercial} filtering={q !== ""} />
     </>
   );
 }
 
-function CategorySection({ title, rows }: { title: string; rows: EstimateRow[] }) {
+function CategorySection({ title, rows, filtering }: { title: string; rows: EstimateRow[]; filtering: boolean }) {
   const total = rows.reduce((s, e) => s + e.total, 0);
   return (
-    <>
-      <div className="sec-h" style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-        {title}
-        <small className="j">{rows.length} estimate{rows.length === 1 ? "" : "s"} · {money(total)}</small>
-      </div>
-      <div className="card" style={{ marginTop: 12 }}>
-        <table className="dtable">
+    <CollapseSection
+      title={title}
+      summary={`${rows.length} estimate${rows.length === 1 ? "" : "s"} · ${money(total)}`}
+      forceOpen={filtering}
+    >
+      <table className="dtable">
           <thead>
             <tr>
               <th>Project</th>
@@ -99,8 +99,7 @@ function CategorySection({ title, rows }: { title: string; rows: EstimateRow[] }
               ))
             )}
           </tbody>
-        </table>
-      </div>
-    </>
+      </table>
+    </CollapseSection>
   );
 }

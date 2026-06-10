@@ -48,6 +48,7 @@ export interface ProjectRow {
   last: string;
   value: number;
   estimates: number;
+  category: "Residential" | "Commercial";
 }
 
 export async function projectsList(): Promise<ProjectRow[]> {
@@ -68,15 +69,17 @@ export async function projectsList(): Promise<ProjectRow[]> {
     const pid = String(p.id);
     const ests = estByProject.get(pid) ?? [];
     const o = ov.get(pid); // overlay: status / market / type
+    const type = (o?.type ?? (p.type as string | null)) ?? "";
     return {
       id: pid,
       name: String(p.name),
-      type: (o?.type ?? (p.type as string | null)) ?? "",
+      type,
       status: o?.status ?? String(p.status),
       market: (o?.market ?? (p.market as string | null)) ?? "",
       last: (p.last_activity as string | null) ?? "",
       value: pyRound(projectValue(ests)),
       estimates: ests.length,
+      category: categoryOf(type),
     };
   });
 
