@@ -39,6 +39,12 @@ export default async function Home() {
       if (!nextEventById.has(pid)) nextEventById.set(pid, `${String(e.subject ?? "").slice(0, 32)} · ${String(e.start_at ?? "").slice(5, 10)}`);
     }
   } catch { /* table appears after the first calendar sync */ }
+  // money progress: collected vs current bid, from the payments feed
+  const collectedById = new Map<string, number>();
+  try {
+    const pays = (await db.execute("SELECT project_id, SUM(amount) AS total FROM payments GROUP BY project_id")).rows;
+    for (const r of pays) collectedById.set(String(r.project_id), Number(r.total ?? 0));
+  } catch { /* payments table arrives with the QB pipe */ }
 
   return (
     <section className="view">
@@ -72,6 +78,7 @@ export default async function Home() {
                   <span>last activity {x.last || "—"}</span>
                 )}
               </div>
+              <PcProgress collected={collectedById.get(x.id) ?? 0} value={x.value} />
             </Link>
           ))
         ) : (
@@ -83,5 +90,19 @@ export default async function Home() {
         <Link href="/projects">View all {s.projects} projects →</Link>
       </div>
     </section>
+  );
+}
+
+// collected-vs-bid progress bar on a project card; hides until the job has a bid value
+function PcProgress({ collected, value }: { collected: number; value: number }) {
+  if (!value) return null;
+  const pct = Math.max(0, Math.min(100, Math.round((collected / value) * 100)));
+  return (
+    <div className="pc-progress">
+      <div className="pc-progress-bar">
+        <div className="pc-progress-fill" style={{ width: `${pct}%` }} />
+      </div>
+      <small>{pct}% collected{collected > 0 ? ` · ${money(collected)}` : ""}</small>
+    </div>
   );
 }

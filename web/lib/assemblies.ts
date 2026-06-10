@@ -550,6 +550,179 @@ export const ASSEMBLIES: Record<string, Assembly> = {
       { desc: "Plumbing Material & Labor", qty: () => 1 },
     ],
   },
+
+  // Attic -> finished space over the existing footprint; stairs are the defining line.
+  "attic-conversion": {
+    key: "attic-conversion",
+    label: "Attic Conversion",
+    blurb: "Finish the attic — stairs, envelope, finishes.",
+    category: "Additions & Conversions",
+    inputs: [
+      { key: "sqft", label: "Finished area (sqft)", placeholder: "400", default: 400 },
+    ],
+    lines: [
+      ...ALWAYS,
+      { desc: "Stair Material", qty: () => 1 },
+      { desc: "Stair Labor", qty: () => 1 },
+      { desc: "Framing Material", qty: (i) => r0(i.sqft * 0.5) },
+      { desc: "Framing Labor", qty: (i) => r0(i.sqft * 0.5) },
+      { desc: "Insulation Material", qty: (i) => r0(i.sqft) },
+      { desc: "Insulation Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Drywall", qty: (i) => r0(i.sqft * 2.5) },
+      { desc: "Interior Paint Material", qty: (i) => r0(i.sqft) },
+      { desc: "Interior Paint Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Interior Trim Material", qty: (i) => r0(i.sqft) },
+      { desc: "Interior Trim Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Electrical Material", qty: (i) => r0(i.sqft) },
+      { desc: "Electrical Labor", qty: (i) => r0(i.sqft) },
+      { desc: "HVAC Material", qty: () => 1 },
+      { desc: "LVT Flooring - Materials", qty: (i) => r0(i.sqft) },
+      { desc: "LVT Flooring - Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Windows", qty: () => 2 },
+    ],
+  },
+
+  // Patio slab + covered roof + gas for the grill — the outdoor-living package.
+  "outdoor-living": {
+    key: "outdoor-living",
+    label: "Outdoor Living / Patio",
+    blurb: "Covered patio with power and gas.",
+    category: "Exterior & Outdoor",
+    inputs: [
+      { key: "sqft", label: "Patio area (sqft)", placeholder: "300", default: 300 },
+    ],
+    lines: [
+      ...ALWAYS,
+      { desc: "Site Prep/Grading", qty: () => 1 },
+      { desc: "Concrete Forming Material (Includes Reinforcement)", qty: (i) => r0(i.sqft) },
+      { desc: "Slab Material", qty: (i) => slabYards(i.sqft) },
+      { desc: "Slab Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Wood Post & Column Material", qty: (i) => r0((perimeter(i.sqft) / 8) * 10) },
+      { desc: "Wood Post & Column Labor", qty: (i) => r0((perimeter(i.sqft) / 8) * 10) },
+      { desc: "Framing Material", qty: (i) => r0(i.sqft) },
+      { desc: "Framing Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Shingle Roofing Material", qty: (i) => roofSq(i.sqft) },
+      { desc: "Shingle Roofing Labor", qty: (i) => roofSq(i.sqft) },
+      { desc: "Electrical Material", qty: (i) => r0(i.sqft) },
+      { desc: "Electrical Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Plumbing Gas Materials And Labor", qty: () => 1 },
+      { desc: "Exterior Paint Material", qty: (i) => r0(i.sqft) },
+      { desc: "Exterior Paint Labor", qty: (i) => r0(i.sqft) },
+    ],
+  },
+
+  // ── Commercial — same proven rates, commercial shapes (MHP's clinic/bank/storage work) ──
+
+  // Tenant finish-out: partitions, full MEP touch, finishes. Per leased sqft.
+  "tenant-buildout": {
+    key: "tenant-buildout",
+    label: "Tenant Buildout / Clinic Finish",
+    blurb: "Partitions, MEP, finishes for a leased shell.",
+    category: "Commercial",
+    inputs: [
+      { key: "sqft", label: "Leased area (sqft)", placeholder: "2000", default: 2000 },
+      { key: "baths", label: "Restrooms", placeholder: "2", default: 2 },
+    ],
+    lines: [
+      ...ALWAYS,
+      { desc: "Building Permits", qty: () => 1 },
+      { desc: "Framing Material", qty: (i) => r0(i.sqft * 0.6) },
+      { desc: "Framing Labor", qty: (i) => r0(i.sqft * 0.6) },
+      { desc: "Insulation Material", qty: (i) => r0(i.sqft * 0.6) },
+      { desc: "Insulation Labor", qty: (i) => r0(i.sqft * 0.6) },
+      { desc: "Drywall", qty: (i) => r0(i.sqft * 2.2) },
+      { desc: "Interior Paint Material", qty: (i) => r0(i.sqft) },
+      { desc: "Interior Paint Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Electrical Material", qty: (i) => r0(i.sqft) },
+      { desc: "Electrical Labor", qty: (i) => r0(i.sqft) },
+      { desc: "HVAC Material", qty: (i) => Math.max(1, r0(i.sqft / 1200)) },
+      { desc: "Plumbing Material & Labor", qty: (i) => r0(i.baths * 3) },
+      { desc: "Plumbing Fixtures", qty: (i) => r0(i.baths) },
+      { desc: "Interior Doors", qty: (i) => Math.max(2, r0(i.sqft / 250)) },
+      { desc: "Door Hardware", qty: (i) => Math.max(2, r0(i.sqft / 250)) },
+      { desc: "LVT Flooring - Materials", qty: (i) => r0(i.sqft) },
+      { desc: "LVT Flooring - Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Interior Trim Material", qty: (i) => r0(i.sqft * 0.6) },
+      { desc: "Interior Trim Labor", qty: (i) => r0(i.sqft * 0.6) },
+    ],
+  },
+
+  // Office/clinic refresh — finishes only, occupied-space work.
+  "office-renovation": {
+    key: "office-renovation",
+    label: "Office Renovation",
+    blurb: "Paint, flooring, doors — occupied space.",
+    category: "Commercial",
+    inputs: [
+      { key: "sqft", label: "Office area (sqft)", placeholder: "1500", default: 1500 },
+    ],
+    lines: [
+      ...ALWAYS,
+      { desc: "Interior Paint Material", qty: (i) => r0(i.sqft) },
+      { desc: "Interior Paint Labor", qty: (i) => r0(i.sqft) },
+      { desc: "LVT Flooring - Materials", qty: (i) => r0(i.sqft) },
+      { desc: "LVT Flooring - Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Drywall", qty: (i) => r0(i.sqft * 0.3) },
+      { desc: "Interior Trim Material", qty: (i) => r0(i.sqft * 0.5) },
+      { desc: "Interior Trim Labor", qty: (i) => r0(i.sqft * 0.5) },
+      { desc: "Interior Doors", qty: (i) => Math.max(1, r0(i.sqft / 400)) },
+      { desc: "Door Hardware", qty: (i) => Math.max(1, r0(i.sqft / 400)) },
+      { desc: "Electrical Material", qty: (i) => r0(i.sqft * 0.4) },
+      { desc: "Electrical Labor", qty: (i) => r0(i.sqft * 0.4) },
+    ],
+  },
+
+  // Commercial re-roof — same proven roofing rates at commercial scale.
+  "commercial-reroof": {
+    key: "commercial-reroof",
+    label: "Commercial Re-roof",
+    blurb: "Tear-off and re-roof at commercial scale.",
+    category: "Commercial",
+    inputs: [
+      { key: "sqft", label: "Roof footprint (sqft)", placeholder: "6000", default: 6000 },
+    ],
+    lines: [
+      ...ALWAYS,
+      { desc: "Building Permits", qty: () => 1 },
+      { desc: "Waste Management", qty: (i) => Math.max(1, r0(i.sqft / 3000)) },
+      { desc: "Shingle Roofing Material", qty: (i) => roofSq(i.sqft) },
+      { desc: "Shingle Roofing Labor", qty: (i) => roofSq(i.sqft) },
+      { desc: "Gutter Material", qty: (i) => r0(perimeter(i.sqft)) },
+      { desc: "Gutter Labor", qty: (i) => r0(perimeter(i.sqft)) },
+    ],
+  },
+
+  // Slab-on-grade shop/storage shell — MHP's storage/commercial pattern.
+  "shop-storage": {
+    key: "shop-storage",
+    label: "Shop / Storage Building",
+    blurb: "Slab-on-grade shell with power.",
+    category: "Commercial",
+    inputs: [
+      { key: "sqft", label: "Building area (sqft)", placeholder: "1500", default: 1500 },
+    ],
+    lines: [
+      ...ALWAYS,
+      { desc: "Building Permits", qty: () => 1 },
+      { desc: "Site Prep/Grading", qty: () => 1 },
+      { desc: "Footing Material", qty: (i) => r0(perimeter(i.sqft)) },
+      { desc: "Footing Labor", qty: (i) => r0(perimeter(i.sqft)) },
+      { desc: "Concrete Forming Material (Includes Reinforcement)", qty: (i) => r0(i.sqft) },
+      { desc: "Slab Material", qty: (i) => slabYards(i.sqft) },
+      { desc: "Slab Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Framing Material", qty: (i) => r0(i.sqft) },
+      { desc: "Framing Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Trusses & Trim Joists", qty: (i) => r0(i.sqft) },
+      { desc: "Shingle Roofing Material", qty: (i) => roofSq(i.sqft) },
+      { desc: "Shingle Roofing Labor", qty: (i) => roofSq(i.sqft) },
+      { desc: "Siding Material", qty: (i) => wallFt(i.sqft) },
+      { desc: "Siding Labor", qty: (i) => wallFt(i.sqft) },
+      { desc: "Exterior Doors", qty: () => 2 },
+      { desc: "Electrical Material", qty: (i) => r0(i.sqft * 0.6) },
+      { desc: "Electrical Labor", qty: (i) => r0(i.sqft * 0.6) },
+      { desc: "Electrical Meter (Permanent Power)", qty: () => 1 },
+    ],
+  },
 };
 
 export interface ExpandedAssembly {
@@ -585,6 +758,7 @@ export const ASSEMBLY_CATEGORIES = [
   "Additions & Conversions",
   "Remodels & Interiors",
   "Exterior & Outdoor",
+  "Commercial",
 ];
 
 export const ASSEMBLY_LIST = Object.values(ASSEMBLIES).map((a) => ({

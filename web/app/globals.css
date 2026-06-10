@@ -21,17 +21,6 @@ h2{font-family:var(--disp);font-weight:650;font-size:29px;letter-spacing:-.5px;m
 /* consistent vertical rhythm for the section wrapper every page renders into */
 .view{display:block}
 .view>h2:first-child,.view>.row:first-child{margin-top:2px}
-textarea{display:block;width:100%;min-height:170px;padding:16px;border:1px solid var(--line);
-  border-radius:var(--r);background:var(--card);font-family:var(--sans);font-size:15px;resize:vertical;
-  color:var(--ink);box-shadow:var(--shadow-sm);transition:border-color var(--t),box-shadow var(--t)}
-textarea:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
-.upload{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:16px;padding:16px 20px;
-  border:1.5px dashed var(--line);border-radius:var(--r);background:var(--card)}
-.upload input[type=file]{font-family:var(--sans);font-size:13px;color:var(--muted)}
-.upload input[type=file]::file-selector-button{font-family:var(--sans);font-weight:600;font-size:13px;
-  padding:9px 16px;margin-right:12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--paper);
-  color:var(--navy);cursor:pointer;transition:border-color var(--t),background var(--t)}
-.upload input[type=file]::file-selector-button:hover{border-color:var(--navy);background:#fff}
 /* assembly quick-start picker */
 .asm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:16px}
 .asm-card{display:flex;align-items:center;text-align:left;padding:14px 16px;
@@ -47,9 +36,6 @@ textarea:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
 .asm-inputs input{width:120px;padding:9px 12px;border:1px solid var(--line);border-radius:var(--r-sm);
   font-family:var(--sans);font-size:14px;background:#fff}
 .asm-inputs input:focus-visible{outline:none;box-shadow:var(--ring);border-color:var(--navy)}
-.or-sep{display:flex;align-items:center;gap:12px;margin:34px 0 10px;color:var(--ink-2);font-size:12px;
-  font-weight:700;text-transform:uppercase;letter-spacing:.8px}
-.or-sep::before,.or-sep::after{content:'';flex:1;height:1px;background:var(--line)}
 /* per-line scope detail under the item name */
 .line-detail{margin-top:3px;font-size:11.5px;line-height:1.4;color:var(--muted);max-width:52ch}
 /* history range hint tucked under the rate input (was its own table column) */
@@ -274,6 +260,11 @@ small.j{color:var(--muted);font-size:11px}
 .pcard .pc-val{font-family:var(--disp);font-size:29px;font-weight:650;color:var(--ink);line-height:1;letter-spacing:-.6px}
 .pcard .pc-meta{color:var(--muted);font-size:12.5px;margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .pcard .pc-meta .pdot{width:3px;height:3px;border-radius:50%;background:var(--muted);opacity:.5}
+/* collected-vs-bid progress on the home cards */
+.pc-progress{margin-top:12px}
+.pc-progress-bar{height:6px;background:#edeef1;border-radius:4px;overflow:hidden}
+.pc-progress-fill{height:100%;background:var(--navy);border-radius:4px;transition:width var(--t)}
+.pc-progress small{display:block;margin-top:5px;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 .morelink{margin-top:26px;color:var(--muted);font-size:14px}
 .morelink a{color:var(--navy);font-weight:600;cursor:pointer;text-decoration:none}
 .morelink a:hover{text-decoration:underline}
@@ -619,5 +610,4 @@ body.compact .prow{padding:9px 16px}
   /* settings rows: label over control instead of side-by-side */
   .setrow{flex-direction:column;align-items:stretch;gap:10px}
 
-  textarea{min-height:140px}
 }
