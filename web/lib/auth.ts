@@ -11,7 +11,7 @@ import { SESSION_COOKIE } from "@/lib/auth-constants";
 
 export { SESSION_COOKIE };
 
-export type Role = "admin" | "ceo" | "estimator" | "sales" | "materials" | "editor" | "viewer";
+export type Role = "admin" | "ceo" | "estimator" | "sales" | "materials" | "editor" | "viewer" | "crew";
 
 export interface SessionUser {
   id: number;
@@ -33,6 +33,7 @@ const RESET_TTL_MS = 60 * 60 * 1000; // password-reset token lifetime: 1h
 // Functional roles (ceo, estimator, sales, materials) are all at editor-level for writes.
 // Admin is above everything. Viewer is read-only.
 const RANK: Record<Role, number> = {
+  crew: 0,    // field team — read-only, no client financials
   viewer: 0,
   materials: 1,
   sales: 1,

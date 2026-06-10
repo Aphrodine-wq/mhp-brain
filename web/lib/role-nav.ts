@@ -53,6 +53,11 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
     { href: "/projects", label: "Projects" },
     { href: "/estimates", label: "Estimates" },
   ],
+  crew: [
+    { href: "/", label: "Home" },
+    { href: "/projects", label: "Projects" },
+    { href: "/crew", label: "Crew" },
+  ],
 };
 
 export function navForRole(role: Role): NavItem[] {
@@ -68,6 +73,7 @@ export const ROLE_LABELS: Record<Role, string> = {
   materials: "Materials",
   editor: "Editor",
   viewer: "Viewer",
+  crew: "Crew",
 };
 
 // Which home screen component to render per role.

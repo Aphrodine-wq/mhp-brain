@@ -74,6 +74,11 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
     { href: "/projects", label: "Projects", icon: i("projects") },
     { href: "/estimates", label: "Estimates", icon: i("estimates") },
   ],
+  crew: [
+    { href: "/", label: "Home", icon: i("home") },
+    { href: "/projects", label: "Projects", icon: i("projects") },
+    { href: "/crew", label: "Crew", icon: i("crew") },
+  ],
 };
 
 const ROLE_FOOTER: Record<string, NavItem[]> = {
@@ -98,6 +103,7 @@ const ROLE_LABEL: Record<Role, string> = {
   materials: "Materials",
   editor: "Editor",
   viewer: "Viewer",
+  crew: "Crew",
 };
 
 const ROLE_TITLE: Record<Role, string> = {
@@ -108,6 +114,7 @@ const ROLE_TITLE: Record<Role, string> = {
   materials: "MHP Materials",
   editor: "MHP Brain",
   viewer: "MHP Brain",
+  crew: "MHP Crew",
 };
 
 export default function Sidebar({ user }: { user: SessionUser }) {
