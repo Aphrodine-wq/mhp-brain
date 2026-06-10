@@ -33,12 +33,6 @@ export default async function Home() {
         <Link className="btn" href="/estimates">+ New Estimate</Link>
       </div>
 
-      <div className="stat-strip">
-        <div><div className="sv">{s.active}</div><div className="sk">Active jobs</div></div>
-        <div><div className="sv">{money(s.active_value)}</div><div className="sk">Active book value</div></div>
-        <div><div className="sv">{s.bid}</div><div className="sk">Bids out</div></div>
-      </div>
-
       <div className="sec-h">Active now</div>
       <div className="proj-cards">
         {active.length ? (
