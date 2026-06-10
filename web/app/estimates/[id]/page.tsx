@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { estimateDetail } from "@/lib/queries";
 import { money } from "@/lib/format";
+import PrintButton from "./PrintButton";
 
 export const dynamic = "force-dynamic";
 
@@ -28,27 +29,39 @@ export default async function EstimateDetailPage({ params }: { params: Promise<{
 
   return (
     <section className="view">
-      <h2>{est.project}</h2>
-      <div className="sub" style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-        <span>{est.date || "No date"}</span>·<span>{est.source || "—"}</span>·
-        <span className={`badge ${CONF[est.confidence] || "unknown"}`}>{est.confidence || "—"}</span>
-      </div>
-
-      <div className="row" style={{ marginTop: 0 }}>
+      <div className="row no-print" style={{ marginTop: 0, marginBottom: 20 }}>
         <Link className="btn ghost" href="/estimates">← All estimates</Link>
         <Link className="btn ghost" href={`/projects/${est.projectId}`}>View project</Link>
         {est.hasDoc && (
-          <a className="btn" href={`/api/estimates/${est.id}/document`}>Download original ↓</a>
+          <a className="btn ghost" href={`/api/estimates/${est.id}/document`}>Download original ↓</a>
         )}
+        <PrintButton />
+        <span className={`badge ${CONF[est.confidence] || "unknown"}`} style={{ marginLeft: "auto" }} title="Parse confidence">
+          {est.confidence || "—"}
+        </span>
       </div>
 
-      <div className="stat-strip">
-        <div><div className="sv">{est.total ? money(est.total) : "—"}</div><div className="sk">Estimate total</div></div>
-        <div><div className="sv">{est.lineItems}</div><div className="sk">Line items</div></div>
-        <div><div className="sv">{est.sumItemTotal ? money(est.sumItemTotal) : "—"}</div><div className="sk">Item cost subtotal</div></div>
-      </div>
+      {/* cover page — same paper as the client packet's cover; prints as page one */}
+      <article className="doc-page cover" style={{ minHeight: 760 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="MHP" className="cover-logo" />
+        <div className="cover-kicker">Construction Estimate</div>
+        <h1 className="cover-title">{est.project}</h1>
+        <div className="cover-meta">
+          <div><span>Date</span><b>{est.date || "—"}</b></div>
+          <div><span>Prepared by</span><b>MHP Construction</b></div>
+          <div><span>Line items</span><b>{est.lineItems}</b></div>
+          <div><span>Original file</span><b style={{ wordBreak: "break-word" }}>{est.source || "—"}</b></div>
+        </div>
+        <div className="cover-total">
+          <span>Estimate total</span>
+          <b>{est.total ? money(est.total) : "—"}</b>
+          {est.sumItemTotal ? <small>{money(est.sumItemTotal)} item cost subtotal</small> : null}
+        </div>
+        <div className="cover-foot">MHP Construction · Oxford, MS · MS Residential Builder R21909</div>
+      </article>
 
-      <div className="card" style={{ marginTop: 22 }}>
+      <div className="card" style={{ maxWidth: 820, margin: "0 auto" }}>
         <table className="dtable">
           <thead>
             <tr>

@@ -82,7 +82,7 @@ export default function ClientPacket({
       {/* ── 1. COVER PAGE ── */}
       <article className="doc-page cover">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo-light.png" alt="MHP" className="cover-logo" />
+        <img src="/logo.png" alt="MHP" className="cover-logo" />
         <div className="cover-kicker">Construction Estimate &amp; Proposal</div>
         <h1 className="cover-title">{client.project || "Project Estimate"}</h1>
         <div className="cover-meta">

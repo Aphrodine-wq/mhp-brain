@@ -303,7 +303,7 @@ export default function Estimator({
       <div className="sheet">
         <header className="sheet-head">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-light.png" alt="MHP" className="sheet-logo" />
+          <img src="/logo.png" alt="MHP" className="sheet-logo" />
           <div className="sheet-co">
             <b>MHP Construction</b>
             <span>North Mississippi Home Professionals, LLC · License R21909 · Oxford, MS</span>
