@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 export type ProviderState = {
-  id: "quickbooks" | "gmail" | "microsoft" | "trello";
+  id: "quickbooks" | "gmail" | "microsoft" | "trello" | "docusign" | "gbp";
   label: string;
   configured: boolean;
   connection: { account: string; expiresAt: string } | null;
@@ -40,6 +40,21 @@ const ICONS: Record<ProviderState["id"], React.ReactNode> = {
       <rect x="0" y="0" width="24" height="24" rx="4" fill="#0079BF" />
       <rect x="3.5" y="3.5" width="7" height="14" rx="1.5" fill="#fff" />
       <rect x="13.5" y="3.5" width="7" height="9" rx="1.5" fill="#fff" />
+    </svg>
+  ),
+  docusign: (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <rect x="0" y="0" width="24" height="24" rx="4" fill="#FFCC22" />
+      <path d="M12 4v9M8.5 9.5L12 13l3.5-3.5" stroke="#191823" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 17.5h14" stroke="#191823" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  ),
+  gbp: (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path fill="#4285F4" d="M21.6 12.2c0-.7-.06-1.4-.18-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.4z" />
+      <path fill="#34A853" d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22z" />
+      <path fill="#FBBC04" d="M6.4 14a6 6 0 0 1 0-3.8V7.6H3.1a10 10 0 0 0 0 8.9z" />
+      <path fill="#EA4335" d="M12 6c1.5 0 2.8.5 3.8 1.5L18.6 4.7A10 10 0 0 0 3.1 7.6L6.4 10c.8-2.3 3-4 5.6-4z" />
     </svg>
   ),
 };
@@ -85,6 +100,8 @@ export default function Connections({
     gmail: "Connect a dedicated email to automatically capture invoices.",
     microsoft: "Connect Microsoft to pull in Teams conversations, OneDrive paperwork, and the calendar.",
     trello: "Connect Trello to see where every job sits on the board, right on its project page.",
+    docusign: "Connect DocuSign — envelope status per project, signed contracts auto-filed into Documents.",
+    gbp: "Connect the Google Business Profile to pull reviews into the brain.",
   };
 
   const NOT_READY: Record<string, string> = {
@@ -92,6 +109,8 @@ export default function Connections({
     gmail: "Gmail connection needs to be set up by your admin.",
     microsoft: "Microsoft connection needs to be set up by your admin.",
     trello: "Trello needs a TRELLO_API_KEY — grab one at trello.com/power-ups/admin.",
+    docusign: "DocuSign needs DS_CLIENT_ID / DS_CLIENT_SECRET / DS_REDIRECT_URI in the env.",
+    gbp: "GBP needs GBP_CLIENT_ID / GBP_CLIENT_SECRET / GBP_REDIRECT_URI (Google also gates the API behind an access request).",
   };
 
   return (
@@ -207,6 +226,31 @@ export default function Connections({
                       {syncing === "microsoft" ? "Syncing…" : "Sync calendar"}
                     </button>
                   </>
+                )}
+              </>
+            )}
+
+            {p.configured && (p.id === "docusign" || p.id === "gbp") && (
+              <>
+                <a className="btn ghost sm" href={`/api/oauth/${p.id}/start`}>
+                  {p.connection ? "Reconnect" : "Connect"}
+                </a>
+                {p.connection && (
+                  <button
+                    className="btn ghost sm"
+                    disabled={syncing !== null}
+                    onClick={() =>
+                      runSync(p.id, async () => {
+                        const data = await (await fetch(`/api/${p.id}/sync`, { method: "POST" })).json();
+                        if (!data.ok) return data.error ?? "Sync had a problem. Try again.";
+                        return p.id === "docusign"
+                          ? `${data.envelopes} envelopes — ${data.filed} signed PDFs filed, ${data.matched} matched to jobs.`
+                          : `${data.locations} location${data.locations !== 1 ? "s" : ""}, ${data.reviews} reviews${data.average ? ` — ${data.average}★ average` : ""}.`;
+                      })
+                    }
+                  >
+                    {syncing === p.id ? "Syncing…" : p.id === "docusign" ? "Sync envelopes" : "Sync reviews"}
+                  </button>
                 )}
               </>
             )}

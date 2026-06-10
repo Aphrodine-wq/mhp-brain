@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { projectDetail } from "@/lib/queries";
 import { trelloCardsForProject } from "@/lib/trello";
 import { eventsForProject } from "@/lib/calendar";
+import { envelopesForProject } from "@/lib/docusign";
 import { money, BADGE } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +21,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   if (!proj) notFound();
   const trelloCards = await trelloCardsForProject(id).catch(() => []);
   const events = await eventsForProject(id).catch(() => []);
+  const envelopes = await envelopesForProject(id).catch(() => []);
 
   return (
     <section className="view">
@@ -54,6 +56,23 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               </div>
               <span className="sd" style={{ whiteSpace: "nowrap" }}>
                 {ev.startAt.slice(0, 10)}{ev.isAllDay ? "" : ` · ${ev.startAt.slice(11, 16)}`}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {envelopes.length > 0 && (
+        <div className="panel" style={{ marginTop: 18 }}>
+          <h3>Signatures</h3>
+          {envelopes.map((ev, i) => (
+            <div className="setrow" key={i}>
+              <div>
+                <div className="sl">{ev.subject || "Envelope"}</div>
+                <div className="sd">sent {ev.sentAt || "—"}{ev.completedAt ? ` · signed ${ev.completedAt}` : ""}</div>
+              </div>
+              <span className={`badge ${ev.status === "completed" ? "active" : ev.status === "declined" || ev.status === "voided" ? "dead" : "aging"}`}>
+                {ev.status}
               </span>
             </div>
           ))}

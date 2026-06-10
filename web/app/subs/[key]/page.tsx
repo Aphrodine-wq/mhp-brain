@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { subsList } from "@/lib/queries";
 import { listDocuments } from "@/lib/documents-store";
+import { commsForEntity } from "@/lib/twilio";
 import EntityDocs from "../../_components/EntityDocs";
 
 export const dynamic = "force-dynamic";
@@ -12,6 +13,7 @@ export default async function SubDetailPage({ params }: { params: Promise<{ key:
   const sub = (await subsList()).find((s) => s.key === decoded);
   if (!sub) notFound();
   const docs = await listDocuments({ entityType: "sub", entityId: sub.key });
+  const comms = await commsForEntity("sub", sub.key).catch(() => []);
   const projects = sub.projects.split(/;|,/).map((p) => p.trim()).filter(Boolean);
 
   return (
@@ -54,6 +56,21 @@ export default async function SubDetailPage({ params }: { params: Promise<{ key:
           <div className="sd">{sub.source || "—"}</div>
         </div>
       </div>
+
+      {comms.length > 0 && (
+        <div className="panel" style={{ marginTop: 18 }}>
+          <h3>Recent texts &amp; calls</h3>
+          {comms.map((c, i) => (
+            <div className="setrow" key={i}>
+              <div>
+                <div className="sl">{c.kind === "call" ? (c.direction === "in" ? "Call in" : "Call out") : c.direction === "in" ? "Text in" : "Text out"}</div>
+                <div className="sd">{c.body || "—"}</div>
+              </div>
+              <span className="sd" style={{ whiteSpace: "nowrap" }}>{c.at}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <EntityDocs
         entityType="sub"

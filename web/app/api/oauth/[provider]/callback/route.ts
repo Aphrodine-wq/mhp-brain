@@ -5,7 +5,7 @@ import { exchangeCode, type ProviderId } from "@/lib/oauth";
 // Step 2: the provider redirects here with ?code & ?state (QB also ?realmId).
 // The state cookie match is this route's primary guard (CSRF) — we never trust ?state alone.
 
-const PROVIDERS = new Set<ProviderId>(["quickbooks", "gmail", "microsoft"]);
+const PROVIDERS = new Set<ProviderId>(["quickbooks", "gmail", "microsoft", "docusign", "gbp"]);
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ provider: string }> }) {
   const { provider } = await params;
@@ -41,12 +41,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ prov
   if (provider === "quickbooks") {
     realmId = sp.get("realmId") ?? undefined;
     account = realmId ?? null;
-  } else if (provider === "microsoft") {
-    account = jar.get("oauth_account_microsoft")?.value ?? null;
-    jar.delete("oauth_account_microsoft");
   } else {
-    account = jar.get("oauth_account_gmail")?.value ?? null;
-    jar.delete("oauth_account_gmail");
+    // gmail/microsoft/docusign/gbp all stashed their account key at /start
+    account = jar.get(`oauth_account_${provider}`)?.value ?? null;
+    jar.delete(`oauth_account_${provider}`);
   }
   if (!account) return done("error:missing_account");
 

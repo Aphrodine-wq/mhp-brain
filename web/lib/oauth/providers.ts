@@ -2,7 +2,7 @@
 // QuickBooks and never writes to (or reads beyond the dedicated box of) anyone's mailbox.
 // Client id/secret/redirect come from env, never the repo.
 
-export type ProviderId = "quickbooks" | "gmail" | "microsoft" | "trello";
+export type ProviderId = "quickbooks" | "gmail" | "microsoft" | "trello" | "docusign" | "gbp";
 
 export interface ProviderConfig {
   id: ProviderId;
@@ -30,6 +30,9 @@ const ENV_KEYS: Record<ProviderId, string[]> = {
   microsoft: ["MS_CLIENT_ID", "MS_CLIENT_SECRET", "MS_REDIRECT_URI"],
   // Trello is not OAuth2 — a public API key plus a user-granted member token (see lib/trello.ts).
   trello: ["TRELLO_API_KEY"],
+  docusign: ["DS_CLIENT_ID", "DS_CLIENT_SECRET", "DS_REDIRECT_URI"],
+  // GBP can share the Google app with Gmail — same client, different scopes.
+  gbp: ["GBP_CLIENT_ID", "GBP_CLIENT_SECRET", "GBP_REDIRECT_URI"],
 };
 
 export function isConfigured(id: ProviderId): boolean {
@@ -61,6 +64,31 @@ export function providerConfig(id: ProviderId): ProviderConfig {
         // Without access_type=offline + prompt=consent, Google returns a one-shot access token and
         // no refresh token — the connection would die in an hour. These make it durable.
         extraAuthParams: { access_type: "offline", prompt: "consent", include_granted_scopes: "true" },
+      };
+    case "docusign": {
+      // account.docusign.com in prod; account-d.docusign.com for the developer sandbox.
+      const dsBase = process.env.DS_AUTH_BASE ?? "https://account.docusign.com";
+      return {
+        id,
+        authorizeUrl: `${dsBase}/oauth/auth`,
+        tokenUrl: `${dsBase}/oauth/token`,
+        scopes: ["signature"], // read envelopes + download completed docs; we never send
+        clientId: need("DS_CLIENT_ID"),
+        clientSecret: need("DS_CLIENT_SECRET"),
+        redirectUri: need("DS_REDIRECT_URI"),
+        extraAuthParams: {},
+      };
+    }
+    case "gbp":
+      return {
+        id,
+        authorizeUrl: "https://accounts.google.com/o/oauth2/v2/auth",
+        tokenUrl: "https://oauth2.googleapis.com/token",
+        scopes: ["https://www.googleapis.com/auth/business.manage"],
+        clientId: need("GBP_CLIENT_ID"),
+        clientSecret: need("GBP_CLIENT_SECRET"),
+        redirectUri: need("GBP_REDIRECT_URI"),
+        extraAuthParams: { access_type: "offline", prompt: "consent" },
       };
     case "trello":
       // Trello uses its own authorize-fragment token flow, not OAuth2 — handled by lib/trello.ts

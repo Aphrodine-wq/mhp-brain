@@ -4,7 +4,11 @@ import { isConfigured } from "@/lib/oauth/providers";
 import { listConnections } from "@/lib/oauth/store";
 import Connections, { type ProviderState } from "./Connections";
 import AlertsPanel from "./AlertsPanel";
+import TwilioPanel from "./TwilioPanel";
+import ReviewsPanel from "./ReviewsPanel";
 import { alertsConfigured } from "@/lib/alerts";
+import { twilioConfigured } from "@/lib/twilio";
+import { recentReviews } from "@/lib/gbp";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +40,10 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
     { id: "gmail", label: "Gmail (Invoice Capture)", configured: isConfigured("gmail"), connection: conn("gmail") },
     { id: "microsoft", label: "Microsoft Teams + OneDrive", configured: isConfigured("microsoft"), connection: conn("microsoft") },
     { id: "trello", label: "Trello (Project Boards)", configured: trelloConfigured, connection: conn("trello"), connectUrl: trelloConnectUrl },
+    { id: "docusign", label: "DocuSign", configured: isConfigured("docusign"), connection: conn("docusign") },
+    { id: "gbp", label: "Google Business Profile", configured: isConfigured("gbp"), connection: conn("gbp") },
   ];
+  const reviews = await recentReviews(8).catch(() => []);
 
   return (
     <section className="view">
@@ -46,7 +53,9 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
         conversations. Every connection is read-only: nothing is ever changed in the source system.
       </div>
       <Connections providers={providers} oauthResult={oauth ?? null} />
+      <TwilioPanel configured={twilioConfigured()} />
       <AlertsPanel configured={alertsConfigured()} />
+      {reviews.length > 0 && <ReviewsPanel reviews={reviews} />}
     </section>
   );
 }
