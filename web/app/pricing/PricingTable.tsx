@@ -111,6 +111,9 @@ export default function PricingTable({ materials }: { materials: TrackedMaterial
                     {m.marketPrice != null ? (
                       <>
                         {fmt(m.marketPrice)}
+                        {m.stale && (
+                          <span className="badge aging" style={{ marginLeft: 6 }}>stale</span>
+                        )}
                         <div><small className="j">{m.marketUpdatedAt}{m.marketSource ? ` · ${m.marketSource}` : ""}</small></div>
                       </>
                     ) : (

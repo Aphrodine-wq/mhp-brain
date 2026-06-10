@@ -6,6 +6,7 @@
 // Drift between them is the "are we charging enough for materials" answer.
 import { randomUUID, createHmac, timingSafeEqual } from "crypto";
 import { db } from "@/lib/db";
+import { sendAlert } from "@/lib/alerts";
 
 export interface TrackedMaterial {
   id: string;
@@ -19,6 +20,7 @@ export interface TrackedMaterial {
   rateBaseline: number | null;
   ratesUpdatedAt: string;
   active: boolean;
+  stale: boolean; // market price older than 8 days — the weekly feed missed a beat
 }
 
 let ensured = false;
@@ -40,29 +42,77 @@ async function ensure() {
   ensured = true;
 }
 
-// estimator lines worth watching out of the box — seeded once when the table is empty
+// Mirrors the scraper basket (ftw-scraper config/mhp-materials.json) — names must match
+// exactly so /api/pricing/ingest lands by name. Every material-bearing division covered.
 const SEED: { name: string; unit: string; catalogDesc: string }[] = [
-  { name: "Framing lumber package", unit: "sqft", catalogDesc: "Framing Material" },
-  { name: "Drywall (hung + finished)", unit: "board feet", catalogDesc: "Drywall" },
-  { name: "Architectural shingles", unit: "square", catalogDesc: "Shingle Roofing Material" },
-  { name: "Ready-mix concrete", unit: "cy", catalogDesc: "Slab Material" },
-  { name: "LVT flooring", unit: "sqft", catalogDesc: "LVT Flooring - Materials" },
-  { name: "Insulation", unit: "sqft", catalogDesc: "Insulation Material" },
-  { name: "Fiber-cement siding", unit: "sqft", catalogDesc: "Siding Material" },
-  { name: "Windows (vinyl, low-E)", unit: "opening", catalogDesc: "Windows" },
-  { name: "Kitchen cabinets", unit: "lft", catalogDesc: "Kitchen Cabinets" },
-  { name: "Countertop slab", unit: "sqft", catalogDesc: "Countertop Material" },
+  // Div 6 — lumber & framing
+  { name: "2x4x8 SPF Stud", unit: "each", catalogDesc: "Framing Material" },
+  { name: "2x6x8 SPF #2 Stud", unit: "each", catalogDesc: "Framing Material" },
+  { name: "2x8x10 SYP #2", unit: "each", catalogDesc: "Framing Material" },
+  { name: "7/16 in. 4x8 OSB Sheathing", unit: "sheet", catalogDesc: "Framing Material" },
+  { name: "3/4 in. 4x8 CDX Plywood", unit: "sheet", catalogDesc: "Framing Material" },
+  { name: "1.75 in. x 9.5 in. x 16 ft. LVL Beam", unit: "each", catalogDesc: "Framing Material" },
+  // Div 9 — drywall & finishes
+  { name: "1/2 in. 4x8 Drywall Sheet", unit: "sheet", catalogDesc: "Drywall" },
+  { name: "5/8 in. 4x8 Type X Fire-Code Drywall", unit: "sheet", catalogDesc: "Drywall" },
+  { name: "All-Purpose Joint Compound 4.5 gal.", unit: "each", catalogDesc: "Drywall" },
+  { name: "Luxury Vinyl Plank 7 in. x 48 in. (24 sq ft box)", unit: "box", catalogDesc: "LVT Flooring - Materials" },
+  { name: "Behr Premium Plus 1 gal. Interior Latex Paint", unit: "each", catalogDesc: "Interior Paint Material" },
+  { name: "12x24 Porcelain Floor Tile (sq ft)", unit: "sqft", catalogDesc: "Floor Tile" },
+  // Div 7 — envelope
+  { name: "R-13 15 in. Kraft Faced Insulation Batt", unit: "bag", catalogDesc: "Insulation Material" },
+  { name: "R-19 Unfaced Fiberglass Roll", unit: "bag", catalogDesc: "Insulation Material" },
+  { name: "Architectural Asphalt Shingles (33.3 sq ft bundle)", unit: "bundle", catalogDesc: "Shingle Roofing Material" },
+  { name: "15 lb. Roofing Felt 400 sq ft. roll", unit: "each", catalogDesc: "Shingle Roofing Material" },
+  { name: "D4 Double 4 in. Lap Vinyl Siding White (24 sq ft sq)", unit: "each", catalogDesc: "Siding Material" },
+  { name: "5 in. K-Style Aluminum Gutter 10 ft.", unit: "each", catalogDesc: "Gutter Material" },
+  // Div 3 — concrete
+  { name: "Quikrete 80 lb. Concrete Mix", unit: "bag", catalogDesc: "Slab Material" },
+  { name: "#4 Rebar 20 ft.", unit: "each", catalogDesc: "Concrete Forming Material (Includes Reinforcement)" },
+  { name: "6x6 #10 Wire Remesh 5x10 ft.", unit: "sheet", catalogDesc: "Concrete Forming Material (Includes Reinforcement)" },
+  // Div 4 — masonry
+  { name: "8x8x16 Concrete Block CMU", unit: "each", catalogDesc: "Block Material" },
+  // Div 8 — openings
+  { name: "36x60 Vinyl Double Hung Window Low-E", unit: "each", catalogDesc: "Windows" },
+  { name: "6-Panel Hollow Core Prehung Interior Door 32 in.", unit: "each", catalogDesc: "Interior Doors" },
+  { name: "Fiberglass Prehung Front Entry Door 36 in.", unit: "each", catalogDesc: "Exterior Doors" },
+  // Div 12 — casework
+  { name: "36 in. Shaker Base Kitchen Cabinet", unit: "each", catalogDesc: "Kitchen Cabinets" },
+  // Div 22 — plumbing
+  { name: "3/4 in. PEX-A Pipe 100 ft.", unit: "roll", catalogDesc: "Plumbing Material & Labor" },
+  { name: "40 Gal. Electric Water Heater", unit: "each", catalogDesc: "Water Heaters" },
+  // Div 23 — HVAC
+  { name: "3 Ton 14.3 SEER2 Air Conditioner Condenser", unit: "each", catalogDesc: "HVAC Material" },
+  // Div 26 — electrical
+  { name: "12/2 Romex NM-B Wire 250 ft.", unit: "roll", catalogDesc: "Electrical Material" },
+  { name: "200 Amp 40-Space Main Breaker Panel", unit: "each", catalogDesc: "Electrical Material" },
 ];
 
-async function seedIfEmpty() {
-  const n = (await db.execute("SELECT COUNT(*) AS n FROM tracked_materials")).rows[0];
-  if (Number(n?.n ?? 0) > 0) return;
+// first-generation generic seeds, superseded by the basket-aligned list above
+const RETIRED_SEEDS = [
+  "Framing lumber package", "Drywall (hung + finished)", "Architectural shingles",
+  "Ready-mix concrete", "LVT flooring", "Insulation", "Fiber-cement siding",
+  "Windows (vinyl, low-E)", "Kitchen cabinets", "Countertop slab",
+];
+
+// idempotent: insert any basket material that isn't tracked yet; retire old generics
+// that never got a feed (keeps anything a human priced by hand).
+async function reconcileSeeds() {
+  const existing = new Set(
+    (await db.execute("SELECT LOWER(name) AS n FROM tracked_materials")).rows.map((r) => String(r.n)),
+  );
   for (const m of SEED) {
+    if (existing.has(m.name.toLowerCase())) continue;
     await db.execute({
       sql: "INSERT INTO tracked_materials (id, name, unit, catalog_desc, active) VALUES (?, ?, ?, ?, TRUE)",
       args: [randomUUID(), m.name, m.unit, m.catalogDesc],
     });
   }
+  await db.execute({
+    sql: `UPDATE tracked_materials SET active = FALSE
+          WHERE market_price IS NULL AND name = ANY(string_to_array(?, '||'))`,
+    args: [RETIRED_SEEDS.join("||")],
+  });
 }
 
 const toRow = (r: Record<string, unknown>): TrackedMaterial => ({
@@ -77,11 +127,14 @@ const toRow = (r: Record<string, unknown>): TrackedMaterial => ({
   rateBaseline: r.rate_baseline == null ? null : Number(r.rate_baseline),
   ratesUpdatedAt: String(r.rates_updated_at ?? "").slice(0, 10),
   active: Boolean(r.active),
+  stale:
+    r.market_price != null &&
+    Date.now() - new Date(String(r.market_updated_at ?? "")).getTime() > 8 * 864e5,
 });
 
 export async function listMaterials(): Promise<TrackedMaterial[]> {
   await ensure();
-  await seedIfEmpty();
+  await reconcileSeeds();
   const rows = (await db.execute("SELECT * FROM tracked_materials WHERE active = TRUE ORDER BY name")).rows;
   return rows.map(toRow);
 }
@@ -161,18 +214,37 @@ export function verifyIngestSignature(rawBody: string, signature: string): boole
 export async function ingestPrices(items: { id?: string; name?: string; price: number; source?: string }[]): Promise<number> {
   await ensure();
   let updated = 0;
+  const movers: string[] = [];
   for (const it of items) {
     if (!Number.isFinite(it.price) || it.price <= 0) continue;
     const r = it.id
       ? await db.execute({
-          sql: "UPDATE tracked_materials SET market_price = ?, market_source = ?, market_updated_at = now()::text WHERE id = ? RETURNING id",
-          args: [it.price, it.source ?? "scraper", it.id],
+          sql: `UPDATE tracked_materials SET market_price = ?, market_source = ?, market_updated_at = now()::text
+                WHERE id = ? RETURNING name, (SELECT market_price FROM tracked_materials WHERE id = ?) AS old_price`,
+          args: [it.price, it.source ?? "scraper", it.id, it.id],
         })
       : await db.execute({
-          sql: "UPDATE tracked_materials SET market_price = ?, market_source = ?, market_updated_at = now()::text WHERE LOWER(name) = LOWER(?) RETURNING id",
+          sql: `UPDATE tracked_materials t SET market_price = ?, market_source = ?, market_updated_at = now()::text
+                FROM (SELECT id, market_price AS old_price FROM tracked_materials WHERE LOWER(name) = LOWER(?)) prev
+                WHERE t.id = prev.id RETURNING t.name, prev.old_price`,
           args: [it.price, it.source ?? "scraper", String(it.name ?? "")],
         });
-    if (r.rows.length) updated++;
+    if (r.rows.length) {
+      updated++;
+      const old = r.rows[0].old_price == null ? null : Number(r.rows[0].old_price);
+      if (old && Math.abs(it.price - old) / old >= 0.1) {
+        const pct = Math.round(((it.price - old) / old) * 100);
+        movers.push(`${String(r.rows[0].name)}: $${old} → $${it.price} (${pct > 0 ? "+" : ""}${pct}%)`);
+      }
+    }
+  }
+  // material costs moving double digits is a reprice signal — say so in the channel
+  if (movers.length) {
+    void sendAlert({
+      title: "Material prices moved — check the estimator rates",
+      urgent: true,
+      lines: movers.slice(0, 10),
+    });
   }
   return updated;
 }
