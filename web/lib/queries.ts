@@ -123,6 +123,35 @@ export async function subsList(): Promise<SubRow[]> {
   });
 }
 
+// Estimate originals (estimate_files) surfaced as the Estimates category on /documents.
+export interface EstimateDocRow {
+  estimateId: string;
+  project: string;
+  filename: string;
+  uploadedAt: string;
+}
+
+export async function estimateDocsList(): Promise<EstimateDocRow[]> {
+  try {
+    const rows = (
+      await db.execute(`
+        SELECT e.id, p.name, ef.filename, ef.uploaded_at
+        FROM estimate_files ef
+        JOIN estimates e ON e.source_file = ef.source_file
+        JOIN projects p ON p.id = e.project_id
+        ORDER BY ef.uploaded_at DESC, p.name`)
+    ).rows;
+    return rows.map((r) => ({
+      estimateId: String(r.id),
+      project: String(r.name),
+      filename: String(r.filename ?? ""),
+      uploadedAt: r.uploaded_at instanceof Date ? r.uploaded_at.toISOString().slice(0, 10) : String(r.uploaded_at ?? "").slice(0, 10),
+    }));
+  } catch {
+    return [];
+  }
+}
+
 export interface CrewRow {
   name: string;
   role: string;

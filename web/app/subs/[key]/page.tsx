@@ -1,0 +1,61 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { subsList } from "@/lib/queries";
+import { listDocuments } from "@/lib/documents-store";
+import SubDocs from "./SubDocs";
+
+export const dynamic = "force-dynamic";
+
+export default async function SubDetailPage({ params }: { params: Promise<{ key: string }> }) {
+  const { key } = await params;
+  const decoded = decodeURIComponent(key);
+  const sub = (await subsList()).find((s) => s.key === decoded);
+  if (!sub) notFound();
+  const docs = await listDocuments({ entityType: "sub", entityId: sub.key });
+  const projects = sub.projects.split(/;|,/).map((p) => p.trim()).filter(Boolean);
+
+  return (
+    <section className="view">
+      <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+        <h2 style={{ margin: 0 }}>{sub.name}</h2>
+        {sub.verified && <span className="badge active" title="Confirmed">✓ Confirmed</span>}
+      </div>
+      <div className="sub" style={{ marginTop: 6 }}>
+        {sub.trade || "No trade set"} · {sub.phone || "no phone"}
+      </div>
+
+      <div className="row" style={{ marginTop: 0 }}>
+        <Link className="btn ghost" href="/subs">← All subs</Link>
+        {sub.phone && <a className="btn ghost" href={`tel:${sub.phone.replace(/[^\d+]/g, "")}`}>Call</a>}
+      </div>
+
+      <div className="panel" style={{ marginTop: 18 }}>
+        <h3>General</h3>
+        <div className="setrow">
+          <div><div className="sl">Trade / Service</div></div>
+          <div className="sd">{sub.trade || "—"}</div>
+        </div>
+        <div className="setrow">
+          <div><div className="sl">Phone</div></div>
+          <div className="sd">{sub.phone || "—"}</div>
+        </div>
+        <div className="setrow">
+          <div><div className="sl">Jobs worked</div></div>
+          <div className="sd">{sub.jobs || "—"}</div>
+        </div>
+        <div className="setrow">
+          <div><div className="sl">Projects</div></div>
+          <div className="sd" style={{ textAlign: "right", maxWidth: 420 }}>
+            {projects.length ? projects.join(" · ") : "—"}
+          </div>
+        </div>
+        <div className="setrow">
+          <div><div className="sl">Source</div></div>
+          <div className="sd">{sub.source || "—"}</div>
+        </div>
+      </div>
+
+      <SubDocs subKey={sub.key} subName={sub.name} docs={docs} />
+    </section>
+  );
+}

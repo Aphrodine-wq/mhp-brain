@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { SubRow } from "@/lib/queries";
 import { post } from "@/lib/client";
@@ -170,7 +171,8 @@ function TradeSection({
             return (
               <tr key={x.key}>
                 <td>
-                  <b>{x.name}</b> {x.verified && <span className="badge active" title="Confirmed">✓</span>}
+                  <Link href={`/subs/${encodeURIComponent(x.key)}`} className="cell-link">{x.name}</Link>{" "}
+                  {x.verified && <span className="badge active" title="Confirmed">✓</span>}
                 </td>
                 <td>{ed ? <input value={trade} onChange={(e) => setTrade(e.target.value)} style={{ width: 150 }} /> : x.trade || "—"}</td>
                 <td>{ed ? <input value={phone} onChange={(e) => setPhone(e.target.value)} style={{ width: 130 }} /> : x.phone || "—"}</td>
