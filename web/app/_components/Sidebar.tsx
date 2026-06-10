@@ -10,7 +10,6 @@ type NavItem = { href: string; label: string; icon: React.ReactNode };
 // Icon library — shared across role configs
 const ICONS: Record<string, React.ReactNode> = {
   home: (<><path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" /></>),
-  requests: (<><path d="M4 4h16v12H7l-3 3z" /><path d="M8 9h8M8 12h5" /></>),
   estimator: (<><rect x="6" y="3" width="12" height="18" rx="2" /><path d="M9 7h6M9 11h6M9 15h6" /></>),
   estimates: (<><path d="M6 2h9l5 5v15H6z" /><path d="M14 2v6h6" /><path d="M9 13h6M9 17h6" /></>),
   projects: (<path d="M3 7h6l2 2h10v11H3z" />),
@@ -29,7 +28,6 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
   // CEO sees the full admin surface; only the landing differs (Cockpit, not Home).
   ceo: [
     { href: "/", label: "Cockpit", icon: i("home") },
-    { href: "/requests", label: "Requests", icon: i("requests") },
     { href: "/estimate-builder", label: "Estimate Builder", icon: i("estimator") },
     { href: "/estimates", label: "Estimates", icon: i("estimates") },
     { href: "/projects", label: "Projects", icon: i("projects") },
@@ -37,7 +35,6 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
     { href: "/crew", label: "Crew", icon: i("crew") },
   ],
   estimator: [
-    { href: "/requests", label: "Requests", icon: i("requests") },
     { href: "/estimate-builder", label: "Estimate Builder", icon: i("estimator") },
     { href: "/estimates", label: "Estimates", icon: i("estimates") },
     { href: "/projects", label: "Projects", icon: i("projects") },
@@ -45,7 +42,6 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
   ],
   sales: [
     { href: "/", label: "Pipeline", icon: i("pipeline") },
-    { href: "/requests", label: "Requests", icon: i("requests") },
     { href: "/projects", label: "Projects", icon: i("projects") },
     { href: "/estimates", label: "Estimates", icon: i("estimates") },
   ],
@@ -57,7 +53,6 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
   ],
   admin: [
     { href: "/", label: "Home", icon: i("home") },
-    { href: "/requests", label: "Requests", icon: i("requests") },
     { href: "/estimate-builder", label: "Estimate Builder", icon: i("estimator") },
     { href: "/estimates", label: "Estimates", icon: i("estimates") },
     { href: "/projects", label: "Projects", icon: i("projects") },
@@ -106,17 +101,6 @@ const ROLE_LABEL: Record<Role, string> = {
   crew: "Crew",
 };
 
-const ROLE_TITLE: Record<Role, string> = {
-  admin: "MHP Brain",
-  ceo: "MHP Cockpit",
-  estimator: "MHP Estimator",
-  sales: "MHP Sales",
-  materials: "MHP Materials",
-  editor: "MHP Brain",
-  viewer: "MHP Brain",
-  crew: "MHP Crew",
-};
-
 export default function Sidebar({ user }: { user: SessionUser }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -133,7 +117,6 @@ export default function Sidebar({ user }: { user: SessionUser }) {
 
   const nav = ROLE_NAV[user.role] ?? ROLE_NAV.viewer;
   const foot = ROLE_FOOTER[user.role] ?? ROLE_FOOTER.default;
-  const title = ROLE_TITLE[user.role] ?? "MHP Brain";
 
   const link = ({ href, label, icon }: NavItem) => (
     <Link key={href} href={href} className={`nav${isActive(href) ? " active" : ""}`} onClick={() => setOpen(false)}>
@@ -161,7 +144,6 @@ export default function Sidebar({ user }: { user: SessionUser }) {
         </button>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo-light.png" alt="MHP" />
-        <span className="tb-title">{title}</span>
       </header>
 
       {/* Backdrop behind the open drawer */}
@@ -171,7 +153,6 @@ export default function Sidebar({ user }: { user: SessionUser }) {
       <div className="brand">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo-light.png" alt="MHP" />
-        <span>{title}</span>
       </div>
       <nav>
         {nav.map(link)}

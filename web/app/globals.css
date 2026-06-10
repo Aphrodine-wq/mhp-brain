@@ -165,7 +165,6 @@ small.j{color:var(--muted);font-size:11px}
   position:sticky;top:0;height:100vh}
 .brand{display:flex;align-items:center;gap:11px;padding:20px 18px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
 .brand img{height:36px;width:auto}
-.brand span{font-family:var(--disp);font-weight:600;font-size:17px;color:#fff;letter-spacing:-.2px}
 .sidebar nav{padding:14px 12px;display:flex;flex-direction:column;gap:1px;flex:1}
 .nav{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:var(--r-sm);color:rgba(255,255,255,.66);
   font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;transition:background var(--t),color var(--t)}
@@ -287,6 +286,8 @@ small.j{color:var(--muted);font-size:11px}
 .setrow input,.setrow select{padding:8px 12px;border:1px solid var(--line);border-radius:var(--r-sm);font-family:var(--sans);
   transition:border-color var(--t),box-shadow var(--t)}
 .setrow input:focus,.setrow select:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
+.setrow .actions{display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+.setrow .actions input.mk{width:180px}
 .toggle{width:44px;height:24px;border-radius:var(--r-pill);background:var(--line);position:relative;cursor:pointer;transition:background var(--t)}
 .toggle.on{background:var(--navy)}
 .toggle::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;left:3px;
@@ -419,7 +420,6 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
     background:var(--ink-navy);color:#fff;padding:11px 16px;
     border-bottom:1px solid rgba(255,255,255,.1)}
   .topbar img{height:28px;width:auto}
-  .topbar .tb-title{font-family:var(--disp);font-weight:600;font-size:16px;letter-spacing:-.2px}
   .hamburger{display:flex;align-items:center;justify-content:center;background:0;border:0;
     color:#fff;cursor:pointer;padding:6px;margin:-6px 2px -6px -6px;-webkit-tap-highlight-color:transparent}
   .hamburger svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}

@@ -84,41 +84,6 @@ export async function projectsList(): Promise<ProjectRow[]> {
   return out;
 }
 
-export interface EstimateRequestRow {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  market: string;
-  projectType: string;
-  sqft: number | null;
-  scope: string;
-  status: string;
-  createdAt: string;
-}
-
-// Homeowner estimate requests submitted from the marketing site. Newest first.
-export async function estimateRequestsList(): Promise<EstimateRequestRow[]> {
-  const rows = (await db.execute(
-    "SELECT id,name,email,phone,address,market,project_type,sqft,scope,status,created_at " +
-    "FROM estimate_requests WHERE status != 'spam' ORDER BY created_at DESC",
-  )).rows;
-  return rows.map((r) => ({
-    id: String(r.id),
-    name: String(r.name),
-    email: (r.email as string | null) ?? "",
-    phone: (r.phone as string | null) ?? "",
-    address: (r.address as string | null) ?? "",
-    market: (r.market as string | null) ?? "",
-    projectType: (r.project_type as string | null) ?? "",
-    sqft: (r.sqft as number | null) ?? null,
-    scope: (r.scope as string | null) ?? "",
-    status: String(r.status),
-    createdAt: (r.created_at as string | null) ?? "",
-  }));
-}
-
 export interface SubRow {
   name: string;
   key: string;

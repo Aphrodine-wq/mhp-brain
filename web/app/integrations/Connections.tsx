@@ -46,11 +46,12 @@ export default function Connections({
 
   return (
     <div className="panel" style={{ marginTop: 18 }}>
-      <h3>Connected Services</h3>
-      <div className="sd" style={{ marginBottom: 6 }}>
-        Link your company accounts so the system can pull in real numbers automatically. All connections are read-only — nothing gets changed in your other systems.
-      </div>
-      {notice && <div className={notice.ok ? "conn-ok" : "conn-err"}>{notice.text}</div>}
+      <h3>Connected services</h3>
+      {notice && (
+        <div className={notice.ok ? "conn-ok" : "conn-err"} style={{ margin: "14px 20px 4px" }}>
+          {notice.text}
+        </div>
+      )}
 
       {providers.map((p) => (
         <div className="setrow" key={p.id}>
@@ -61,14 +62,15 @@ export default function Connections({
                 NOT_READY[p.id]
               ) : p.connection ? (
                 <>
-                  Connected · <b>{p.connection.account}</b>
+                  Connected as <b>{p.connection.account}</b>
                 </>
               ) : (
                 DESCRIPTIONS[p.id]
               )}
             </div>
+            {p.id === "microsoft" && syncResult ? <div className="sd">{syncResult}</div> : null}
           </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div className="actions">
             {!p.configured ? (
               <span className="badge aging">Not set up</span>
             ) : p.connection ? (
@@ -78,7 +80,7 @@ export default function Connections({
             )}
 
             {p.configured && p.id === "quickbooks" && (
-              <a className="btn ghost" href="/api/oauth/quickbooks/start">
+              <a className="btn ghost sm" href="/api/oauth/quickbooks/start">
                 {p.connection ? "Reconnect" : "Connect"}
               </a>
             )}
@@ -90,10 +92,9 @@ export default function Connections({
                   placeholder="invoices@company.com"
                   value={gmailBox}
                   onChange={(e) => setGmailBox(e.target.value)}
-                  style={{ width: 170 }}
                 />
                 <button
-                  className="btn ghost"
+                  className="btn ghost sm"
                   disabled={!gmailBox.trim()}
                   onClick={() =>
                     (window.location.href = "/api/oauth/gmail/start?account=" + encodeURIComponent(gmailBox.trim()))
@@ -105,13 +106,13 @@ export default function Connections({
             )}
 
             {p.configured && p.id === "microsoft" && (
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <a className="btn ghost" href="/api/oauth/microsoft/start">
+              <>
+                <a className="btn ghost sm" href="/api/oauth/microsoft/start">
                   {p.connection ? "Reconnect" : "Connect"}
                 </a>
                 {p.connection && (
                   <button
-                    className="btn ghost"
+                    className="btn ghost sm"
                     disabled={syncing}
                     onClick={async () => {
                       setSyncing(true);
@@ -137,14 +138,11 @@ export default function Connections({
                     {syncing ? "Pulling..." : "Pull latest"}
                   </button>
                 )}
-              </div>
+              </>
             )}
-            {p.id === "microsoft" && syncResult ? (
-              <div className="sd" style={{ marginTop: 4 }}>{syncResult}</div>
-            ) : null}
 
             {p.configured && p.connection && (
-              <a className="btn ghost" href={`/api/oauth/${p.id}/disconnect`}>
+              <a className="btn ghost sm" href={`/api/oauth/${p.id}/disconnect`}>
                 Disconnect
               </a>
             )}
