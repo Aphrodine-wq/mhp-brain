@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import type { CatalogRow } from "@/lib/queries";
 import { money } from "@/lib/format";
-import { ASSEMBLY_LIST } from "@/lib/assemblies";
+import { ASSEMBLY_LIST, ASSEMBLY_CATEGORIES } from "@/lib/assemblies";
 import { detailFor, divisionDetailFor, ESTIMATE_SCOPE } from "@/lib/line-detail";
 import ClientPacket, { type ClientInfo } from "./ClientPacket";
+import CollapseSection from "../_components/CollapseSection";
 
 interface Line {
   key: number;
@@ -219,17 +220,29 @@ export default function Estimator({
     const asm = ASSEMBLY_LIST.find((a) => a.key === asmKey);
     return (
       <section className="view">
-        <div className="asm-grid" style={{ marginTop: 2 }}>
-          {ASSEMBLY_LIST.map((a) => (
-            <button
-              key={a.key}
-              className={`asm-card${asmKey === a.key ? " active" : ""}`}
-              onClick={() => selectAssembly(a.key)}
+        {ASSEMBLY_CATEGORIES.map((cat) => {
+          const items = ASSEMBLY_LIST.filter((a) => a.category === cat);
+          return (
+            <CollapseSection
+              key={cat}
+              title={cat}
+              summary={`${items.length} template${items.length === 1 ? "" : "s"}`}
+              forceOpen={items.some((a) => a.key === asmKey)}
             >
-              <b>{a.label}</b>
-            </button>
-          ))}
-        </div>
+              <div className="asm-grid" style={{ margin: 0, padding: "14px 16px 16px" }}>
+                {items.map((a) => (
+                  <button
+                    key={a.key}
+                    className={`asm-card${asmKey === a.key ? " active" : ""}`}
+                    onClick={() => selectAssembly(a.key)}
+                  >
+                    <b>{a.label}</b>
+                  </button>
+                ))}
+              </div>
+            </CollapseSection>
+          );
+        })}
         {asm && (
           <div className="asm-inputs">
             {asm.inputs.map((d) => (

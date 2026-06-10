@@ -28,6 +28,7 @@ export interface Assembly {
   key: string;
   label: string;
   blurb: string;
+  category: string;
   inputs: AssemblyInputDef[];
   lines: AssemblyLineDef[];
 }
@@ -57,6 +58,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   "bonus-room": {
     key: "bonus-room",
     label: "Bonus Room Suite",
+    category: "Additions & Conversions",
     blurb: "Room over an existing structure, optional bath.",
     inputs: [
       { key: "floorSqft", label: "Floor area (sqft)", placeholder: "600", default: 600 },
@@ -94,6 +96,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   bathroom: {
     key: "bathroom",
     label: "Bathroom Remodel",
+    category: "Remodels & Interiors",
     blurb: "Gut and remodel a bath.",
     inputs: [
       { key: "sqft", label: "Bathroom area (sqft)", placeholder: "120", default: 120 },
@@ -122,6 +125,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   kitchen: {
     key: "kitchen",
     label: "Kitchen Remodel",
+    category: "Remodels & Interiors",
     blurb: "Full gut — cabinets, counters, finishes.",
     inputs: [
       { key: "sqft", label: "Kitchen area (sqft)", placeholder: "300", default: 300 },
@@ -153,6 +157,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   "new-construction": {
     key: "new-construction",
     label: "New Construction (Full House)",
+    category: "New Builds",
     blurb: "Ground-up home, foundation to finishes.",
     inputs: [
       { key: "heatedSqft", label: "Heated area (sqft)", placeholder: "2400", default: 2400 },
@@ -233,6 +238,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   "deck-porch": {
     key: "deck-porch",
     label: "Deck / Porch",
+    category: "Exterior & Outdoor",
     blurb: "Framing, decking, footings.",
     inputs: [
       { key: "sqft", label: "Deck/porch area (sqft)", placeholder: "240", default: 240 },
@@ -253,6 +259,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   garage: {
     key: "garage",
     label: "Detached Garage",
+    category: "New Builds",
     blurb: "Slab, shell, roof, siding, power.",
     inputs: [
       { key: "sqft", label: "Garage area (sqft)", placeholder: "480", default: 480 },
@@ -284,6 +291,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   "room-addition": {
     key: "room-addition",
     label: "Room Addition",
+    category: "Additions & Conversions",
     blurb: "Slab addition tied into the house.",
     inputs: [
       { key: "floorSqft", label: "Floor area (sqft)", placeholder: "400", default: 400 },
@@ -332,6 +340,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   reroof: {
     key: "reroof",
     label: "Roof Replacement",
+    category: "Exterior & Outdoor",
     blurb: "Tear-off, shingles, and gutters.",
     inputs: [
       { key: "sqft", label: "Roof footprint (sqft)", placeholder: "2000", default: 2000 },
@@ -349,6 +358,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   siding: {
     key: "siding",
     label: "Siding Replacement",
+    category: "Exterior & Outdoor",
     blurb: "New siding, trim, and repaint.",
     inputs: [
       { key: "sqft", label: "Heated area (sqft)", placeholder: "2000", default: 2000 },
@@ -368,6 +378,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   "interior-refresh": {
     key: "interior-refresh",
     label: "Interior Refresh",
+    category: "Remodels & Interiors",
     blurb: "Paint, flooring, trim — no structural.",
     inputs: [
       { key: "sqft", label: "Floor area (sqft)", placeholder: "1500", default: 1500 },
@@ -388,6 +399,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   flooring: {
     key: "flooring",
     label: "Flooring Replacement",
+    category: "Remodels & Interiors",
     blurb: "LVT throughout, optional tile.",
     inputs: [
       { key: "sqft", label: "Total floor area (sqft)", placeholder: "1200", default: 1200 },
@@ -407,6 +419,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   "garage-conversion": {
     key: "garage-conversion",
     label: "Garage Conversion",
+    category: "Additions & Conversions",
     blurb: "Garage to living space — envelope and finishes.",
     inputs: [
       { key: "sqft", label: "Garage area (sqft)", placeholder: "440", default: 440 },
@@ -438,6 +451,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   "covered-porch": {
     key: "covered-porch",
     label: "Covered Porch",
+    category: "Exterior & Outdoor",
     blurb: "Porch with posts and a shingle roof.",
     inputs: [
       { key: "sqft", label: "Porch area (sqft)", placeholder: "240", default: 240 },
@@ -464,6 +478,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   "concrete-slab": {
     key: "concrete-slab",
     label: "Concrete Slab / Driveway",
+    category: "Exterior & Outdoor",
     blurb: "Forming, pour, and finish off proven rates.",
     inputs: [
       { key: "sqft", label: "Slab area (sqft)", placeholder: "600", default: 600 },
@@ -481,6 +496,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   repaint: {
     key: "repaint",
     label: "Whole-House Repaint",
+    category: "Remodels & Interiors",
     blurb: "Interior and exterior, two coats.",
     inputs: [
       { key: "sqft", label: "Heated area (sqft)", placeholder: "1800", default: 1800 },
@@ -498,6 +514,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   windows: {
     key: "windows",
     label: "Window Replacement",
+    category: "Exterior & Outdoor",
     blurb: "Per-opening replacement with trim and touch-up.",
     inputs: [
       { key: "count", label: "Window openings", placeholder: "10", default: 10 },
@@ -518,6 +535,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   countertops: {
     key: "countertops",
     label: "Countertops & Backsplash",
+    category: "Remodels & Interiors",
     blurb: "New tops, backsplash, sink re-set.",
     inputs: [
       { key: "sqft", label: "Counter area (sqft)", placeholder: "55", default: 55 },
@@ -562,9 +580,17 @@ export function expandAssembly(key: string, rawInputs: Record<string, number>): 
   return { descriptions, qtyByCanon };
 }
 
+export const ASSEMBLY_CATEGORIES = [
+  "New Builds",
+  "Additions & Conversions",
+  "Remodels & Interiors",
+  "Exterior & Outdoor",
+];
+
 export const ASSEMBLY_LIST = Object.values(ASSEMBLIES).map((a) => ({
   key: a.key,
   label: a.label,
   blurb: a.blurb,
+  category: a.category,
   inputs: a.inputs,
 }));
