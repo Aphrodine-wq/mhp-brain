@@ -203,6 +203,7 @@ export default function Estimator({
     const asm = ASSEMBLY_LIST.find((a) => a.key === asmKey);
     return (
       <section className="view">
+        <div className="eb-kicker">Built on MHP job history</div>
         <h2>Quick start — pick a job type</h2>
         <div className="sub">
           Pick a template and enter a couple dimensions — we build the full scope with quantities derived
@@ -310,7 +311,7 @@ export default function Estimator({
               <thead>
                 <tr>
                   <th>CSI</th><th>Item</th><th className="n">Qty</th><th>Unit</th><th className="n">Rate ($)</th>
-                  <th className="n">Item Total</th><th>Backed by</th><th></th>
+                  <th className="n">Item Total</th><th></th>
                 </tr>
               </thead>
               <tbody>
@@ -331,15 +332,13 @@ export default function Estimator({
                           <td>{l.unit || ""}</td>
                           <td className="n">
                             <input className="cell" type="number" step="any" value={l.rate} onChange={(e) => update(l.key, "rate", e.target.value)} />
-                          </td>
-                          <td className="n it">{money(it)}</td>
-                          <td>
                             {l.p25 != null ? (
-                              <small className="j">${l.p25}–${l.p75} · {l.jobs}j</small>
+                              <div className="rate-hint">${l.p25}–${l.p75} · {l.jobs} jobs</div>
                             ) : l.jobs > 0 ? (
-                              <small className="j">{l.jobs}j</small>
+                              <div className="rate-hint">{l.jobs} jobs</div>
                             ) : null}
                           </td>
+                          <td className="n it">{money(it)}</td>
                           <td><button className="x" onClick={() => remove(l.key)}>×</button></td>
                         </tr>
                       );
@@ -412,7 +411,7 @@ function FragmentGroup({ division, children }: { division: string; children: Rea
   return (
     <>
       <tr className="div">
-        <td colSpan={8}>
+        <td colSpan={7}>
           {division}
           {dd && <span className="div-detail">{dd}</span>}
         </td>
