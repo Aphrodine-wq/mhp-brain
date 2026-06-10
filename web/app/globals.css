@@ -507,6 +507,18 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
   align-items:center;border-left:1px solid rgba(255,255,255,.08);transition:background var(--t),color var(--t)}
 .logout:hover{color:#fff;background:rgba(255,255,255,.06)}
 .logout svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* modal (Add Sub) */
+.modal-scrim{position:fixed;inset:0;z-index:80;background:rgba(8,16,28,.5);display:flex;align-items:center;
+  justify-content:center;padding:20px}
+.modal{width:100%;max-width:460px;background:#fff;border-radius:var(--r-lg);box-shadow:var(--shadow-lg);
+  padding:24px 26px}
+.modal h3{font-family:var(--disp);font-size:18px;margin:0 0 16px;letter-spacing:-.3px}
+.modal label{display:flex;flex-direction:column;gap:6px;margin-bottom:13px;font-size:12px;font-weight:600;color:var(--ink)}
+.modal label input{padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-sm);font-family:var(--sans);
+  font-size:14px;transition:border-color var(--t),box-shadow var(--t)}
+.modal label input:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
+.modal-import{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;padding-top:14px;border-top:1px dashed var(--line)}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
 /* connections notices (Integrations OAuth result) */
 .conn-ok{background:#e3f1e4;border:1px solid #bfe0c2;color:#2f6b34;font-size:13px;padding:8px 12px;border-radius:var(--r-sm);margin-bottom:10px}
 .conn-err{background:#fbe9e4;border:1px solid #e6c4b8;color:var(--warn);font-size:13px;padding:8px 12px;border-radius:var(--r-sm);margin-bottom:10px}

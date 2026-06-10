@@ -8,9 +8,7 @@ export default async function SubsPage() {
   return (
     <section className="view">
       <h2>Subs &amp; Suppliers</h2>
-      <div className="sub">
-        Pulled from the Corinth roster, estimate sheets, and job history. {subs.length} on the bench.
-      </div>
+      <div className="sub">Grouped by trade. Pulled from the roster, estimate sheets, and job history.</div>
       <SubsTable subs={subs} />
     </section>
   );
