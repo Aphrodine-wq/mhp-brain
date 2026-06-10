@@ -401,6 +401,137 @@ export const ASSEMBLIES: Record<string, Assembly> = {
       { desc: "Floor Tile Labor", qty: (i) => r0(i.tileSqft) },
     ],
   },
+
+  // Garage -> conditioned living space. Light framing (furring/partitions), full envelope
+  // and finish package; window + door cut-ins by hand if the plan calls for them.
+  "garage-conversion": {
+    key: "garage-conversion",
+    label: "Garage Conversion",
+    blurb: "Garage to living space — envelope and finishes.",
+    inputs: [
+      { key: "sqft", label: "Garage area (sqft)", placeholder: "440", default: 440 },
+    ],
+    lines: [
+      ...ALWAYS,
+      { desc: "Structure Demolition", qty: () => 1 },
+      { desc: "Framing Material", qty: (i) => r0(i.sqft * 0.5) },
+      { desc: "Framing Labor", qty: (i) => r0(i.sqft * 0.5) },
+      { desc: "Insulation Material", qty: (i) => r0(i.sqft) },
+      { desc: "Insulation Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Drywall", qty: (i) => r0(i.sqft * 2.5) },
+      { desc: "Interior Paint Material", qty: (i) => r0(i.sqft) },
+      { desc: "Interior Paint Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Interior Trim Material", qty: (i) => r0(i.sqft) },
+      { desc: "Interior Trim Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Electrical Material", qty: (i) => r0(i.sqft) },
+      { desc: "Electrical Labor", qty: (i) => r0(i.sqft) },
+      { desc: "HVAC Material", qty: () => 1 },
+      { desc: "LVT Flooring - Materials", qty: (i) => r0(i.sqft) },
+      { desc: "LVT Flooring - Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Interior Doors", qty: () => 1 },
+      { desc: "Door Hardware", qty: () => 1 },
+      { desc: "Windows", qty: () => 1 },
+    ],
+  },
+
+  // Covered porch — open Deck/Porch plus posts and a shingle roof over it.
+  "covered-porch": {
+    key: "covered-porch",
+    label: "Covered Porch",
+    blurb: "Porch with posts and a shingle roof.",
+    inputs: [
+      { key: "sqft", label: "Porch area (sqft)", placeholder: "240", default: 240 },
+    ],
+    lines: [
+      ...ALWAYS,
+      { desc: "Footing Material", qty: (i) => r0(perimeter(i.sqft)) },
+      { desc: "Footing Labor", qty: (i) => r0(perimeter(i.sqft)) },
+      { desc: "Porch Material", qty: (i) => r0(i.sqft) },
+      { desc: "Porch Labor", qty: (i) => r0(i.sqft) },
+      // posts every ~8ft of perimeter, 10ft tall
+      { desc: "Wood Post & Column Material", qty: (i) => r0((perimeter(i.sqft) / 8) * 10) },
+      { desc: "Wood Post & Column Labor", qty: (i) => r0((perimeter(i.sqft) / 8) * 10) },
+      { desc: "Framing Material", qty: (i) => r0(i.sqft) },
+      { desc: "Framing Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Shingle Roofing Material", qty: (i) => roofSq(i.sqft) },
+      { desc: "Shingle Roofing Labor", qty: (i) => roofSq(i.sqft) },
+      { desc: "Exterior Paint Material", qty: (i) => r0(i.sqft) },
+      { desc: "Exterior Paint Labor", qty: (i) => r0(i.sqft) },
+    ],
+  },
+
+  // Flatwork — slab, driveway, or patio off proven concrete rates.
+  "concrete-slab": {
+    key: "concrete-slab",
+    label: "Concrete Slab / Driveway",
+    blurb: "Forming, pour, and finish off proven rates.",
+    inputs: [
+      { key: "sqft", label: "Slab area (sqft)", placeholder: "600", default: 600 },
+    ],
+    lines: [
+      ...ALWAYS,
+      { desc: "Site Prep/Grading", qty: () => 1 },
+      { desc: "Concrete Forming Material (Includes Reinforcement)", qty: (i) => r0(i.sqft) },
+      { desc: "Slab Material", qty: (i) => slabYards(i.sqft) },
+      { desc: "Slab Labor", qty: (i) => r0(i.sqft) },
+    ],
+  },
+
+  // Repaint inside and out — wall area derived from the footprint for the exterior side.
+  repaint: {
+    key: "repaint",
+    label: "Whole-House Repaint",
+    blurb: "Interior and exterior, two coats.",
+    inputs: [
+      { key: "sqft", label: "Heated area (sqft)", placeholder: "1800", default: 1800 },
+    ],
+    lines: [
+      ...ALWAYS,
+      { desc: "Interior Paint Material", qty: (i) => r0(i.sqft) },
+      { desc: "Interior Paint Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Exterior Paint Material", qty: (i) => wallFt(i.sqft) },
+      { desc: "Exterior Paint Labor", qty: (i) => wallFt(i.sqft) },
+    ],
+  },
+
+  // Pull-and-set window replacement; trim and touch-up scale per opening.
+  windows: {
+    key: "windows",
+    label: "Window Replacement",
+    blurb: "Per-opening replacement with trim and touch-up.",
+    inputs: [
+      { key: "count", label: "Window openings", placeholder: "10", default: 10 },
+    ],
+    lines: [
+      ...ALWAYS,
+      { desc: "Windows", qty: (i) => r0(i.count) },
+      { desc: "Exterior Trim Material", qty: (i) => r0(i.count * 15) },
+      { desc: "Exterior Trim Labor", qty: (i) => r0(i.count * 15) },
+      { desc: "Interior Trim Material", qty: (i) => r0(i.count * 10) },
+      { desc: "Interior Trim Labor", qty: (i) => r0(i.count * 10) },
+      { desc: "Exterior Paint Material", qty: (i) => r0(i.count * 15) },
+      { desc: "Exterior Paint Labor", qty: (i) => r0(i.count * 15) },
+    ],
+  },
+
+  // Counter swap — tops, backsplash, and the sink re-set.
+  countertops: {
+    key: "countertops",
+    label: "Countertops & Backsplash",
+    blurb: "New tops, backsplash, sink re-set.",
+    inputs: [
+      { key: "sqft", label: "Counter area (sqft)", placeholder: "55", default: 55 },
+      { key: "bsSqft", label: "Backsplash area (sqft)", placeholder: "30", default: 30 },
+    ],
+    lines: [
+      ...ALWAYS,
+      { desc: "Countertop Material", qty: (i) => r0(i.sqft) },
+      { desc: "Countertop Labor", qty: (i) => r0(i.sqft) },
+      { desc: "Backsplash Material", qty: (i) => r0(i.bsSqft) },
+      { desc: "Backsplash Labor", qty: (i) => r0(i.bsSqft) },
+      { desc: "Plumbing Material & Labor", qty: () => 1 },
+    ],
+  },
 };
 
 export interface ExpandedAssembly {
