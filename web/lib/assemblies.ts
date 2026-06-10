@@ -57,7 +57,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   "bonus-room": {
     key: "bonus-room",
     label: "Bonus Room Suite",
-    blurb: "Conditioned room built out over an existing structure, optional bath(s).",
+    blurb: "Room over an existing structure, optional bath.",
     inputs: [
       { key: "floorSqft", label: "Floor area (sqft)", placeholder: "600", default: 600 },
       { key: "baths", label: "Bathrooms", placeholder: "1", default: 1 },
@@ -94,7 +94,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   bathroom: {
     key: "bathroom",
     label: "Bathroom Remodel",
-    blurb: "Gut and remodel an existing bathroom.",
+    blurb: "Gut and remodel a bath.",
     inputs: [
       { key: "sqft", label: "Bathroom area (sqft)", placeholder: "120", default: 120 },
     ],
@@ -122,7 +122,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   kitchen: {
     key: "kitchen",
     label: "Kitchen Remodel",
-    blurb: "Gut and remodel a kitchen — cabinets, counters, finishes.",
+    blurb: "Full gut — cabinets, counters, finishes.",
     inputs: [
       { key: "sqft", label: "Kitchen area (sqft)", placeholder: "300", default: 300 },
       { key: "cabinetLft", label: "Cabinet run (linear ft)", placeholder: "40", default: 40 },
@@ -153,7 +153,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   "new-construction": {
     key: "new-construction",
     label: "New Construction (Full House)",
-    blurb: "Ground-up custom home — foundation to finishes. Bottom-up from proven rates.",
+    blurb: "Ground-up home, foundation to finishes.",
     inputs: [
       { key: "heatedSqft", label: "Heated area (sqft)", placeholder: "2400", default: 2400 },
       { key: "garageSqft", label: "Garage (sqft)", placeholder: "440", default: 440 },
@@ -233,7 +233,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   "deck-porch": {
     key: "deck-porch",
     label: "Deck / Porch",
-    blurb: "Open deck or porch — framing, decking surface, footings. (Proven porch rates.)",
+    blurb: "Framing, decking, footings.",
     inputs: [
       { key: "sqft", label: "Deck/porch area (sqft)", placeholder: "240", default: 240 },
     ],
@@ -253,7 +253,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   garage: {
     key: "garage",
     label: "Detached Garage",
-    blurb: "Slab-on-grade detached garage — foundation, shell, roof, siding, power.",
+    blurb: "Slab, shell, roof, siding, power.",
     inputs: [
       { key: "sqft", label: "Garage area (sqft)", placeholder: "480", default: 480 },
     ],
@@ -284,7 +284,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   "room-addition": {
     key: "room-addition",
     label: "Room Addition",
-    blurb: "Ground-level slab addition tied into the existing house — full envelope and finishes.",
+    blurb: "Slab addition tied into the house.",
     inputs: [
       { key: "floorSqft", label: "Floor area (sqft)", placeholder: "400", default: 400 },
       { key: "baths", label: "Bathrooms", placeholder: "0", default: 0 },
@@ -332,7 +332,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   reroof: {
     key: "reroof",
     label: "Roof Replacement",
-    blurb: "Tear-off and re-roof — shingles and gutters off proven roofing rates.",
+    blurb: "Tear-off, shingles, and gutters.",
     inputs: [
       { key: "sqft", label: "Roof footprint (sqft)", placeholder: "2000", default: 2000 },
     ],
@@ -349,7 +349,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   siding: {
     key: "siding",
     label: "Siding Replacement",
-    blurb: "Re-side the exterior — siding, exterior trim, and repaint.",
+    blurb: "New siding, trim, and repaint.",
     inputs: [
       { key: "sqft", label: "Heated area (sqft)", placeholder: "2000", default: 2000 },
     ],
@@ -368,7 +368,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   "interior-refresh": {
     key: "interior-refresh",
     label: "Interior Refresh",
-    blurb: "Repaint, new flooring, and trim across an occupied home — no structural work.",
+    blurb: "Paint, flooring, trim — no structural.",
     inputs: [
       { key: "sqft", label: "Floor area (sqft)", placeholder: "1500", default: 1500 },
     ],
@@ -388,7 +388,7 @@ export const ASSEMBLIES: Record<string, Assembly> = {
   flooring: {
     key: "flooring",
     label: "Flooring Replacement",
-    blurb: "Pull and replace flooring — LVT throughout with optional tile areas.",
+    blurb: "LVT throughout, optional tile.",
     inputs: [
       { key: "sqft", label: "Total floor area (sqft)", placeholder: "1200", default: 1200 },
       { key: "tileSqft", label: "Tile area (sqft)", placeholder: "0", default: 0 },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CatalogRow } from "@/lib/queries";
 import { money } from "@/lib/format";
 import { ASSEMBLY_LIST } from "@/lib/assemblies";
@@ -54,6 +54,26 @@ export default function Estimator({
   const setC = (k: keyof ClientInfo, v: string) => setClient((c) => ({ ...c, [k]: v }));
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
+  // user defaults from the Settings page (markup/contingency/display) — same localStorage
+  // hydration pattern as SettingsForm: must run post-mount because this component SSRs.
+  const [prefs, setPrefs] = useState({ markup: null as number | null, contPct: 10, bands: true, cont: true });
+  /* eslint-disable react-hooks/set-state-in-effect -- localStorage hydration has no render-time equivalent under SSR */
+  useEffect(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem("mhp_settings") || "{}");
+      setPrefs({
+        markup: s.markup ? Number(s.markup) : null,
+        contPct: s.contPct != null ? Number(s.contPct) : 10,
+        bands: s.bands !== false,
+        cont: s.cont !== false,
+      });
+      if (s.preparedBy) setClient((c) => ({ ...c, preparedBy: s.preparedBy }));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
   async function saveProject() {
     setSaveState("saving");
     try {
@@ -94,7 +114,8 @@ export default function Estimator({
 
   // shared: populate the editable table from an /api/estimate response
   function applyResult(d: { lines: SeedResult[]; notes: string[]; markup: number }) {
-    setMarkup(d.markup);
+    setMarkup(prefs.markup ?? d.markup); // user's default markup wins over the server's
+
     setNotes(d.notes);
     const sorted = [...d.lines].sort((a, b) => (a.division || "").localeCompare(b.division || ""));
     setLines(
@@ -187,7 +208,7 @@ export default function Estimator({
     const d = (l.division || "Other").replace(/^Division\s*/, "Div ").replace(/:.*$/, (m) => m.split(":")[0]);
     byDiv[d] = (byDiv[d] || 0) + it;
   }
-  const cont = sub * 0.1;
+  const cont = prefs.cont ? sub * (prefs.contPct / 100) : 0;
   const bid = sub * mk;
 
   // group consecutive lines by division for header rows
@@ -203,12 +224,8 @@ export default function Estimator({
     const asm = ASSEMBLY_LIST.find((a) => a.key === asmKey);
     return (
       <section className="view">
-        <div className="eb-kicker">Built on MHP job history</div>
-        <h2>Quick start — pick a job type</h2>
-        <div className="sub">
-          Pick a template and enter a couple dimensions — we build the full scope with quantities derived
-          from MHP&apos;s job history. Or describe it free-form below.
-        </div>
+        <h2>New estimate</h2>
+        <div className="sub">Pick a job type — the scope builds from MHP job history.</div>
         <div className="asm-grid">
           {ASSEMBLY_LIST.map((a) => (
             <button
@@ -240,14 +257,9 @@ export default function Estimator({
 
         <div className="or-sep"><span>or describe it</span></div>
 
-        <div className="sec-h" style={{ margin: "0 0 6px" }}>Describe the job</div>
-        <div className="sub">
-          Type everything you know — scope, rooms, square footage, finishes. The more detail, the better the
-          seed. You&apos;ll edit every line next.
-        </div>
         <textarea value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={PLACEHOLDER} />
         <div className="upload">
-          <span className="upload-h">Upload plans, scope docs, or photos <span>(optional)</span></span>
+          <span className="upload-h">Plans, docs, or photos <span>(optional)</span></span>
           <input type="file" multiple onChange={(e) => setFiles(e.target.files)} />
         </div>
         <div className="row">
@@ -332,7 +344,7 @@ export default function Estimator({
                           <td>{l.unit || ""}</td>
                           <td className="n">
                             <input className="cell" type="number" step="any" value={l.rate} onChange={(e) => update(l.key, "rate", e.target.value)} />
-                            {l.p25 != null ? (
+                            {!prefs.bands ? null : l.p25 != null ? (
                               <div className="rate-hint">${l.p25}–${l.p75} · {l.jobs} jobs</div>
                             ) : l.jobs > 0 ? (
                               <div className="rate-hint">{l.jobs} jobs</div>
@@ -371,7 +383,7 @@ export default function Estimator({
           </div>
           <div className="pv-tot">
             <div className="pv-line"><span>Subtotal cost</span><b>{money(sub)}</b></div>
-            <div className="pv-line"><span>Contingency</span><b>{money(cont)}</b></div>
+            {prefs.cont && <div className="pv-line"><span>Contingency ({prefs.contPct}%)</span><b>{money(cont)}</b></div>}
             <div className="pv-line">
               <span>Markup <input className="mk" type="number" value={markup} style={{ width: 56 }} onChange={(e) => setMarkup(Number(e.target.value))} /> %</span>
             </div>
