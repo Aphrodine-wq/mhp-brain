@@ -367,7 +367,20 @@ export default function Estimator({
               flagged lines first.
             </div>
             <div className="modal-actions">
-              <button className="btn ghost" onClick={() => { const a = confirmAction; setConfirmAction(null); runAction(a); }}>
+              <button
+                className="btn ghost"
+                onClick={() => {
+                  const a = confirmAction;
+                  setConfirmAction(null);
+                  // the override is allowed but never silent — the channel hears about it
+                  void fetch("/api/alerts/bid-guard", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ project: client.project, totalShort, markup, bid, action: a }),
+                  }).catch(() => {});
+                  runAction(a);
+                }}
+              >
                 {confirmAction === "save" ? "Save anyway" : confirmAction === "export" ? "Export anyway" : "Continue anyway"} — deliberate
               </button>
               <button className="btn" onClick={() => setConfirmAction(null)}>Go back and fix prices</button>

@@ -3,6 +3,8 @@ import { currentUser } from "@/lib/auth";
 import { isConfigured } from "@/lib/oauth/providers";
 import { listConnections } from "@/lib/oauth/store";
 import Connections, { type ProviderState } from "./Connections";
+import AlertsPanel from "./AlertsPanel";
+import { alertsConfigured } from "@/lib/alerts";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +46,7 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
         conversations. Every connection is read-only: nothing is ever changed in the source system.
       </div>
       <Connections providers={providers} oauthResult={oauth ?? null} />
+      <AlertsPanel configured={alertsConfigured()} />
     </section>
   );
 }
