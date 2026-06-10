@@ -239,7 +239,7 @@ export default function Estimator({
 
         <div className="or-sep"><span>or describe it</span></div>
 
-        <h2>Describe the job</h2>
+        <div className="sec-h" style={{ margin: "0 0 6px" }}>Describe the job</div>
         <div className="sub">
           Type everything you know — scope, rooms, square footage, finishes. The more detail, the better the
           seed. You&apos;ll edit every line next.
@@ -285,12 +285,12 @@ export default function Estimator({
     <section className="view">
       <div className="row" style={{ justifyContent: "space-between" }}>
         <h2 style={{ margin: 0 }}>Full Line Estimate — working</h2>
-        <div>
-          <button className="btn ghost" onClick={() => setView("input")}>← New</button>{" "}
-          <button className="btn ghost" onClick={exportx}>Export to Excel</button>{" "}
+        <div className="row" style={{ margin: 0 }}>
+          <button className="btn ghost" onClick={() => setView("input")}>← New</button>
+          <button className="btn ghost" onClick={exportx}>Export to Excel</button>
           <button className="btn ghost" onClick={saveProject} disabled={saveState === "saving"}>
             {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved ✓" : saveState === "error" ? "Retry save" : "Save as Project"}
-          </button>{" "}
+          </button>
           <button className="btn" onClick={() => setView("packet")}>Client Packet →</button>
         </div>
       </div>
@@ -332,7 +332,7 @@ export default function Estimator({
                           <td className="n">
                             <input className="cell" type="number" step="any" value={l.rate} onChange={(e) => update(l.key, "rate", e.target.value)} />
                           </td>
-                          <td className="n">{money(it)}</td>
+                          <td className="n it">{money(it)}</td>
                           <td>
                             {l.p25 != null ? (
                               <small className="j">${l.p25}–${l.p75} · {l.jobs}j</small>
