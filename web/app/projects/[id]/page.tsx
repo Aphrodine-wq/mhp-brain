@@ -33,11 +33,11 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
       <div className="stat-strip">
         <div><div className="sv">{proj.value ? money(proj.value) : "—"}</div><div className="sk">Current bid value</div></div>
-        <div><div className="sv">{proj.estimates.length}</div><div className="sk">Estimates on file</div></div>
+        <div><div className="sv">{proj.estimates.length}</div><div className="sk">Documents on file</div></div>
         <div><div className="sv">{proj.last || "—"}</div><div className="sk">Last activity</div></div>
       </div>
 
-      <div className="sec-h">Estimates on file</div>
+      <div className="sec-h">Documents</div>
       <div className="card" style={{ marginTop: 16 }}>
         <table className="dtable">
           <thead>
@@ -51,7 +51,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               <tr>
                 <td colSpan={5}>
                   <div className="empty">
-                    <div className="big">No estimates on file</div>
+                    <div className="big">No documents on file</div>
                     Nothing parsed for this job yet.
                   </div>
                 </td>
