@@ -161,7 +161,7 @@ small.j{color:var(--muted);font-size:11px}
 .sidebar{width:208px;flex-shrink:0;background:var(--ink-navy);color:#fff;display:flex;flex-direction:column;
   position:sticky;top:0;height:100vh;transition:width .2s ease}
 .brand{display:flex;align-items:center;gap:11px;padding:20px 18px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
-.brand img{height:36px;width:auto}
+.brand img{height:52px;width:auto}
 /* collapse control — its own slim row pinned above the profile */
 .collapse-row{display:flex;justify-content:flex-end;padding:6px 12px;border-top:1px solid rgba(255,255,255,.1)}
 .collapse-btn{display:flex;align-items:center;justify-content:center;background:0;border:0;
@@ -203,30 +203,38 @@ small.j{color:var(--muted);font-size:11px}
   .sidebar.collapsed .profile{justify-content:center;padding:14px 0}
   .sidebar.collapsed .logout{border-left:0;border-top:1px solid rgba(255,255,255,.08);justify-content:center;padding:12px 0}
 }
-/* collapsible category sections (Estimates + Projects) — header card that swings
-   open into an attached table panel, so categories read as minimized dropdowns */
+/* collapsible category sections (Estimates / Projects / Subs / Documents / Templates) —
+   header card with the house cobalt accent edge that swings open into an attached panel */
 .csec{margin-top:14px}
-.csec-h{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:15px 18px;
-  background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);cursor:pointer;
-  font-family:var(--sans);box-shadow:var(--shadow-sm);
-  transition:border-color var(--t),box-shadow var(--t),border-radius var(--t)}
-.csec-h:hover{border-color:var(--navy)}
+.csec-h{display:flex;align-items:center;gap:13px;width:100%;text-align:left;padding:16px 18px;
+  background:var(--card);border:1px solid var(--line);border-left:3px solid #b9cae9;
+  border-radius:var(--r-lg);cursor:pointer;font-family:var(--sans);box-shadow:var(--shadow-sm);
+  transition:border-color var(--t),box-shadow var(--t),border-radius var(--t),transform var(--t)}
+.csec-h:hover{border-color:var(--navy);border-left-color:var(--navy);box-shadow:var(--shadow-lg);transform:translateY(-1px)}
 .csec-h:focus-visible{outline:none;box-shadow:var(--ring)}
-.csec-h svg{width:15px;height:15px;stroke:var(--muted);fill:none;stroke-width:2.2;stroke-linecap:round;
-  stroke-linejoin:round;flex-shrink:0;transition:transform var(--t)}
-.csec-h.open svg{transform:rotate(90deg)}
-.csec-h.open{border-bottom-left-radius:0;border-bottom-right-radius:0}
-.csec-t{font-family:var(--disp);font-size:16px;font-weight:600;color:var(--ink)}
-.csec-h small{margin-left:auto;font-size:12px}
-.csec-body{background:var(--card);border:1px solid var(--line);border-top:0;
-  border-radius:0 0 var(--r-lg) var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm)}
+/* chevron sits in a small paper coin so the affordance reads at a glance */
+.csec-h svg{width:24px;height:24px;padding:5px;border-radius:50%;background:var(--paper);border:1px solid var(--line-2);
+  stroke:var(--navy);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;
+  transition:transform var(--t),background var(--t)}
+.csec-h.open svg{transform:rotate(90deg);background:#eef3fb}
+.csec-h.open{border-left-color:var(--navy);border-bottom-left-radius:0;border-bottom-right-radius:0;transform:none;box-shadow:var(--shadow)}
+.csec-t{font-family:var(--disp);font-size:16px;font-weight:650;letter-spacing:-.2px;color:var(--ink)}
+.csec-h.open .csec-t{color:var(--navy)}
+.csec-h small{margin-left:auto;font-size:12px;font-variant-numeric:tabular-nums;
+  background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r-pill);padding:4px 12px;white-space:nowrap}
+.csec-body{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--navy);border-top:0;
+  border-radius:0 0 var(--r-lg) var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm);
+  animation:csec-in .16s ease}
+@keyframes csec-in{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
 /* nested year dropdowns inside a category — flat rows, no floating-card chrome */
 .csec-n{border-bottom:1px solid var(--line-2)}
 .csec-n:last-child{border-bottom:0}
-.csec-n .csec-h{border:0;border-radius:0;box-shadow:none;background:transparent;padding:13px 18px}
+.csec-n .csec-h,.csec-n .csec-h.open{border:0;border-radius:0;box-shadow:none;background:transparent;padding:13px 18px;transform:none}
 .csec-n .csec-h:hover{background:var(--hover)}
+.csec-n .csec-h svg{width:20px;height:20px;padding:4px}
 .csec-n .csec-t{font-size:14px}
-.csec-n .csec-body{border:0;border-radius:0;box-shadow:none;border-top:1px solid var(--line-2)}
+.csec-n .csec-h small{background:transparent;border:0;padding:0}
+.csec-n .csec-body{border:0;border-radius:0;box-shadow:none;border-top:1px solid var(--line-2);animation:none}
 /* integration brand marks */
 .conn-icon{width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
   border:1px solid var(--line-2);border-radius:var(--r-sm);background:#fff}
@@ -554,7 +562,7 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
   .topbar{display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:40;
     background:var(--ink-navy);color:#fff;padding:11px 16px;
     border-bottom:1px solid rgba(255,255,255,.1)}
-  .topbar img{height:28px;width:auto}
+  .topbar img{height:34px;width:auto}
   .hamburger{display:flex;align-items:center;justify-content:center;background:0;border:0;
     color:#fff;cursor:pointer;padding:6px;margin:-6px 2px -6px -6px;-webkit-tap-highlight-color:transparent}
   .hamburger svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
