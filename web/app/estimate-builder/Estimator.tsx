@@ -53,6 +53,8 @@ export default function Estimator({
   const [client, setClient] = useState<ClientInfo>({ project: "", clientName: initialClientName, address: "", date: "", preparedBy: "MHP Construction" });
   const setC = (k: keyof ClientInfo, v: string) => setClient((c) => ({ ...c, [k]: v }));
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  // Bid Guard exit gate — which outbound action is awaiting explicit confirmation
+  const [confirmAction, setConfirmAction] = useState<null | "export" | "save" | "packet">(null);
 
   // user defaults from the Settings page (markup/contingency/display) — same localStorage
   // hydration pattern as SettingsForm: must run post-mount because this component SSRs.
@@ -230,6 +232,17 @@ export default function Estimator({
   // markup is not margin — show what the chosen markup actually nets (on direct cost)
   const marginPct = markup > 0 ? (markup / (100 + markup)) * 100 : 0;
 
+  // The exit gate: while the guard is firing, every outbound path (export / save / packet)
+  // requires an explicit "deliberate" confirmation. Nothing underpriced leaves by accident;
+  // a chosen underprice (loyalty work) is one click — per MARGIN_GUARD.md, never a hard block.
+  const guardActive = totalShort > 0 || markup <= 0;
+  const runAction = (a: "export" | "save" | "packet") => {
+    if (a === "export") exportx();
+    else if (a === "save") saveProject();
+    else setView("packet");
+  };
+  const guarded = (a: "export" | "save" | "packet") => (guardActive ? setConfirmAction(a) : runAction(a));
+
   // group consecutive lines by division for header rows
   const groups: { division: string; lines: Line[] }[] = [];
   for (const l of lines) {
@@ -328,14 +341,40 @@ export default function Estimator({
     <section className="view">
       <div className="doc-bar">
         <button className="btn ghost sm" onClick={() => setView("input")}>← New</button>
-        <button className="btn ghost sm" onClick={exportx}>Export to Excel</button>
-        <button className="btn ghost sm" onClick={saveProject} disabled={saveState === "saving"}>
+        <button className="btn ghost sm" onClick={() => guarded("export")}>Export to Excel</button>
+        <button className="btn ghost sm" onClick={() => guarded("save")} disabled={saveState === "saving"}>
           {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved ✓" : saveState === "error" ? "Retry save" : "Save as Project"}
         </button>
         {totalShort > 0 && <span className="doc-bar-warn" title="Lines priced under MHP's historical baseline">{money(totalShort)} under baseline</span>}
         <div className="doc-bar-bid"><span>Bid</span><b>{money(bid)}</b></div>
-        <button className="btn sm" onClick={() => setView("packet")}>Client Packet →</button>
+        <button className="btn sm" onClick={() => guarded("packet")}>Client Packet →</button>
       </div>
+
+      {confirmAction && (
+        <div className="modal-scrim" onClick={() => setConfirmAction(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>This estimate loses money as priced</h3>
+            <div className="warn-row" style={{ paddingBottom: 10 }}>
+              {totalShort > 0 && (
+                <>
+                  <b style={{ color: "#9c2f23" }}>{money(totalShort)} under MHP baselines</b>
+                  {" — "}
+                  {[...shortByDiv.entries()].sort((a, b) => b[1].short - a[1].short).map(([d, v]) => `${d.replace(/^Division\s*\d+:\s*/, "")} (${money(v.short)})`).join(", ")}.
+                </>
+              )}
+              {markup <= 0 && <> Markup is {markup || 0}% — no margin on the whole bid.</>}
+              {" "}If this is deliberate — loyalty client, strategic price — go ahead. If not, fix the
+              flagged lines first.
+            </div>
+            <div className="modal-actions">
+              <button className="btn ghost" onClick={() => { const a = confirmAction; setConfirmAction(null); runAction(a); }}>
+                {confirmAction === "save" ? "Save anyway" : confirmAction === "export" ? "Export anyway" : "Continue anyway"} — deliberate
+              </button>
+              <button className="btn" onClick={() => setConfirmAction(null)}>Go back and fix prices</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {(totalShort > 0 || markup <= 0) && (
         <div className="warn-panel no-print">
