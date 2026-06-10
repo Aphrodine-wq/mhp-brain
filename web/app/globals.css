@@ -27,8 +27,6 @@ textarea{display:block;width:100%;min-height:170px;padding:16px;border:1px solid
 textarea:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
 .upload{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:16px;padding:16px 20px;
   border:1.5px dashed var(--line);border-radius:var(--r);background:var(--card)}
-.upload-h{font-size:14px;color:var(--muted);font-weight:500}
-.upload-h span{opacity:.65}
 .upload input[type=file]{font-family:var(--sans);font-size:13px;color:var(--muted)}
 .upload input[type=file]::file-selector-button{font-family:var(--sans);font-weight:600;font-size:13px;
   padding:9px 16px;margin-right:12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--paper);
@@ -147,9 +145,6 @@ tbody tr:hover{background:var(--hover)}
 td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 /* computed money is the heaviest cell per row */
 td.it{font-weight:600;color:var(--ink)}
-input.cell{width:84px;padding:7px 9px;border:1px solid var(--line);border-radius:var(--r-sm);text-align:right;
-  font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:14px;transition:border-color var(--t),box-shadow var(--t)}
-input.cell:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
 .div td{background:#eef3fb;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.6px;
   color:var(--navy);border-bottom:1px solid #dde6f4;padding:8px 14px}
 .tot{display:flex;justify-content:flex-end;gap:44px;padding:20px 4px 4px;font-size:15px;color:var(--muted)}
@@ -157,10 +152,6 @@ input.cell:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
 .x{color:var(--warn);cursor:pointer;font-weight:700;border:0;background:0;font-size:16px;border-radius:6px;
   width:26px;height:26px;transition:background var(--t)}
 .x:hover{background:#fbe9e4}
-.notes{background:#fff8ef;border:1px solid #efe0c9;padding:12px 16px;border-radius:var(--r);
-  font-size:13px;margin:0 0 18px;color:#6b5a3a}
-.add{display:flex;gap:10px;margin:18px 0;align-items:center}
-.add select{flex:1;min-width:0;max-width:560px}
 select,input.mk{padding:9px 11px;border:1px solid var(--line);border-radius:var(--r-sm);font-family:var(--sans);
   font-size:14px;background:#fff;color:var(--ink);transition:border-color var(--t),box-shadow var(--t)}
 select:focus,input.mk:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
@@ -230,6 +221,13 @@ small.j{color:var(--muted);font-size:11px}
 .csec-h small{margin-left:auto;font-size:12px}
 .csec-body{background:var(--card);border:1px solid var(--line);border-top:0;
   border-radius:0 0 var(--r-lg) var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm)}
+/* nested year dropdowns inside a category — flat rows, no floating-card chrome */
+.csec-n{border-bottom:1px solid var(--line-2)}
+.csec-n:last-child{border-bottom:0}
+.csec-n .csec-h{border:0;border-radius:0;box-shadow:none;background:transparent;padding:13px 18px}
+.csec-n .csec-h:hover{background:var(--hover)}
+.csec-n .csec-t{font-size:14px}
+.csec-n .csec-body{border:0;border-radius:0;box-shadow:none;border-top:1px solid var(--line-2)}
 /* integration brand marks */
 .conn-icon{width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
   border:1px solid var(--line-2);border-radius:var(--r-sm);background:#fff}
@@ -315,30 +313,80 @@ small.j{color:var(--muted);font-size:11px}
 .crew-meta a{color:var(--navy);text-decoration:none}
 .crew-rate{display:inline-block;margin-top:10px;padding:4px 12px;background:var(--paper);border:1px solid var(--line);
   border-radius:var(--r-pill);font-weight:700;font-size:13px;color:var(--ink)}
-/* live preview */
-.est-layout{display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start}
-/* working-estimate table: compact fixed columns so the Item column gets the width */
-.est-layout th,.est-layout td{padding:10px 12px}
-.est-layout th:first-child,.est-layout td:first-child{width:54px}
-.est-layout th:nth-child(2){width:45%}
-.est-layout td:nth-child(2){min-width:260px}
-/* narrow screens: bid total floats above the table instead of burying below it */
-@media(max-width:1100px){.est-layout{grid-template-columns:1fr}.preview{position:static;order:-1}}
-.preview{position:sticky;top:24px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
-  box-shadow:var(--shadow);overflow:hidden}
-.preview h3{font-family:var(--disp);font-size:16px;margin:0;padding:14px 18px;border-bottom:0;
-  background:var(--ink-navy);color:#fff;display:flex;align-items:center;gap:8px}
-.preview .live{width:7px;height:7px;border-radius:50%;background:#2f9e44;animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.pv-body{padding:8px 18px 16px}
-.pv-div{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid var(--line-2);color:var(--muted)}
-.pv-div b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600}
-.pv-tot{padding:14px 18px;background:var(--paper);border-top:1px solid var(--line)}
-.pv-line{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);padding:3px 0}
-.pv-bid{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px;padding-top:10px;
-  border-top:2px solid var(--navy)} /* same grand-total rule as the packet's .doc-table tr.grand */
-.pv-bid span{font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--muted)}
-.pv-bid b{font-family:var(--disp);font-size:30px;color:var(--navy);font-weight:650;letter-spacing:-.5px}
+/* ── working estimate as a live document ──
+   The sheet IS the estimate: letterhead, division sections, and totals on one piece of
+   paper; numbers look printed until hovered/focused, then edit in place. Actions and
+   the running bid live in a sticky navy bar. */
+.doc-bar{position:sticky;top:14px;z-index:30;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  max-width:880px;margin:0 auto 22px;background:var(--ink-navy);color:#fff;border-radius:var(--r-lg);
+  padding:10px 14px;box-shadow:var(--shadow-lg)}
+.doc-bar-bid{margin-left:auto;display:flex;align-items:baseline;gap:9px;padding:0 8px}
+.doc-bar-bid span{font-size:10px;text-transform:uppercase;letter-spacing:.7px;font-weight:700;color:rgba(255,255,255,.6)}
+.doc-bar-bid b{font-family:var(--disp);font-size:21px;font-weight:650;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
+.sheet{max-width:880px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:var(--shadow);padding:46px 52px 38px}
+.sheet input{font-family:var(--sans);color:var(--ink)}
+.sheet input::-webkit-outer-spin-button,.sheet input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.sheet input[type=number]{-moz-appearance:textfield;appearance:textfield}
+.sheet-head{display:flex;align-items:center;gap:16px;padding-bottom:16px;border-bottom:2px solid var(--navy)}
+.sheet-logo{height:44px;width:auto;object-fit:contain}
+.sheet-co{display:flex;flex-direction:column;gap:2px;min-width:0}
+.sheet-co b{font-family:var(--disp);font-size:16px}
+.sheet-co span{font-size:11px;color:var(--muted)}
+.sheet-kicker{margin-left:auto;font-size:13px;text-transform:uppercase;letter-spacing:2.5px;color:var(--navy);font-weight:700}
+.sheet-title{display:block;width:100%;margin:20px 0 4px;padding:0 0 2px;border:0;background:transparent;
+  font-family:var(--disp);font-size:27px;font-weight:650;letter-spacing:-.5px;
+  border-bottom:1px dashed transparent;transition:border-color var(--t)}
+.sheet-title::placeholder{color:#b0b8c4;font-weight:500}
+.sheet-title:hover{border-bottom-color:var(--line)}
+.sheet-title:focus{outline:none;border-bottom:1px solid var(--navy)}
+.sheet-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:4px 28px;margin:6px 0 8px}
+.sheet-meta label{display:flex;flex-direction:column;font-size:10px;text-transform:uppercase;letter-spacing:.6px;
+  color:var(--muted);font-weight:700}
+.sheet-meta input{border:0;background:transparent;padding:2px 0;font-size:13.5px;
+  border-bottom:1px dashed transparent;transition:border-color var(--t)}
+.sheet-meta input:hover{border-bottom-color:var(--line)}
+.sheet-meta input:focus{outline:none;border-bottom:1px solid var(--navy)}
+.sheet-note{margin-top:14px;padding:9px 13px;background:#fff8ef;border:1px solid #efe0c9;border-radius:var(--r-sm);
+  font-size:12.5px;color:#6b5a3a}
+.sheet-div{margin-top:26px}
+.sheet-div-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-bottom:6px;
+  border-bottom:1px solid var(--line);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--navy)}
+.sheet-div-h b{font-size:13px;letter-spacing:0;color:var(--ink);font-variant-numeric:tabular-nums}
+.sheet-div-d{font-size:11px;color:var(--muted);margin-top:4px}
+.sheet-line{display:grid;grid-template-columns:58px 1fr 110px 96px 92px 24px;gap:0 12px;align-items:baseline;
+  padding:8px 0;border-bottom:1px solid var(--line-2);transition:background var(--t)}
+.sheet-line:hover{background:var(--hover)}
+.sheet-line.miss .sl-name{color:var(--warn)}
+.sl-no{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.sl-name{border:0;background:0;padding:0;font:inherit;font-size:13.5px;color:var(--ink);text-align:left;cursor:pointer}
+.sl-name:hover{color:var(--navy)}
+.sheet .line-detail{margin:4px 0 2px}
+.sl-qty{display:flex;align-items:baseline;gap:5px;justify-content:flex-end}
+.sl-qty small{font-size:10.5px;color:var(--muted);white-space:nowrap;max-width:52px;overflow:hidden;text-overflow:ellipsis}
+.sheet input.cell{width:64px;padding:1px 2px;border:0;border-radius:0;background:transparent;text-align:right;
+  font-size:13.5px;font-variant-numeric:tabular-nums;border-bottom:1px dashed transparent;
+  transition:border-color var(--t),background var(--t)}
+.sheet input.cell:hover{border-bottom-color:var(--line)}
+.sheet input.cell:focus{outline:none;border-bottom:1px solid var(--navy);background:#f6f9ff}
+.sl-rate{text-align:right}
+.sheet .rate-hint{opacity:0;transition:opacity var(--t)}
+.sheet-line:hover .rate-hint,.sheet-line:focus-within .rate-hint{opacity:1}
+.sl-total{text-align:right;font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.sheet-line .x{opacity:0;transition:opacity var(--t),background var(--t)}
+.sheet-line:hover .x,.sheet-line:focus-within .x{opacity:1}
+.sheet-add{display:flex;gap:10px;align-items:center;margin-top:16px}
+.sheet-add select{flex:1;min-width:0;font-size:12.5px;color:var(--muted);background:transparent;border-style:dashed}
+.sheet-totals{display:flex;flex-direction:column;gap:6px;max-width:340px;margin:28px 0 0 auto}
+.sheet-totals>div{display:flex;justify-content:space-between;align-items:baseline;gap:18px;font-size:13.5px;color:var(--muted)}
+.sheet-totals b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.sheet-totals .grand{margin-top:6px;padding-top:10px;border-top:2px solid var(--navy)} /* same grand-total rule as the packet */
+.sheet-totals .grand span{font-size:11px;text-transform:uppercase;letter-spacing:.7px;font-weight:700}
+.sheet-totals .grand b{font-family:var(--disp);font-size:28px;font-weight:650;color:var(--navy);letter-spacing:-.5px}
+.sheet-scope{margin-top:34px;padding-top:18px;border-top:1px solid var(--line)}
+.sheet-scope .doc-sub{margin-top:0}
+.sheet-foot{margin-top:30px;padding-top:14px;border-top:1px solid var(--line-2);text-align:center;
+  font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
 /* settings */
 .setrow{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:16px 20px;border-bottom:1px solid var(--line-2)}
 .setrow:last-child{border-bottom:0}
@@ -509,7 +557,7 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
   /* wide tables: scroll horizontally inside their card/panel rather than
      overflowing the viewport or crushing columns to nothing */
   .card,.panel,.csec-body{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .dtable,.est-layout table,.panel table{min-width:620px}
+  .dtable,.panel table{min-width:620px}
   .dtable th,.dtable td,table th,table td{padding:10px 12px}
   .dtable th{position:static}              /* sticky header is moot once the card itself scrolls */
 
@@ -522,8 +570,14 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
   /* filters / add-line rows stack and go full width */
   .filterbar{flex-wrap:wrap}
   .filterbar input{max-width:none;width:100%}
-  .add{flex-wrap:wrap}
-  .add select{flex:1 1 100%;min-width:0;max-width:100%}
+  .sheet-add{flex-wrap:wrap}
+  .sheet-add select{flex:1 1 100%;min-width:0;max-width:100%}
+
+  /* document sheet: tighter paper, no CSI column, controls always visible (no hover on touch) */
+  .sheet{padding:24px 18px 26px}
+  .sheet-line{grid-template-columns:1fr 92px 86px 80px 22px}
+  .sl-no{display:none}
+  .sheet .rate-hint,.sheet-line .x{opacity:1}
 
   /* settings rows: label over control instead of side-by-side */
   .setrow{flex-direction:column;align-items:stretch;gap:10px}

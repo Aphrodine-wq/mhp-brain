@@ -101,6 +101,8 @@ export default function Estimator({
   const [notes, setNotes] = useState<string[]>([]);
   const [markup, setMarkup] = useState(18);
   const [pick, setPick] = useState(0);
+  // which line's scope detail is expanded — collapsed by default so the sheet reads like a document
+  const [detailKey, setDetailKey] = useState<number | null>(null);
   const [asmKey, setAsmKey] = useState<string>("");
   const [asmInputs, setAsmInputs] = useState<Record<string, number>>({});
   const keyRef = useRef(0);
@@ -198,16 +200,10 @@ export default function Estimator({
     URL.revokeObjectURL(u);
   }
 
-  // live preview rollup
+  // live rollup — the document's own totals recompute on every keystroke
   const mk = 1 + (markup || 0) / 100;
-  let sub = 0;
-  const byDiv: Record<string, number> = {};
-  for (const l of lines) {
-    const it = (parseFloat(l.qty) || 0) * (parseFloat(l.rate) || 0);
-    sub += it;
-    const d = (l.division || "Other").replace(/^Division\s*/, "Div ").replace(/:.*$/, (m) => m.split(":")[0]);
-    byDiv[d] = (byDiv[d] || 0) + it;
-  }
+  const lineTotal = (l: Line) => (parseFloat(l.qty) || 0) * (parseFloat(l.rate) || 0);
+  const sub = lines.reduce((s, l) => s + lineTotal(l), 0);
   const cont = prefs.cont ? sub * (prefs.contPct / 100) : 0;
   const bid = sub * mk;
 
@@ -224,9 +220,7 @@ export default function Estimator({
     const asm = ASSEMBLY_LIST.find((a) => a.key === asmKey);
     return (
       <section className="view">
-        <h2>New estimate</h2>
-        <div className="sub">Pick a job type — the scope builds from MHP job history.</div>
-        <div className="asm-grid">
+        <div className="asm-grid" style={{ marginTop: 2 }}>
           {ASSEMBLY_LIST.map((a) => (
             <button
               key={a.key}
@@ -259,7 +253,6 @@ export default function Estimator({
 
         <textarea value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={PLACEHOLDER} />
         <div className="upload">
-          <span className="upload-h">Plans, docs, or photos <span>(optional)</span></span>
           <input type="file" multiple onChange={(e) => setFiles(e.target.files)} />
         </div>
         <div className="row">
@@ -294,141 +287,131 @@ export default function Estimator({
     return <ClientPacket lines={packetLines} markup={markup} client={client} onBack={() => setView("result")} />;
   }
 
+  // Working estimate, rendered as the live document itself: a letterhead sheet whose
+  // numbers are editable in place and whose totals recompute as you type. Actions and
+  // the running bid ride in a sticky bar so they never scroll away.
   return (
     <section className="view">
-      <div className="row" style={{ justifyContent: "space-between" }}>
-        <h2 style={{ margin: 0 }}>Full Line Estimate — working</h2>
-        <div className="row" style={{ margin: 0 }}>
-          <button className="btn ghost" onClick={() => setView("input")}>← New</button>
-          <button className="btn ghost" onClick={exportx}>Export to Excel</button>
-          <button className="btn ghost" onClick={saveProject} disabled={saveState === "saving"}>
-            {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved ✓" : saveState === "error" ? "Retry save" : "Save as Project"}
-          </button>
-          <button className="btn" onClick={() => setView("packet")}>Client Packet →</button>
-        </div>
+      <div className="doc-bar">
+        <button className="btn ghost sm" onClick={() => setView("input")}>← New</button>
+        <button className="btn ghost sm" onClick={exportx}>Export to Excel</button>
+        <button className="btn ghost sm" onClick={saveProject} disabled={saveState === "saving"}>
+          {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved ✓" : saveState === "error" ? "Retry save" : "Save as Project"}
+        </button>
+        <div className="doc-bar-bid"><span>Bid</span><b>{money(bid)}</b></div>
+        <button className="btn sm" onClick={() => setView("packet")}>Client Packet →</button>
       </div>
 
-      <div className="client-bar">
-        <label>Project<input value={client.project} placeholder="Lora Hunter — Bonus Room" onChange={(e) => setC("project", e.target.value)} /></label>
-        <label>Client<input value={client.clientName} placeholder="Lora Hunter" onChange={(e) => setC("clientName", e.target.value)} /></label>
-        <label>Address<input value={client.address} placeholder="Oxford, MS" onChange={(e) => setC("address", e.target.value)} /></label>
-        <label>Date<input value={client.date} placeholder="June 8, 2026" onChange={(e) => setC("date", e.target.value)} /></label>
-      </div>
-      {notes.length > 0 && <div className="notes">{notes.map((n, i) => <div key={i}>• {n}</div>)}</div>}
-
-      <div className="est-layout">
-        <div>
-          <div className="card">
-            <table>
-              <thead>
-                <tr>
-                  <th>CSI</th><th>Item</th><th className="n">Qty</th><th>Unit</th><th className="n">Rate ($)</th>
-                  <th className="n">Item Total</th><th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {groups.map((g, gi) => (
-                  <FragmentGroup key={gi} division={g.division}>
-                    {g.lines.map((l) => {
-                      const it = (parseFloat(l.qty) || 0) * (parseFloat(l.rate) || 0);
-                      return (
-                        <tr key={l.key} className={l.kind === "missing" ? "miss" : undefined}>
-                          <td>{l.item_no || ""}</td>
-                          <td>
-                            {l.description}
-                            {l.detail && <div className="line-detail">{l.detail}</div>}
-                          </td>
-                          <td className="n">
-                            <input className="cell" type="number" value={l.qty} onChange={(e) => update(l.key, "qty", e.target.value)} />
-                          </td>
-                          <td>{l.unit || ""}</td>
-                          <td className="n">
-                            <input className="cell" type="number" step="any" value={l.rate} onChange={(e) => update(l.key, "rate", e.target.value)} />
-                            {!prefs.bands ? null : l.p25 != null ? (
-                              <div className="rate-hint">${l.p25}–${l.p75} · {l.jobs} jobs</div>
-                            ) : l.jobs > 0 ? (
-                              <div className="rate-hint">{l.jobs} jobs</div>
-                            ) : null}
-                          </td>
-                          <td className="n it">{money(it)}</td>
-                          <td><button className="x" onClick={() => remove(l.key)}>×</button></td>
-                        </tr>
-                      );
-                    })}
-                  </FragmentGroup>
-                ))}
-              </tbody>
-            </table>
+      <div className="sheet">
+        <header className="sheet-head">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-light.png" alt="MHP" className="sheet-logo" />
+          <div className="sheet-co">
+            <b>MHP Construction</b>
+            <span>North Mississippi Home Professionals, LLC · License R21909 · Oxford, MS</span>
           </div>
-          <div className="add">
-            <select value={pick} onChange={(e) => setPick(Number(e.target.value))}>
-              {catalog.map((x, i) => (
-                <option key={i} value={i}>{x.description} — ${x.rate}/{x.unit} ({x.jobs}j)</option>
+          <div className="sheet-kicker">Estimate</div>
+        </header>
+
+        <input
+          className="sheet-title"
+          value={client.project}
+          placeholder="Project name"
+          onChange={(e) => setC("project", e.target.value)}
+        />
+        <div className="sheet-meta">
+          <label>Client<input value={client.clientName} placeholder="Client name" onChange={(e) => setC("clientName", e.target.value)} /></label>
+          <label>Address<input value={client.address} placeholder="Oxford, MS" onChange={(e) => setC("address", e.target.value)} /></label>
+          <label>Date<input value={client.date} placeholder="June 8, 2026" onChange={(e) => setC("date", e.target.value)} /></label>
+          <label>Prepared by<input value={client.preparedBy} onChange={(e) => setC("preparedBy", e.target.value)} /></label>
+        </div>
+        {notes.length > 0 && <div className="sheet-note">{notes.join(" ")}</div>}
+
+        {groups.map((g, gi) => {
+          const dd = divisionDetailFor(g.division);
+          return (
+            <div className="sheet-div" key={gi}>
+              <div className="sheet-div-h">
+                <span>{g.division}</span>
+                <b>{money(g.lines.reduce((s, l) => s + lineTotal(l), 0))}</b>
+              </div>
+              {dd && <div className="sheet-div-d">{dd}</div>}
+              {g.lines.map((l) => (
+                <div className={`sheet-line${l.kind === "missing" ? " miss" : ""}`} key={l.key}>
+                  <span className="sl-no">{l.item_no || ""}</span>
+                  <div>
+                    <button
+                      className="sl-name"
+                      onClick={() => setDetailKey((k) => (k === l.key ? null : l.key))}
+                      title={l.detail ? "Show scope detail" : undefined}
+                    >
+                      {l.description}
+                    </button>
+                    {detailKey === l.key && l.detail && <div className="line-detail">{l.detail}</div>}
+                  </div>
+                  <span className="sl-qty">
+                    <input className="cell" type="number" value={l.qty} onChange={(e) => update(l.key, "qty", e.target.value)} />
+                    <small>{l.unit || ""}</small>
+                  </span>
+                  <span className="sl-rate">
+                    <input className="cell" type="number" step="any" value={l.rate} onChange={(e) => update(l.key, "rate", e.target.value)} />
+                    {prefs.bands && (l.p25 != null ? (
+                      <div className="rate-hint">${l.p25}–${l.p75} · {l.jobs} jobs</div>
+                    ) : l.jobs > 0 ? (
+                      <div className="rate-hint">{l.jobs} jobs</div>
+                    ) : null)}
+                  </span>
+                  <b className="sl-total">{money(lineTotal(l))}</b>
+                  <button className="x" onClick={() => remove(l.key)}>×</button>
+                </div>
               ))}
-            </select>
-            <button className="btn ghost" onClick={addPick}>+ Add line</button>
-          </div>
-        </div>
-
-        <div className="preview">
-          <h3><span className="live" /> Live Preview</h3>
-          <div className="pv-body">
-            {Object.entries(byDiv).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).length ? (
-              Object.entries(byDiv).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).map(([k, v]) => (
-                <div key={k} className="pv-div"><span>{k}</span><b>{money(v)}</b></div>
-              ))
-            ) : (
-              <div className="pv-div"><span>Fill quantities to price</span></div>
-            )}
-          </div>
-          <div className="pv-tot">
-            <div className="pv-line"><span>Subtotal cost</span><b>{money(sub)}</b></div>
-            {prefs.cont && <div className="pv-line"><span>Contingency ({prefs.contPct}%)</span><b>{money(cont)}</b></div>}
-            <div className="pv-line">
-              <span>Markup <input className="mk" type="number" value={markup} style={{ width: 56 }} onChange={(e) => setMarkup(Number(e.target.value))} /> %</span>
             </div>
-            <div className="pv-bid"><span>Bid</span><b>{money(bid)}</b></div>
-          </div>
-        </div>
-      </div>
+          );
+        })}
 
-      <div className="scope">
-        <h3>Scope, assumptions &amp; terms</h3>
-        <div className="scope-grid">
+        <div className="sheet-add">
+          <select value={pick} onChange={(e) => setPick(Number(e.target.value))}>
+            {catalog.map((x, i) => (
+              <option key={i} value={i}>{x.description} — ${x.rate}/{x.unit} ({x.jobs}j)</option>
+            ))}
+          </select>
+          <button className="btn ghost sm" onClick={addPick}>+ Add line</button>
+        </div>
+
+        <div className="sheet-totals">
+          <div><span>Subtotal cost</span><b>{money(sub)}</b></div>
+          {prefs.cont && <div><span>Contingency ({prefs.contPct}%)</span><b>{money(cont)}</b></div>}
           <div>
-            <h4>Included</h4>
-            <ul>{ESTIMATE_SCOPE.included.map((s, i) => <li key={i}>{s}</li>)}</ul>
+            <span>Markup <input className="mk" type="number" value={markup} style={{ width: 52 }} onChange={(e) => setMarkup(Number(e.target.value))} /> %</span>
+            <b>{money(bid - sub)}</b>
           </div>
-          <div>
-            <h4>Not included</h4>
-            <ul>{ESTIMATE_SCOPE.excluded.map((s, i) => <li key={i}>{s}</li>)}</ul>
-          </div>
-          <div>
-            <h4>Assumptions</h4>
-            <ul>{ESTIMATE_SCOPE.assumptions.map((s, i) => <li key={i}>{s}</li>)}</ul>
-          </div>
-          <div>
-            <h4>Terms</h4>
-            <ul>{ESTIMATE_SCOPE.terms.map((s, i) => <li key={i}>{s}</li>)}</ul>
+          <div className="grand"><span>Bid</span><b>{money(bid)}</b></div>
+        </div>
+
+        <div className="sheet-scope">
+          <div className="doc-sub">Scope, assumptions &amp; terms</div>
+          <div className="scope-grid">
+            <div>
+              <h4>Included</h4>
+              <ul>{ESTIMATE_SCOPE.included.map((x, i) => <li key={i}>{x}</li>)}</ul>
+            </div>
+            <div>
+              <h4>Not included</h4>
+              <ul>{ESTIMATE_SCOPE.excluded.map((x, i) => <li key={i}>{x}</li>)}</ul>
+            </div>
+            <div>
+              <h4>Assumptions</h4>
+              <ul>{ESTIMATE_SCOPE.assumptions.map((x, i) => <li key={i}>{x}</li>)}</ul>
+            </div>
+            <div>
+              <h4>Terms</h4>
+              <ul>{ESTIMATE_SCOPE.terms.map((x, i) => <li key={i}>{x}</li>)}</ul>
+            </div>
           </div>
         </div>
+
+        <div className="sheet-foot">MHP Construction · Oxford, MS · License R21909</div>
       </div>
     </section>
-  );
-}
-
-// division header row + its lines (a <tbody> can't hold a fragment with a header <tr> cleanly via map keys otherwise)
-function FragmentGroup({ division, children }: { division: string; children: React.ReactNode }) {
-  const dd = divisionDetailFor(division);
-  return (
-    <>
-      <tr className="div">
-        <td colSpan={7}>
-          {division}
-          {dd && <span className="div-detail">{dd}</span>}
-        </td>
-      </tr>
-      {children}
-    </>
   );
 }
