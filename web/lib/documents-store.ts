@@ -37,7 +37,15 @@ async function ensure() {
     uploaded_by TEXT,
     uploaded_at TIMESTAMPTZ DEFAULT now()
   )`);
+  // external-source identity (e.g. "onedrive:<itemId>") so syncs are idempotent
+  await db.execute("ALTER TABLE documents ADD COLUMN IF NOT EXISTS source_ref TEXT");
   ensured = true;
+}
+
+export async function documentExistsByRef(sourceRef: string): Promise<boolean> {
+  await ensure();
+  const r = await db.execute({ sql: "SELECT 1 FROM documents WHERE source_ref = ? LIMIT 1", args: [sourceRef] });
+  return r.rows.length > 0;
 }
 
 const toMeta = (r: Record<string, unknown>): DocMeta => ({
@@ -69,12 +77,13 @@ export async function saveDocument(d: {
   mime?: string | null;
   content: Buffer;
   uploadedBy: string;
+  sourceRef?: string | null;
 }): Promise<string> {
   await ensure();
   const id = randomUUID();
   await db.execute({
-    sql: `INSERT INTO documents (id, category, entity_type, entity_id, entity_label, filename, mime, size_bytes, content, uploaded_by)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO documents (id, category, entity_type, entity_id, entity_label, filename, mime, size_bytes, content, uploaded_by, source_ref)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       id,
       d.category,
@@ -86,6 +95,7 @@ export async function saveDocument(d: {
       d.content.length,
       d.content,
       d.uploadedBy,
+      d.sourceRef ?? null,
     ],
   });
   return id;

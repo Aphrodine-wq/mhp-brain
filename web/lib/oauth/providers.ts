@@ -2,7 +2,7 @@
 // QuickBooks and never writes to (or reads beyond the dedicated box of) anyone's mailbox.
 // Client id/secret/redirect come from env, never the repo.
 
-export type ProviderId = "quickbooks" | "gmail" | "microsoft";
+export type ProviderId = "quickbooks" | "gmail" | "microsoft" | "trello";
 
 export interface ProviderConfig {
   id: ProviderId;
@@ -28,6 +28,8 @@ const ENV_KEYS: Record<ProviderId, string[]> = {
   quickbooks: ["QB_CLIENT_ID", "QB_CLIENT_SECRET", "QB_REDIRECT_URI"],
   gmail: ["GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REDIRECT_URI"],
   microsoft: ["MS_CLIENT_ID", "MS_CLIENT_SECRET", "MS_REDIRECT_URI"],
+  // Trello is not OAuth2 — a public API key plus a user-granted member token (see lib/trello.ts).
+  trello: ["TRELLO_API_KEY"],
 };
 
 export function isConfigured(id: ProviderId): boolean {
@@ -60,6 +62,10 @@ export function providerConfig(id: ProviderId): ProviderConfig {
         // no refresh token — the connection would die in an hour. These make it durable.
         extraAuthParams: { access_type: "offline", prompt: "consent", include_granted_scopes: "true" },
       };
+    case "trello":
+      // Trello uses its own authorize-fragment token flow, not OAuth2 — handled by lib/trello.ts
+      // and /api/trello/connect. Nothing should ever ask for an OAuth2 config for it.
+      throw new Error("trello does not use the OAuth2 flow");
     case "microsoft": {
       // Microsoft Graph — read-only Teams + OneDrive. Tenant can be "common" for multi-tenant or
       // a specific tenant ID for single-tenant (MHP's own M365). Read MS_TENANT_ID from env,

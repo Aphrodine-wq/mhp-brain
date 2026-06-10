@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 
 export type ProviderState = {
-  id: "quickbooks" | "gmail" | "microsoft";
+  id: "quickbooks" | "gmail" | "microsoft" | "trello";
   label: string;
   configured: boolean;
   connection: { account: string; expiresAt: string } | null;
+  connectUrl?: string | null; // trello: server-built authorize URL (fragment token flow)
 };
 
 // official brand marks, inlined so they render with zero external requests
@@ -34,6 +35,13 @@ const ICONS: Record<ProviderState["id"], React.ReactNode> = {
       <rect x="12" y="12" width="10" height="10" fill="#FFB900" />
     </svg>
   ),
+  trello: (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <rect x="0" y="0" width="24" height="24" rx="4" fill="#0079BF" />
+      <rect x="3.5" y="3.5" width="7" height="14" rx="1.5" fill="#fff" />
+      <rect x="13.5" y="3.5" width="7" height="9" rx="1.5" fill="#fff" />
+    </svg>
+  ),
 };
 
 export default function Connections({
@@ -44,8 +52,21 @@ export default function Connections({
   oauthResult: string | null;
 }) {
   const [gmailBox, setGmailBox] = useState("");
-  const [syncing, setSyncing] = useState(false);
-  const [syncResult, setSyncResult] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState<string | null>(null); // which sync is running
+  const [syncResult, setSyncResult] = useState<Record<string, string>>({});
+
+  // shared runner for the one-click sync buttons (Teams pull, OneDrive crawl, Trello boards)
+  async function runSync(key: string, fn: () => Promise<string>) {
+    setSyncing(key);
+    setSyncResult((r) => ({ ...r, [key]: "" }));
+    try {
+      const text = await fn();
+      setSyncResult((r) => ({ ...r, [key]: text }));
+    } catch {
+      setSyncResult((r) => ({ ...r, [key]: "Sync had a problem. Try again." }));
+    }
+    setSyncing(null);
+  }
 
   const notice = oauthResult
     ? oauthResult.startsWith("connected")
@@ -62,13 +83,15 @@ export default function Connections({
   const DESCRIPTIONS: Record<string, string> = {
     quickbooks: "Connect your QuickBooks to see real job costs, payments, and margins.",
     gmail: "Connect a dedicated email to automatically capture invoices.",
-    microsoft: "Connect Microsoft Teams to pull in job conversations and files.",
+    microsoft: "Connect Microsoft to pull in Teams conversations and sync OneDrive paperwork into Documents.",
+    trello: "Connect Trello to see where every job sits on the board, right on its project page.",
   };
 
   const NOT_READY: Record<string, string> = {
     quickbooks: "QuickBooks connection needs to be set up by your admin.",
     gmail: "Gmail connection needs to be set up by your admin.",
-    microsoft: "Teams connection needs to be set up by your admin.",
+    microsoft: "Microsoft connection needs to be set up by your admin.",
+    trello: "Trello needs a TRELLO_API_KEY — grab one at trello.com/power-ups/admin.",
   };
 
   return (
@@ -97,7 +120,7 @@ export default function Connections({
                   DESCRIPTIONS[p.id]
                 )}
               </div>
-              {p.id === "microsoft" && syncResult ? <div className="sd">{syncResult}</div> : null}
+              {syncResult[p.id] ? <div className="sd">{syncResult[p.id]}</div> : null}
             </div>
           </div>
           <div className="actions">
@@ -141,31 +164,60 @@ export default function Connections({
                   {p.connection ? "Reconnect" : "Connect"}
                 </a>
                 {p.connection && (
+                  <>
+                    <button
+                      className="btn ghost sm"
+                      disabled={syncing !== null}
+                      onClick={() =>
+                        runSync("microsoft", async () => {
+                          await fetch("/api/teams/discover");
+                          const data = await (await fetch("/api/teams/sync", { method: "POST" })).json();
+                          if (!data.ok) return "Sync had a problem. Try again.";
+                          const total = data.channels.synced + data.chats.synced;
+                          return `Pulled ${total} message${total !== 1 ? "s" : ""}, linked ${data.matched} to jobs.`;
+                        })
+                      }
+                    >
+                      {syncing === "microsoft" ? "Pulling…" : "Pull Teams"}
+                    </button>
+                    <button
+                      className="btn ghost sm"
+                      disabled={syncing !== null}
+                      onClick={() =>
+                        runSync("microsoft", async () => {
+                          const data = await (await fetch("/api/onedrive/sync", { method: "POST" })).json();
+                          if (!data.ok) return data.error ?? "Sync had a problem. Try again.";
+                          return `Scanned ${data.scanned} files — imported ${data.imported} document${data.imported !== 1 ? "s" : ""} into Documents.`;
+                        })
+                      }
+                    >
+                      {syncing === "microsoft" ? "Syncing…" : "Sync OneDrive"}
+                    </button>
+                  </>
+                )}
+              </>
+            )}
+
+            {p.configured && p.id === "trello" && (
+              <>
+                {p.connectUrl && (
+                  <a className="btn ghost sm" href={p.connectUrl}>
+                    {p.connection ? "Reconnect" : "Connect"}
+                  </a>
+                )}
+                {p.connection && (
                   <button
                     className="btn ghost sm"
-                    disabled={syncing}
-                    onClick={async () => {
-                      setSyncing(true);
-                      setSyncResult(null);
-                      try {
-                        await fetch("/api/teams/discover");
-                        const res = await fetch("/api/teams/sync", { method: "POST" });
-                        const data = await res.json();
-                        if (data.ok) {
-                          const total = data.channels.synced + data.chats.synced;
-                          setSyncResult(
-                            `Pulled ${total} message${total !== 1 ? "s" : ""}, linked ${data.matched} to jobs.`,
-                          );
-                        } else {
-                          setSyncResult("Sync had a problem. Try again.");
-                        }
-                      } catch {
-                        setSyncResult("Couldn't connect. Check your internet.");
-                      }
-                      setSyncing(false);
-                    }}
+                    disabled={syncing !== null}
+                    onClick={() =>
+                      runSync("trello", async () => {
+                        const data = await (await fetch("/api/trello/sync", { method: "POST" })).json();
+                        if (!data.ok) return data.error ?? "Sync had a problem. Try again.";
+                        return `${data.boards} board${data.boards !== 1 ? "s" : ""}, ${data.cards} cards — ${data.matched} matched to jobs.`;
+                      })
+                    }
                   >
-                    {syncing ? "Pulling..." : "Pull latest"}
+                    {syncing === "trello" ? "Syncing…" : "Sync boards"}
                   </button>
                 )}
               </>

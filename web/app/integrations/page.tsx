@@ -20,10 +20,20 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
   }
 
   const conn = (id: ProviderState["id"]) => conns.find((c) => c.provider === id) ?? null;
+  // Trello's connect URL is built server-side (it carries the API key); the token comes
+  // back in a fragment that /integrations/trello catches.
+  const trelloConfigured = isConfigured("trello");
+  let trelloConnectUrl: string | null = null;
+  if (trelloConfigured) {
+    const { trelloAuthorizeUrl } = await import("@/lib/trello");
+    const base = process.env.APP_BASE_URL ?? "http://localhost:3000";
+    trelloConnectUrl = trelloAuthorizeUrl(`${base}/integrations/trello`);
+  }
   const providers: ProviderState[] = [
     { id: "quickbooks", label: "QuickBooks", configured: isConfigured("quickbooks"), connection: conn("quickbooks") },
     { id: "gmail", label: "Gmail (Invoice Capture)", configured: isConfigured("gmail"), connection: conn("gmail") },
-    { id: "microsoft", label: "Microsoft Teams", configured: isConfigured("microsoft"), connection: conn("microsoft") },
+    { id: "microsoft", label: "Microsoft Teams + OneDrive", configured: isConfigured("microsoft"), connection: conn("microsoft") },
+    { id: "trello", label: "Trello (Project Boards)", configured: trelloConfigured, connection: conn("trello"), connectUrl: trelloConnectUrl },
   ];
 
   return (

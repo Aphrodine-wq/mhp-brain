@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { projectDetail } from "@/lib/queries";
+import { trelloCardsForProject } from "@/lib/trello";
 import { money, BADGE } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const { id } = await params;
   const proj = await projectDetail(id);
   if (!proj) notFound();
+  const trelloCards = await trelloCardsForProject(id).catch(() => []);
 
   return (
     <section className="view">
@@ -36,6 +38,21 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         <div><div className="sv">{proj.estimates.length}</div><div className="sk">Documents on file</div></div>
         <div><div className="sv">{proj.last || "—"}</div><div className="sk">Last activity</div></div>
       </div>
+
+      {trelloCards.length > 0 && (
+        <div className="panel" style={{ marginTop: 18 }}>
+          <h3>On the board</h3>
+          {trelloCards.map((c, i) => (
+            <div className="setrow" key={i}>
+              <div>
+                <div className="sl"><a href={c.url} target="_blank" rel="noreferrer" className="cell-link">{c.name}</a></div>
+                <div className="sd">{c.board}{c.due ? ` · due ${c.due}` : ""} · last activity {c.lastActivity}</div>
+              </div>
+              <span className="badge bid">{c.list || "—"}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="sec-h">Documents</div>
       <div className="card" style={{ marginTop: 16 }}>
