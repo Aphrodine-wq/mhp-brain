@@ -5,12 +5,21 @@ import { DIVISION_DETAIL } from "./line-detail";
 const norm = (d: string | null | undefined) =>
   String(d ?? "").replace(/\s+/g, " ").trim().toLowerCase();
 
-// Lines that are budget allowances (selection-dependent), not fixed-scope work.
-const ALLOWANCE_NAMES = new Set(["appliances", "plumbing fixtures"]);
+// Lines that are budget allowances (selection-dependent), not fixed-scope work. The
+// appliance/fixture/lighting families are flagged as allowances in their own catalog
+// detail text; lines whose catalog unit is literally "allowance" are caught by unit.
+const ALLOWANCE_NAMES = new Set([
+  "appliances",
+  "kitchen appliances",
+  "laundry appliances",
+  "plumbing fixtures",
+  "lighting fixtures",
+]);
 
-/** A line is an allowance if it has no proven history (jobs 0) or is a known selection allowance. */
-export function isAllowance(line: { description: string; jobs: number }): boolean {
-  return line.jobs === 0 || ALLOWANCE_NAMES.has(norm(line.description));
+/** A line is an allowance if it has no proven history (jobs 0), is priced per "allowance"
+ *  unit, or is a known selection allowance. Saved estimates have no jobs count — pass unit. */
+export function isAllowance(line: { description: string; jobs?: number; unit?: string | null }): boolean {
+  return line.jobs === 0 || norm(line.unit) === "allowance" || ALLOWANCE_NAMES.has(norm(line.description));
 }
 
 export interface ScopeItem {

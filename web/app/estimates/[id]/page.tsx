@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { estimateDetail } from "@/lib/queries";
 import { money } from "@/lib/format";
+import { isAllowance } from "@/lib/documents";
 import PrintButton from "./PrintButton";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +27,12 @@ export default async function EstimateDetailPage({ params }: { params: Promise<{
     if (!last || last.division !== div) groups.push({ division: div, lines: [l] });
     else last.lines.push(l);
   }
+
+  // page 3: selection-dependent budget lines the customer gets to choose against
+  const lineTotal = (l: (typeof est.lines)[number]) =>
+    l.itemTotal ?? (l.qty != null && l.unitPrice != null ? l.qty * l.unitPrice : l.sovTotal);
+  const allowances = est.lines.filter((l) => isAllowance({ description: l.description, unit: l.unit }));
+  const allowanceTotal = allowances.reduce((s, l) => s + (lineTotal(l) ?? 0), 0);
 
   return (
     <section className="view">
@@ -61,7 +68,10 @@ export default async function EstimateDetailPage({ params }: { params: Promise<{
         <div className="cover-foot">MHP Construction · Oxford, MS · MS Residential Builder R21909</div>
       </article>
 
-      <div className="card" style={{ maxWidth: 820, margin: "0 auto" }}>
+      {/* page 2 — full line-item breakdown */}
+      <article className="doc-page" style={{ minHeight: 760, marginTop: 24 }}>
+        <h2 className="doc-h">Estimate Detail</h2>
+        <div style={{ overflowX: "auto" }}>
         <table className="dtable">
           <thead>
             <tr>
@@ -100,7 +110,42 @@ export default async function EstimateDetailPage({ params }: { params: Promise<{
             )}
           </tbody>
         </table>
-      </div>
+        </div>
+      </article>
+
+      {/* page 3 — allowances sheet: the budgets carried for items the customer selects */}
+      <article className="doc-page" style={{ minHeight: 760, marginTop: 24 }}>
+        <h2 className="doc-h">Project Allowances</h2>
+        <p className="doc-lead">
+          Allowances are budget figures for selection-dependent items. The final cost follows your
+          selections and adjusts the contract sum up or down by change order — no markup games, just
+          the real number.
+        </p>
+        <table className="doc-table">
+          <thead><tr><th>Allowance</th><th className="n">Budget</th></tr></thead>
+          <tbody>
+            {allowances.length ? (
+              allowances.map((l, i) => (
+                <tr key={i}>
+                  <td>
+                    {l.description}
+                    {l.qty != null && l.unit ? <small className="j"> — {l.qty} {l.unit}</small> : null}
+                  </td>
+                  <td className="n">{lineTotal(l) != null ? money(lineTotal(l)!) : "—"}</td>
+                </tr>
+              ))
+            ) : (
+              <tr><td colSpan={2}>No allowance items on this estimate.</td></tr>
+            )}
+          </tbody>
+          {allowances.length > 0 && (
+            <tfoot><tr><td>Total allowances carried</td><td className="n"><b>{money(allowanceTotal)}</b></td></tr></tfoot>
+          )}
+        </table>
+        <div className="cover-foot" style={{ marginTop: 36 }}>
+          MHP Construction · Oxford, MS · MS Residential Builder R21909
+        </div>
+      </article>
     </section>
   );
 }
