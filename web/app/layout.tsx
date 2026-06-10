@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Sidebar from "./_components/Sidebar";
+import AppearanceMode from "./_components/AppearanceMode";
 import { currentUser } from "@/lib/auth";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -32,6 +33,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className={inter.variable}>
       <body>
+        <AppearanceMode />
         {user ? (
           <div className="app">
             <Sidebar user={user} />

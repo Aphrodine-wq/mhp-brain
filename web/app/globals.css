@@ -450,6 +450,11 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .badge.done{background:#eef0f2;color:#5b6470}
 .badge.dead{background:#efe9e6;color:#8a6a5a}
 .badge.unknown{background:#eef0f2;color:#8a8f96}
+/* compact mode (Settings → Appearance) — denser rows across tables and panels */
+body.compact .dtable th,body.compact .dtable td{padding:7px 12px}
+body.compact .setrow{padding:10px 16px}
+body.compact .sheet-line{padding:5px 0}
+body.compact .prow{padding:9px 16px}
 .empty{text-align:center;padding:70px 20px;color:var(--muted)}
 .empty .big{font-family:var(--disp);font-size:22px;color:var(--ink);margin-bottom:8px;letter-spacing:-.3px}
 .filterbar{display:flex;gap:8px;margin:18px 0;align-items:center}

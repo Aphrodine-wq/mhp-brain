@@ -5,10 +5,13 @@ import { useEffect, useState } from "react";
 export default function SettingsForm() {
   const [markup, setMarkup] = useState(18);
   const [contPct, setContPct] = useState(10);
+  const [taxPct, setTaxPct] = useState(7);
   const [market, setMarket] = useState("Oxford");
   const [preparedBy, setPreparedBy] = useState("MHP Construction");
   const [bands, setBands] = useState(true);
   const [cont, setCont] = useState(true);
+  const [packetDetail, setPacketDetail] = useState(false);
+  const [compact, setCompact] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   // Hydrate once from localStorage AFTER mount. This has to be an effect, not a lazy useState
@@ -21,10 +24,13 @@ export default function SettingsForm() {
       const s = JSON.parse(localStorage.getItem("mhp_settings") || "{}");
       if (s.markup) setMarkup(Number(s.markup));
       if (s.contPct != null) setContPct(Number(s.contPct));
+      if (s.taxPct != null) setTaxPct(Number(s.taxPct));
       if (s.market) setMarket(s.market);
       if (s.preparedBy) setPreparedBy(s.preparedBy);
       if (s.bands === false) setBands(false);
       if (s.cont === false) setCont(false);
+      if (s.packetDetail === true) setPacketDetail(true);
+      if (s.compact === true) setCompact(true);
     } catch {
       /* ignore */
     }
@@ -33,9 +39,13 @@ export default function SettingsForm() {
   /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
-    if (loaded)
-      localStorage.setItem("mhp_settings", JSON.stringify({ markup, contPct, market, preparedBy, bands, cont }));
-  }, [loaded, markup, contPct, market, preparedBy, bands, cont]);
+    if (!loaded) return;
+    localStorage.setItem(
+      "mhp_settings",
+      JSON.stringify({ markup, contPct, taxPct, market, preparedBy, bands, cont, packetDetail, compact }),
+    );
+    document.body.classList.toggle("compact", compact); // applies instantly; layout re-applies on load
+  }, [loaded, markup, contPct, taxPct, market, preparedBy, bands, cont, packetDetail, compact]);
 
   return (
     <>
@@ -57,6 +67,15 @@ export default function SettingsForm() {
           </div>
           <div>
             <input type="number" value={contPct} style={{ width: 80 }} onChange={(e) => setContPct(Number(e.target.value))} /> %
+          </div>
+        </div>
+        <div className="setrow">
+          <div>
+            <div className="sl">Sales tax</div>
+            <div className="sd">Applied on the client packet total (MS state rate is 7%).</div>
+          </div>
+          <div>
+            <input type="number" value={taxPct} style={{ width: 80 }} onChange={(e) => setTaxPct(Number(e.target.value))} /> %
           </div>
         </div>
         <div className="setrow">
@@ -95,6 +114,24 @@ export default function SettingsForm() {
             <div className="sd">Show the contingency buffer in the live preview rollup.</div>
           </div>
           <div className={`toggle${cont ? " on" : ""}`} onClick={() => setCont((c) => !c)} />
+        </div>
+        <div className="setrow">
+          <div>
+            <div className="sl">Packet line detail</div>
+            <div className="sd">Client packet opens with per-line detail shown under each division.</div>
+          </div>
+          <div className={`toggle${packetDetail ? " on" : ""}`} onClick={() => setPacketDetail((v) => !v)} />
+        </div>
+      </div>
+
+      <div className="panel" style={{ marginTop: 18 }}>
+        <h3>Appearance</h3>
+        <div className="setrow">
+          <div>
+            <div className="sl">Compact tables</div>
+            <div className="sd">Tighter rows everywhere — more estimates and projects per screen.</div>
+          </div>
+          <div className={`toggle${compact ? " on" : ""}`} onClick={() => setCompact((v) => !v)} />
         </div>
       </div>
     </>

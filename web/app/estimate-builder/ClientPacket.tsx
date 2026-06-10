@@ -27,15 +27,19 @@ const divName = (d: string) => d.replace(/^Division\s*\d+:\s*/, "") || "Other";
 export default function ClientPacket({
   lines,
   markup,
+  taxPct = 7,
+  initialShowLines = false,
   client,
   onBack,
 }: {
   lines: PacketLine[];
   markup: number;
+  taxPct?: number;
+  initialShowLines?: boolean;
   client: ClientInfo;
   onBack: () => void;
 }) {
-  const [showLines, setShowLines] = useState(false);
+  const [showLines, setShowLines] = useState(initialShowLines);
 
   const priced = lines.filter((l) => l.qty > 0 && l.rate > 0);
   const total = (l: PacketLine) => l.qty * l.rate;
@@ -60,7 +64,7 @@ export default function ClientPacket({
   const subtotal = priced.reduce((s, l) => s + total(l), 0);
   const bid = subtotal * (1 + (markup || 0) / 100);
   const oandp = bid - subtotal;
-  const tax = bid * 0.07;
+  const tax = bid * ((taxPct || 0) / 100);
   const grand = bid + tax;
 
   const allowances = priced.filter(isAllowance);
@@ -94,7 +98,7 @@ export default function ClientPacket({
         <div className="cover-total">
           <span>Estimated investment</span>
           <b>{money(grand)}</b>
-          <small>includes {markup || 0}% overhead &amp; profit and 7% MS sales tax</small>
+          <small>includes {markup || 0}% overhead &amp; profit and {taxPct || 0}% MS sales tax</small>
         </div>
         <div className="cover-foot">MHP Construction · Oxford, MS · MS Residential Builder R21909</div>
       </article>
@@ -166,7 +170,7 @@ export default function ClientPacket({
           <tfoot>
             <tr><td>Subtotal</td><td className="n">{money(subtotal)}</td></tr>
             <tr><td>Overhead &amp; profit ({markup || 0}%)</td><td className="n">{money(oandp)}</td></tr>
-            <tr><td>MS sales tax (7%)</td><td className="n">{money(tax)}</td></tr>
+            <tr><td>MS sales tax ({taxPct || 0}%)</td><td className="n">{money(tax)}</td></tr>
             <tr className="grand"><td>Total estimated investment</td><td className="n"><b>{money(grand)}</b></td></tr>
           </tfoot>
         </table>

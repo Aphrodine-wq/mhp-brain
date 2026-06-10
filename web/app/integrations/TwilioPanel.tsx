@@ -24,7 +24,17 @@ export default function TwilioPanel({ configured }: { configured: boolean }) {
     <div className="panel" style={{ marginTop: 18 }}>
       <h3>Phone &amp; SMS</h3>
       <div className="setrow">
-        <div>
+        <div className="conn-left">
+          <div className="conn-icon">
+            <svg viewBox="0 0 24 24" aria-hidden>
+              <circle cx="12" cy="12" r="12" fill="#F22F46" />
+              <circle cx="9" cy="9" r="2.1" fill="#fff" />
+              <circle cx="15" cy="9" r="2.1" fill="#fff" />
+              <circle cx="9" cy="15" r="2.1" fill="#fff" />
+              <circle cx="15" cy="15" r="2.1" fill="#fff" />
+            </svg>
+          </div>
+          <div>
           <div className="sl">Twilio</div>
           <div className="sd">
             {configured
@@ -32,6 +42,7 @@ export default function TwilioPanel({ configured }: { configured: boolean }) {
               : "Set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN in the env to pull the company line's texts and calls."}
           </div>
           {result && <div className="sd">{result}</div>}
+          </div>
         </div>
         <div className="actions">
           {configured ? <span className="badge active">Configured</span> : <span className="badge aging">Not set up</span>}

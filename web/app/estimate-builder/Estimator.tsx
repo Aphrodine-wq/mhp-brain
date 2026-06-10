@@ -58,7 +58,7 @@ export default function Estimator({
 
   // user defaults from the Settings page (markup/contingency/display) — same localStorage
   // hydration pattern as SettingsForm: must run post-mount because this component SSRs.
-  const [prefs, setPrefs] = useState({ markup: null as number | null, contPct: 10, bands: true, cont: true });
+  const [prefs, setPrefs] = useState({ markup: null as number | null, contPct: 10, taxPct: 7, bands: true, cont: true, packetDetail: false });
   /* eslint-disable react-hooks/set-state-in-effect -- localStorage hydration has no render-time equivalent under SSR */
   useEffect(() => {
     try {
@@ -66,8 +66,10 @@ export default function Estimator({
       setPrefs({
         markup: s.markup ? Number(s.markup) : null,
         contPct: s.contPct != null ? Number(s.contPct) : 10,
+        taxPct: s.taxPct != null ? Number(s.taxPct) : 7,
         bands: s.bands !== false,
         cont: s.cont !== false,
+        packetDetail: s.packetDetail === true,
       });
       if (s.preparedBy) setClient((c) => ({ ...c, preparedBy: s.preparedBy }));
     } catch {
@@ -331,7 +333,16 @@ export default function Estimator({
       qty: parseFloat(l.qty) || 0,
       rate: parseFloat(l.rate) || 0,
     }));
-    return <ClientPacket lines={packetLines} markup={markup} client={client} onBack={() => setView("result")} />;
+    return (
+      <ClientPacket
+        lines={packetLines}
+        markup={markup}
+        taxPct={prefs.taxPct}
+        initialShowLines={prefs.packetDetail}
+        client={client}
+        onBack={() => setView("result")}
+      />
+    );
   }
 
   // Working estimate, rendered as the live document itself: a letterhead sheet whose
