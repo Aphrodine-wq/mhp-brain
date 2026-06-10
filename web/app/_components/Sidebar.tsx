@@ -106,6 +106,8 @@ export default function Sidebar({ user }: { user: SessionUser }) {
   const router = useRouter();
   // Drawer state — only matters on mobile, where the sidebar slides in over the content.
   const [open, setOpen] = useState(false);
+  // Collapsed rail — desktop only. Persisted so it survives navigation/reloads.
+  const [collapsed, setCollapsed] = useState(false);
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   // Lock body scroll while the drawer is open (mobile). Closing on navigation is
@@ -115,13 +117,32 @@ export default function Sidebar({ user }: { user: SessionUser }) {
     return () => document.body.classList.remove("nav-open");
   }, [open]);
 
+  // Hydrate collapsed state from localStorage after mount (avoids SSR mismatch).
+  useEffect(() => {
+    setCollapsed(localStorage.getItem("mhp.sidebar.collapsed") === "1");
+  }, []);
+
+  const toggleCollapsed = () => {
+    setCollapsed((c) => {
+      const next = !c;
+      localStorage.setItem("mhp.sidebar.collapsed", next ? "1" : "0");
+      return next;
+    });
+  };
+
   const nav = ROLE_NAV[user.role] ?? ROLE_NAV.viewer;
   const foot = ROLE_FOOTER[user.role] ?? ROLE_FOOTER.default;
 
   const link = ({ href, label, icon }: NavItem) => (
-    <Link key={href} href={href} className={`nav${isActive(href) ? " active" : ""}`} onClick={() => setOpen(false)}>
+    <Link
+      key={href}
+      href={href}
+      className={`nav${isActive(href) ? " active" : ""}`}
+      onClick={() => setOpen(false)}
+      title={collapsed ? label : undefined}
+    >
       <svg viewBox="0 0 24 24">{icon}</svg>
-      {label}
+      <span className="nav-label">{label}</span>
     </Link>
   );
 
@@ -149,10 +170,18 @@ export default function Sidebar({ user }: { user: SessionUser }) {
       {/* Backdrop behind the open drawer */}
       <div className={`scrim${open ? " show" : ""}`} onClick={() => setOpen(false)} />
 
-      <aside className={`sidebar${open ? " open" : ""}`}>
+      <aside className={`sidebar${open ? " open" : ""}${collapsed ? " collapsed" : ""}`}>
       <div className="brand">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo-light.png" alt="MHP" />
+        <button
+          className="collapse-btn"
+          onClick={toggleCollapsed}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" /></svg>
+        </button>
       </div>
       <nav>
         {nav.map(link)}
@@ -162,11 +191,12 @@ export default function Sidebar({ user }: { user: SessionUser }) {
           className="nav"
           href="mailto:jamesburge.mcm@gmail.com?subject=MHP%20Estimate%20%E2%80%94%20support%20request"
           onClick={() => setOpen(false)}
+          title={collapsed ? "Support" : undefined}
         >
           <svg viewBox="0 0 24 24">
             <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
           </svg>
-          Support
+          <span className="nav-label">Support</span>
         </a>
       </nav>
       <div className="profile-row">

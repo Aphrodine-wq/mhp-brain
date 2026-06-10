@@ -170,9 +170,14 @@ small.j{color:var(--muted);font-size:11px}
 /* app shell */
 .app{display:flex;min-height:100vh}
 .sidebar{width:208px;flex-shrink:0;background:var(--ink-navy);color:#fff;display:flex;flex-direction:column;
-  position:sticky;top:0;height:100vh}
+  position:sticky;top:0;height:100vh;transition:width .2s ease}
 .brand{display:flex;align-items:center;gap:11px;padding:20px 18px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
 .brand img{height:36px;width:auto}
+.collapse-btn{margin-left:auto;display:flex;align-items:center;justify-content:center;background:0;border:0;
+  color:rgba(255,255,255,.55);cursor:pointer;padding:4px;border-radius:var(--r-sm);transition:color var(--t),background var(--t)}
+.collapse-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
+.collapse-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+  transition:transform var(--t)}
 .sidebar nav{padding:14px 12px;display:flex;flex-direction:column;gap:1px;flex:1}
 .nav{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:var(--r-sm);color:rgba(255,255,255,.66);
   font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;transition:background var(--t),color var(--t)}
@@ -190,6 +195,23 @@ small.j{color:var(--muted);font-size:11px}
 .pmeta{min-width:0}
 .pname{font-size:14px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .prole{font-size:11px;color:rgba(255,255,255,.55);margin-top:1px}
+
+/* collapsed rail — desktop only (above the 860px mobile drawer breakpoint).
+   Shrinks the sidebar to an icon-only column; labels collapse out, icons center. */
+@media(min-width:861px){
+  .sidebar.collapsed{width:64px}
+  .sidebar.collapsed .nav-label,
+  .sidebar.collapsed .brand img,
+  .sidebar.collapsed .pmeta{display:none}
+  .sidebar.collapsed .brand{justify-content:center;padding:20px 0 18px}
+  .sidebar.collapsed .collapse-btn{margin:0}
+  .sidebar.collapsed .collapse-btn svg{transform:rotate(180deg)}
+  .sidebar.collapsed .nav{justify-content:center;padding:9px 0}
+  .sidebar.collapsed .nav-sep{margin:9px 12px}
+  .sidebar.collapsed .profile-row{flex-direction:column}
+  .sidebar.collapsed .profile{justify-content:center;padding:14px 0}
+  .sidebar.collapsed .logout{border-left:0;border-top:1px solid rgba(255,255,255,.08);justify-content:center;padding:12px 0}
+}
 /* dashboard */
 .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin:22px 0}
 .metric{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px;
