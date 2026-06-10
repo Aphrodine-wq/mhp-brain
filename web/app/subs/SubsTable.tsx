@@ -51,6 +51,7 @@ export default function SubsTable({ subs }: { subs: SubRow[] }) {
   const [editing, setEditing] = useState<string | null>(null);
   const [trade, setTrade] = useState("");
   const [phone, setPhone] = useState("");
+  const [license, setLicense] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const list = subs.filter((x) => (x.name + " " + x.trade).toLowerCase().includes(f.toLowerCase()));
@@ -71,11 +72,12 @@ export default function SubsTable({ subs }: { subs: SubRow[] }) {
     setEditing(s.key);
     setTrade(s.trade);
     setPhone(s.phone);
+    setLicense(s.license);
   }
   async function save(s: SubRow) {
     setBusy(s.key);
     try {
-      await post("/api/sub", { name: s.name, trade, phone });
+      await post("/api/sub", { name: s.name, trade, phone, license });
       setEditing(null);
       router.refresh();
     } finally {
@@ -109,9 +111,11 @@ export default function SubsTable({ subs }: { subs: SubRow[] }) {
           editing={editing}
           trade={trade}
           phone={phone}
+          license={license}
           busy={busy}
           setTrade={setTrade}
           setPhone={setPhone}
+          setLicense={setLicense}
           startEdit={startEdit}
           cancelEdit={() => setEditing(null)}
           save={save}
@@ -137,9 +141,11 @@ function TradeSection({
   editing,
   trade,
   phone,
+  license,
   busy,
   setTrade,
   setPhone,
+  setLicense,
   startEdit,
   cancelEdit,
   save,
@@ -151,9 +157,11 @@ function TradeSection({
   editing: string | null;
   trade: string;
   phone: string;
+  license: string;
   busy: string | null;
   setTrade: (v: string) => void;
   setPhone: (v: string) => void;
+  setLicense: (v: string) => void;
   startEdit: (s: SubRow) => void;
   cancelEdit: () => void;
   save: (s: SubRow) => void;
@@ -175,7 +183,11 @@ function TradeSection({
                   {x.verified && <span className="badge active" title="Confirmed">✓</span>}
                 </td>
                 <td>{ed ? <input value={trade} onChange={(e) => setTrade(e.target.value)} style={{ width: 150 }} /> : x.trade || "—"}</td>
-                <td>{ed ? <input value={phone} onChange={(e) => setPhone(e.target.value)} style={{ width: 130 }} /> : x.phone || "—"}</td>
+                <td>
+                  {ed ? <input value={phone} onChange={(e) => setPhone(e.target.value)} style={{ width: 130 }} /> : x.phone || "—"}
+                  {ed && <div style={{ marginTop: 4 }}><input value={license} placeholder="License #" onChange={(e) => setLicense(e.target.value)} style={{ width: 130 }} /></div>}
+                  {!ed && x.license && <div><small className="j">Lic. {x.license}</small></div>}
+                </td>
                 <td className="n">{x.jobs || "—"}</td>
                 <td><small className="j">{x.source}</small></td>
                 <td className="n" style={{ whiteSpace: "nowrap" }}>

@@ -9,7 +9,7 @@ export type EntityType = "project" | "sub" | "crew" | "estimate" | "live_flag";
 // Server-side allow-list: which fields can be set per entity, and (where enumerable) the legal values.
 const ALLOWED: Record<EntityType, Record<string, Set<string> | null>> = {
   project: { status: new Set(["Active", "Aging", "Bid", "Paused", "Likely Done", "Dead", "Unknown"]), market: null, type: null },
-  sub: { trade: null, phone: null, verified: new Set(["true", "false"]) },
+  sub: { trade: null, phone: null, license: null, verified: new Set(["true", "false"]) },
   // crew profile lives here too — the pipeline owns the crew table, the app owns the extras
   crew: { role: null, rate: null, phone: null, email: null, hire_date: null, address: null, emergency_contact: null, certifications: null, notes: null },
   live_flag: { dismissed: new Set(["true", "false"]) },

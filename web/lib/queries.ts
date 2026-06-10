@@ -92,6 +92,7 @@ export interface SubRow {
   key: string;
   trade: string;
   phone: string;
+  license: string;
   jobs: number;
   projects: string;
   source: string;
@@ -115,6 +116,7 @@ export async function subsList(): Promise<SubRow[]> {
       key: k,
       trade: o.trade ?? ((r.trade as string | null) ?? ""),
       phone: o.phone ?? ((r.phone as string | null) ?? ""),
+      license: o.license ?? "",
       jobs: Number(r.jobs ?? 0),
       projects: (r.projects as string | null) ?? "",
       source: (r.source as string | null) ?? "",

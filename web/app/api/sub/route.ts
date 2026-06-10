@@ -16,7 +16,7 @@ export async function POST(req: Request) {
   const actor = user.name.slice(0, 60);
   const key = subKey(String(data.name));
   try {
-    for (const field of ["trade", "phone", "verified"] as const) {
+    for (const field of ["trade", "phone", "license", "verified"] as const) {
       if (field in data) {
         await writeOverride({
           entityType: "sub",

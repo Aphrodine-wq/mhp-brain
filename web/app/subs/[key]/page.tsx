@@ -52,6 +52,17 @@ export default async function SubDetailPage({ params }: { params: Promise<{ key:
           </div>
         </div>
         <div className="setrow">
+          <div>
+            <div className="sl">MS contractor license</div>
+            <div className="sd">
+              <a href="https://search.msboc.us/ContractorSearch.aspx" target="_blank" rel="noreferrer" className="cell-link">
+                Verify at the MS State Board of Contractors →
+              </a>
+            </div>
+          </div>
+          <div className="sd">{sub.license || "—"}</div>
+        </div>
+        <div className="setrow">
           <div><div className="sl">Source</div></div>
           <div className="sd">{sub.source || "—"}</div>
         </div>
