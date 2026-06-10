@@ -118,9 +118,11 @@ export default function Sidebar({ user }: { user: SessionUser }) {
   }, [open]);
 
   // Hydrate collapsed state from localStorage after mount (avoids SSR mismatch).
+  /* eslint-disable react-hooks/set-state-in-effect -- localStorage hydration has no render-time equivalent under SSR */
   useEffect(() => {
     setCollapsed(localStorage.getItem("mhp.sidebar.collapsed") === "1");
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const toggleCollapsed = () => {
     setCollapsed((c) => {
@@ -174,14 +176,6 @@ export default function Sidebar({ user }: { user: SessionUser }) {
       <div className="brand">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo-light.png" alt="MHP" />
-        <button
-          className="collapse-btn"
-          onClick={toggleCollapsed}
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" /></svg>
-        </button>
       </div>
       <nav>
         {nav.map(link)}
@@ -199,6 +193,16 @@ export default function Sidebar({ user }: { user: SessionUser }) {
           <span className="nav-label">Support</span>
         </a>
       </nav>
+      <div className="collapse-row">
+        <button
+          className="collapse-btn"
+          onClick={toggleCollapsed}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" /></svg>
+        </button>
+      </div>
       <div className="profile-row">
         <Link href="/settings" className="profile" onClick={() => setOpen(false)}>
           <div className="avatar">{initials}</div>

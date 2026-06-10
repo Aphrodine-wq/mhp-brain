@@ -35,7 +35,6 @@ textarea:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
   color:var(--navy);cursor:pointer;transition:border-color var(--t),background var(--t)}
 .upload input[type=file]::file-selector-button:hover{border-color:var(--navy);background:#fff}
 /* assembly quick-start picker */
-.eb-kicker{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--navy);font-weight:700;margin-bottom:6px}
 .asm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:16px}
 .asm-card{display:flex;flex-direction:column;gap:6px;text-align:left;padding:16px 18px;min-height:74px;
   border:1px solid var(--line);border-left:3px solid #b9cae9;border-radius:var(--r);background:var(--card);cursor:pointer;
@@ -173,7 +172,9 @@ small.j{color:var(--muted);font-size:11px}
   position:sticky;top:0;height:100vh;transition:width .2s ease}
 .brand{display:flex;align-items:center;gap:11px;padding:20px 18px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
 .brand img{height:36px;width:auto}
-.collapse-btn{margin-left:auto;display:flex;align-items:center;justify-content:center;background:0;border:0;
+/* collapse control — its own slim row pinned above the profile */
+.collapse-row{display:flex;justify-content:flex-end;padding:6px 12px;border-top:1px solid rgba(255,255,255,.1)}
+.collapse-btn{display:flex;align-items:center;justify-content:center;background:0;border:0;
   color:rgba(255,255,255,.55);cursor:pointer;padding:4px;border-radius:var(--r-sm);transition:color var(--t),background var(--t)}
 .collapse-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
 .collapse-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
@@ -204,7 +205,7 @@ small.j{color:var(--muted);font-size:11px}
   .sidebar.collapsed .brand img,
   .sidebar.collapsed .pmeta{display:none}
   .sidebar.collapsed .brand{justify-content:center;padding:20px 0 18px}
-  .sidebar.collapsed .collapse-btn{margin:0}
+  .sidebar.collapsed .collapse-row{justify-content:center;padding:6px 0}
   .sidebar.collapsed .collapse-btn svg{transform:rotate(180deg)}
   .sidebar.collapsed .nav{justify-content:center;padding:9px 0}
   .sidebar.collapsed .nav-sep{margin:9px 12px}
@@ -212,6 +213,28 @@ small.j{color:var(--muted);font-size:11px}
   .sidebar.collapsed .profile{justify-content:center;padding:14px 0}
   .sidebar.collapsed .logout{border-left:0;border-top:1px solid rgba(255,255,255,.08);justify-content:center;padding:12px 0}
 }
+/* collapsible category sections (Estimates + Projects) — header card that swings
+   open into an attached table panel, so categories read as minimized dropdowns */
+.csec{margin-top:14px}
+.csec-h{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:15px 18px;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);cursor:pointer;
+  font-family:var(--sans);box-shadow:var(--shadow-sm);
+  transition:border-color var(--t),box-shadow var(--t),border-radius var(--t)}
+.csec-h:hover{border-color:var(--navy)}
+.csec-h:focus-visible{outline:none;box-shadow:var(--ring)}
+.csec-h svg{width:15px;height:15px;stroke:var(--muted);fill:none;stroke-width:2.2;stroke-linecap:round;
+  stroke-linejoin:round;flex-shrink:0;transition:transform var(--t)}
+.csec-h.open svg{transform:rotate(90deg)}
+.csec-h.open{border-bottom-left-radius:0;border-bottom-right-radius:0}
+.csec-t{font-family:var(--disp);font-size:16px;font-weight:600;color:var(--ink)}
+.csec-h small{margin-left:auto;font-size:12px}
+.csec-body{background:var(--card);border:1px solid var(--line);border-top:0;
+  border-radius:0 0 var(--r-lg) var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm)}
+/* integration brand marks */
+.conn-icon{width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--line-2);border-radius:var(--r-sm);background:#fff}
+.conn-icon svg{width:22px;height:22px;display:block}
+.conn-left{display:flex;align-items:center;gap:14px;min-width:0}
 /* dashboard */
 .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin:22px 0}
 .metric{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px;
@@ -464,7 +487,8 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
     color:#fff;cursor:pointer;padding:6px;margin:-6px 2px -6px -6px;-webkit-tap-highlight-color:transparent}
   .hamburger svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-  /* sidebar → off-canvas drawer */
+  /* sidebar → off-canvas drawer; the collapsed-rail toggle is meaningless here */
+  .collapse-row{display:none}
   .sidebar{position:fixed;top:0;left:0;height:100dvh;width:264px;max-width:84vw;z-index:60;
     transform:translateX(-100%);transition:transform .25s ease;box-shadow:var(--shadow-lg)}
   .sidebar.open{transform:translateX(0)}
@@ -484,7 +508,7 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 
   /* wide tables: scroll horizontally inside their card/panel rather than
      overflowing the viewport or crushing columns to nothing */
-  .card,.panel{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .card,.panel,.csec-body{overflow-x:auto;-webkit-overflow-scrolling:touch}
   .dtable,.est-layout table,.panel table{min-width:620px}
   .dtable th,.dtable td,table th,table td{padding:10px 12px}
   .dtable th{position:static}              /* sticky header is moot once the card itself scrolls */

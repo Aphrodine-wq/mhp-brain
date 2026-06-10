@@ -42,17 +42,15 @@ export default async function Home() {
       <div className="sec-h">Active now</div>
       <div className="proj-cards">
         {active.length ? (
-          active.map((x) => (
+          active.slice(0, 6).map((x) => (
             <Link key={x.id} href={`/projects/${x.id}`} className="pcard">
               <div className="pc-top">
                 <div className="pc-name">{x.name}</div>
-                <span className="badge active">Active</span>
               </div>
               <div className="pc-val">{x.value ? money(x.value) : "—"}</div>
               <div className="pc-meta">
                 <span>{x.market || "—"}</span><span className="pdot" />
-                <span>{x.last || "—"}</span><span className="pdot" />
-                <span>{x.estimates} bid{x.estimates === 1 ? "" : "s"}</span>
+                <span>{x.last || "—"}</span>
               </div>
             </Link>
           ))
@@ -62,8 +60,7 @@ export default async function Home() {
       </div>
 
       <div className="morelink">
-        {s.aging} aging · {s.paused} paused · {s.projects} jobs all-time.{" "}
-        <Link href="/projects">View all projects →</Link>
+        <Link href="/projects">View all {s.projects} projects →</Link>
       </div>
     </section>
   );
