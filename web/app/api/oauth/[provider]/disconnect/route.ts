@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { accountsForProvider, disconnect, type ProviderId } from "@/lib/oauth";
-import { requireAdmin } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 
 // GET /api/oauth/<provider>/disconnect — revoke the token at the provider and forget the connection.
 // Admin-gated like /start: forgetting a key to the books is an admin action. Disconnects EVERY
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ prov
     return NextResponse.json({ error: "unknown provider" }, { status: 404 });
   }
 
-  if (!(await requireAdmin())) {
+  if (!(await requireRole("ceo"))) {
     return NextResponse.json({ error: "admin session required" }, { status: 401 });
   }
 

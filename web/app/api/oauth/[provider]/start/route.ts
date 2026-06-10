@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
 import { getAuthorizeUrl, type ProviderId } from "@/lib/oauth";
-import { requireAdmin } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 
 // Step 1 of the OAuth flow: GET /api/oauth/<provider>/start
 //   quickbooks -> realmId comes back on the callback.
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ prov
   }
 
   // Closed by default: minting a key to the books requires an admin session.
-  if (!(await requireAdmin())) {
+  if (!(await requireRole("ceo"))) {
     return NextResponse.json({ error: "admin session required" }, { status: 401 });
   }
 

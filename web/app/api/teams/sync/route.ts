@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { syncChannelMessages, syncChatMessages, matchMessagesToProjects } from "@/lib/teams";
 
 // POST /api/teams/sync — pull new messages from Teams channels + chats, then match to projects.
 // Idempotent: uses delta links so repeated calls only pull new messages.
 export async function POST() {
-  if (!(await requireAdmin())) {
+  if (!(await requireRole("ceo"))) {
     return NextResponse.json({ error: "admin session required" }, { status: 401 });
   }
 
