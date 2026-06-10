@@ -3,15 +3,15 @@
 import { useState } from "react";
 
 // Twilio comms log — env-configured (account SID + auth token), no OAuth dance.
-export default function TwilioPanel({ configured }: { configured: boolean }) {
+export default function TwilioPanel({ configured, openphone }: { configured: boolean; openphone: boolean }) {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<string | null>(null);
 
-  async function sync() {
+  async function sync(ep: string) {
     setBusy(true);
     setResult(null);
     try {
-      const r = await fetch("/api/twilio/sync", { method: "POST" });
+      const r = await fetch(`/api/${ep}/sync`, { method: "POST" });
       const d = await r.json();
       setResult(r.ok ? `${d.messages} texts, ${d.calls} calls — ${d.matched} matched to subs/crew.` : d.error ?? "Sync failed.");
     } catch {
@@ -47,7 +47,25 @@ export default function TwilioPanel({ configured }: { configured: boolean }) {
         <div className="actions">
           {configured ? <span className="badge active">Configured</span> : <span className="badge aging">Not set up</span>}
           {configured && (
-            <button className="btn ghost sm" disabled={busy} onClick={sync}>
+            <button className="btn ghost sm" disabled={busy} onClick={() => sync("twilio")}>
+              {busy ? "Syncing…" : "Sync log"}
+            </button>
+          )}
+        </div>
+      </div>
+      <div className="setrow">
+        <div>
+          <div className="sl">OpenPhone</div>
+          <div className="sd">
+            {openphone
+              ? "Same comms log, OpenPhone line — use whichever the company runs on."
+              : "Set OPENPHONE_API_KEY in the env to pull an OpenPhone line instead (or as well)."}
+          </div>
+        </div>
+        <div className="actions">
+          {openphone ? <span className="badge active">Configured</span> : <span className="badge unknown">Not set up</span>}
+          {openphone && (
+            <button className="btn ghost sm" disabled={busy} onClick={() => sync("openphone")}>
               {busy ? "Syncing…" : "Sync log"}
             </button>
           )}

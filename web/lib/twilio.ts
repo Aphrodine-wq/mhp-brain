@@ -17,9 +17,9 @@ function auth(): { sid: string; header: string } {
 }
 
 // last 10 digits — US numbers compare reliably regardless of +1 / formatting
-const last10 = (p: string) => p.replace(/\D/g, "").slice(-10);
+export const last10 = (p: string) => p.replace(/\D/g, "").slice(-10);
 
-async function ensureComms() {
+export async function ensureComms() {
   await db.execute(`CREATE TABLE IF NOT EXISTS comms_log (
     sid TEXT PRIMARY KEY,
     kind TEXT,            -- 'sms' | 'call'
@@ -40,7 +40,7 @@ interface PhoneBookEntry {
   label: string;
 }
 
-async function phoneBook(): Promise<Map<string, PhoneBookEntry>> {
+export async function phoneBook(): Promise<Map<string, PhoneBookEntry>> {
   const book = new Map<string, PhoneBookEntry>();
   // overrides may hold corrected numbers; subsList/crewList logic lives in queries — keep
   // this lean and read the base tables plus the overrides overlay directly.

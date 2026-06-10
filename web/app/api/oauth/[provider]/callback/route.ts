@@ -5,7 +5,7 @@ import { exchangeCode, type ProviderId } from "@/lib/oauth";
 // Step 2: the provider redirects here with ?code & ?state (QB also ?realmId).
 // The state cookie match is this route's primary guard (CSRF) — we never trust ?state alone.
 
-const PROVIDERS = new Set<ProviderId>(["quickbooks", "gmail", "microsoft", "docusign", "gbp"]);
+const PROVIDERS = new Set<ProviderId>(["quickbooks", "gmail", "microsoft", "docusign", "gbp", "companycam"]);
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ provider: string }> }) {
   const { provider } = await params;

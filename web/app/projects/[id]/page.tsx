@@ -4,6 +4,7 @@ import { projectDetail } from "@/lib/queries";
 import { trelloCardsForProject } from "@/lib/trello";
 import { eventsForProject } from "@/lib/calendar";
 import { envelopesForProject } from "@/lib/docusign";
+import { ccForProject } from "@/lib/companycam";
 import { money, BADGE } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +23,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const trelloCards = await trelloCardsForProject(id).catch(() => []);
   const events = await eventsForProject(id).catch(() => []);
   const envelopes = await envelopesForProject(id).catch(() => []);
+  const ccProjects = await ccForProject(id).catch(() => []);
 
   return (
     <section className="view">
@@ -74,6 +76,23 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               <span className={`badge ${ev.status === "completed" ? "active" : ev.status === "declined" || ev.status === "voided" ? "dead" : "aging"}`}>
                 {ev.status}
               </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {ccProjects.length > 0 && (
+        <div className="panel" style={{ marginTop: 18 }}>
+          <h3>Job photos</h3>
+          {ccProjects.map((c, i) => (
+            <div className="setrow" key={i}>
+              <div>
+                <div className="sl">
+                  {c.galleryUrl ? <a href={c.galleryUrl} target="_blank" rel="noreferrer" className="cell-link">{c.name}</a> : c.name}
+                </div>
+                <div className="sd">last photo {c.lastPhotoAt || "—"}</div>
+              </div>
+              <span className="badge bid">{c.photoCount} photos</span>
             </div>
           ))}
         </div>

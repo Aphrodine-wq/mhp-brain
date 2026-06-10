@@ -11,7 +11,7 @@ import { requireRole } from "@/lib/auth";
 // Intuit "Disconnect URL" landing. The CSRF surface is intentionally low-stakes: the worst a forged
 // request does is force an admin to reconnect — the connection is read-only, nothing is destroyed.
 
-const PROVIDERS = new Set<ProviderId>(["quickbooks", "gmail", "microsoft", "trello", "docusign", "gbp"]);
+const PROVIDERS = new Set<ProviderId>(["quickbooks", "gmail", "microsoft", "trello", "docusign", "gbp", "companycam"]);
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ provider: string }> }) {
   const { provider } = await params;

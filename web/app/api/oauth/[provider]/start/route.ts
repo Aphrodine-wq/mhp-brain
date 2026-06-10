@@ -8,7 +8,7 @@ import { requireRole } from "@/lib/auth";
 //   quickbooks -> realmId comes back on the callback.
 //   gmail      -> pass ?account=<dedicated box address>; we carry it across the round-trip.
 
-const PROVIDERS = new Set<ProviderId>(["quickbooks", "gmail", "microsoft", "docusign", "gbp"]);
+const PROVIDERS = new Set<ProviderId>(["quickbooks", "gmail", "microsoft", "docusign", "gbp", "companycam"]);
 const STATE_TTL = 600; // seconds — the consent screen round-trip is short-lived
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ provider: string }> }) {
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ prov
   }
 
   // single-account providers: the connection key is fixed, stash it for the callback
-  if (provider === "docusign" || provider === "gbp") {
+  if (provider === "docusign" || provider === "gbp" || provider === "companycam") {
     jar.set(`oauth_account_${provider}`, "default", cookieOpts);
   }
 

@@ -2,7 +2,7 @@
 // QuickBooks and never writes to (or reads beyond the dedicated box of) anyone's mailbox.
 // Client id/secret/redirect come from env, never the repo.
 
-export type ProviderId = "quickbooks" | "gmail" | "microsoft" | "trello" | "docusign" | "gbp";
+export type ProviderId = "quickbooks" | "gmail" | "microsoft" | "trello" | "docusign" | "gbp" | "companycam";
 
 export interface ProviderConfig {
   id: ProviderId;
@@ -31,6 +31,7 @@ const ENV_KEYS: Record<ProviderId, string[]> = {
   // Trello is not OAuth2 — a public API key plus a user-granted member token (see lib/trello.ts).
   trello: ["TRELLO_API_KEY"],
   docusign: ["DS_CLIENT_ID", "DS_CLIENT_SECRET", "DS_REDIRECT_URI"],
+  companycam: ["CC_CLIENT_ID", "CC_CLIENT_SECRET", "CC_REDIRECT_URI"],
   // GBP can share the Google app with Gmail — same client, different scopes.
   gbp: ["GBP_CLIENT_ID", "GBP_CLIENT_SECRET", "GBP_REDIRECT_URI"],
 };
@@ -79,6 +80,17 @@ export function providerConfig(id: ProviderId): ProviderConfig {
         extraAuthParams: {},
       };
     }
+    case "companycam":
+      return {
+        id,
+        authorizeUrl: "https://app.companycam.com/oauth/authorize",
+        tokenUrl: "https://app.companycam.com/oauth/token",
+        scopes: ["read"],
+        clientId: need("CC_CLIENT_ID"),
+        clientSecret: need("CC_CLIENT_SECRET"),
+        redirectUri: need("CC_REDIRECT_URI"),
+        extraAuthParams: {},
+      };
     case "gbp":
       return {
         id,
