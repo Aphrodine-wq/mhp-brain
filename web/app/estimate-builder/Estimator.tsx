@@ -37,8 +37,7 @@ interface SeedResult {
   rate: number | null;
 }
 
-const PLACEHOLDER =
-  "e.g. Gut and remodel a 300 sqft kitchen in Oxford. Demo existing, new framing, drywall, 70 linear feet of custom cabinets, quartz countertops, LVT flooring, repaint, new electrical and plumbing fixtures, tile backsplash.";
+const PLACEHOLDER = "Describe the job — scope, size, finishes.";
 
 export default function Estimator({
   catalog,
@@ -228,7 +227,6 @@ export default function Estimator({
               onClick={() => selectAssembly(a.key)}
             >
               <b>{a.label}</b>
-              <span>{a.blurb}</span>
             </button>
           ))}
         </div>
