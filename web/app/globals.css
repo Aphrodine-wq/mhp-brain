@@ -21,6 +21,20 @@ h2{font-family:var(--disp);font-weight:650;font-size:29px;letter-spacing:-.5px;m
 /* consistent vertical rhythm for the section wrapper every page renders into */
 .view{display:block}
 .view>h2:first-child,.view>.row:first-child{margin-top:2px}
+textarea{display:block;width:100%;min-height:170px;padding:16px;border:1px solid var(--line);
+  border-radius:var(--r);background:var(--card);font-family:var(--sans);font-size:15px;resize:vertical;
+  color:var(--ink);box-shadow:var(--shadow-sm);transition:border-color var(--t),box-shadow var(--t)}
+textarea:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
+.upload{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:16px;padding:16px 20px;
+  border:1.5px dashed var(--line);border-radius:var(--r);background:var(--card)}
+.upload input[type=file]{font-family:var(--sans);font-size:13px;color:var(--muted)}
+.upload input[type=file]::file-selector-button{font-family:var(--sans);font-weight:600;font-size:13px;
+  padding:9px 16px;margin-right:12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--paper);
+  color:var(--navy);cursor:pointer;transition:border-color var(--t),background var(--t)}
+.upload input[type=file]::file-selector-button:hover{border-color:var(--navy);background:#fff}
+.or-sep{display:flex;align-items:center;gap:12px;margin:34px 0 10px;color:var(--ink-2);font-size:12px;
+  font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+.or-sep::before,.or-sep::after{content:'';flex:1;height:1px;background:var(--line)}
 /* assembly quick-start picker */
 .asm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:16px}
 .asm-card{display:flex;align-items:center;text-align:left;padding:14px 16px;

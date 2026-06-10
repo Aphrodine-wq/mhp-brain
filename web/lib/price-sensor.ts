@@ -86,6 +86,19 @@ const SEED: { name: string; unit: string; catalogDesc: string }[] = [
   // Div 26 — electrical
   { name: "12/2 Romex NM-B Wire 250 ft.", unit: "roll", catalogDesc: "Electrical Material" },
   { name: "200 Amp 40-Space Main Breaker Panel", unit: "each", catalogDesc: "Electrical Material" },
+  // second wave — trim, outdoor, fixtures, casework
+  { name: "1x4x8 Primed MDF Trim Board", unit: "each", catalogDesc: "Interior Trim Material" },
+  { name: "5/4x6x12 Pressure Treated Deck Board", unit: "each", catalogDesc: "Porch Material" },
+  { name: "4x4x8 Pressure Treated Post", unit: "each", catalogDesc: "Wood Post & Column Material" },
+  { name: "House Wrap 9 ft. x 150 ft. Roll", unit: "roll", catalogDesc: "Siding Material" },
+  { name: "James Hardie 8.25 in. Fiber Cement Lap Siding 12 ft.", unit: "each", catalogDesc: "Siding Material" },
+  { name: "6 in. LED Recessed Light 6-Pack", unit: "pack", catalogDesc: "Lighting Fixtures" },
+  { name: "Kwikset Entry Door Knob and Deadbolt Combo", unit: "each", catalogDesc: "Door Hardware" },
+  { name: "3x6 Ceramic Subway Tile White (sq ft)", unit: "sqft", catalogDesc: "Backsplash Material" },
+  { name: "36 in. Bathroom Vanity with Top", unit: "each", catalogDesc: "Bathroom Vanities" },
+  { name: "Quartz Countertop Installed (sq ft)", unit: "sqft", catalogDesc: "Countertop Material" },
+  { name: "Round Toilet 1.28 GPF Two-Piece", unit: "each", catalogDesc: "Plumbing Fixtures" },
+  { name: "3 in. x 10 ft. PVC DWV Pipe", unit: "each", catalogDesc: "Plumbing Material & Labor" },
 ];
 
 // first-generation generic seeds, superseded by the basket-aligned list above

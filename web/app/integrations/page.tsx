@@ -9,6 +9,9 @@ import ReviewsPanel from "./ReviewsPanel";
 import { alertsConfigured } from "@/lib/alerts";
 import { twilioConfigured } from "@/lib/twilio";
 import { recentReviews } from "@/lib/gbp";
+import { allSettings } from "@/lib/integration-settings";
+import SettingsPanel from "./SettingsPanel";
+import WeatherPanel from "./WeatherPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +47,7 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
     { id: "gbp", label: "Google Business Profile", configured: isConfigured("gbp"), connection: conn("gbp") },
   ];
   const reviews = await recentReviews(8).catch(() => []);
+  const settings = await allSettings().catch(() => ({}));
 
   return (
     <section className="view">
@@ -55,6 +59,8 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
       <Connections providers={providers} oauthResult={oauth ?? null} />
       <TwilioPanel configured={twilioConfigured()} />
       <AlertsPanel configured={alertsConfigured()} />
+      <WeatherPanel />
+      <SettingsPanel values={settings} />
       {reviews.length > 0 && <ReviewsPanel reviews={reviews} />}
     </section>
   );

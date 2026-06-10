@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth";
 import { sendAlert } from "@/lib/alerts";
 import { money } from "@/lib/format";
+import { getSetting } from "@/lib/integration-settings";
 
 // POST /api/alerts/bid-guard — fired when someone clicks through the Bid Guard exit gate
 // on an under-baseline estimate. Per MARGIN_GUARD.md this is allowed (loyalty pricing is
@@ -18,6 +19,7 @@ export async function POST(req: Request) {
   const totalShort = Number(d.totalShort) || 0;
   const markup = Number(d.markup) || 0;
   const bid = Number(d.bid) || 0;
+  if ((await getSetting("alerts", "bid_guard", "on")) !== "on") return NextResponse.json({ ok: true, muted: true });
   await sendAlert({
     title: "Bid Guard override — estimate sent under baseline",
     urgent: true,

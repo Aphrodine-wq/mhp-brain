@@ -4,8 +4,24 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { TrackedMaterial } from "@/lib/price-sensor";
 import { money } from "@/lib/format";
+import CollapseSection from "../_components/CollapseSection";
 
 const fmt = (n: number | null) => (n == null ? "—" : n >= 100 ? money(n) : `$${n.toFixed(2)}`);
+
+// trade group from the mapped estimator line — same dropdown organization as the rest of the app
+const GROUPS: [RegExp, string][] = [
+  [/framing|porch|post|column/i, "Lumber & Framing"],
+  [/drywall|interior paint|interior trim/i, "Drywall, Paint & Trim"],
+  [/lvt|floor tile|backsplash/i, "Flooring & Tile"],
+  [/insulation|roofing|siding|gutter/i, "Envelope & Roofing"],
+  [/slab|forming|block|footing/i, "Concrete & Masonry"],
+  [/window|door/i, "Openings"],
+  [/cabinet|countertop|vanit/i, "Casework & Counters"],
+  [/plumbing|water heater/i, "Plumbing"],
+  [/hvac/i, "HVAC"],
+  [/electrical|lighting/i, "Electrical"],
+];
+const groupOf = (m: TrackedMaterial) => GROUPS.find(([re]) => re.test(m.catalogDesc))?.[1] ?? "Other";
 
 // drift of recent MHP rate vs all-time baseline — the "are we keeping up" number
 function drift(m: TrackedMaterial): number | null {
@@ -88,7 +104,23 @@ export default function PricingTable({ materials }: { materials: TrackedMaterial
         </div>
       )}
 
-      <div className="card">
+      {(() => {
+        const byGroup = new Map<string, TrackedMaterial[]>();
+        for (const m of materials) {
+          const g = groupOf(m);
+          if (!byGroup.has(g)) byGroup.set(g, []);
+          byGroup.get(g)!.push(m);
+        }
+        const order = [...byGroup.keys()].sort((a, b) => (a === "Other" ? 1 : b === "Other" ? -1 : a.localeCompare(b)));
+        return order.map((g) => {
+          const rows = byGroup.get(g)!;
+          const noFeed = rows.filter((m) => m.marketPrice == null).length;
+          const stale = rows.filter((m) => m.stale).length;
+          const parts = [`${rows.length} material${rows.length === 1 ? "" : "s"}`];
+          if (stale) parts.push(`${stale} stale`);
+          if (noFeed) parts.push(`${noFeed} no feed`);
+          return (
+            <CollapseSection key={g} title={g} summary={parts.join(" · ")}>
         <table className="dtable">
           <thead>
             <tr>
@@ -98,7 +130,7 @@ export default function PricingTable({ materials }: { materials: TrackedMaterial
             </tr>
           </thead>
           <tbody>
-            {materials.map((m) => {
+            {rows.map((m) => {
               const d = drift(m);
               return (
                 <tr key={m.id}>
@@ -149,7 +181,10 @@ export default function PricingTable({ materials }: { materials: TrackedMaterial
             })}
           </tbody>
         </table>
-      </div>
+            </CollapseSection>
+          );
+        });
+      })()}
 
       <div className="morelink">
         Market prices land automatically from the price scraper (POST /api/pricing/ingest, HMAC-signed) or get typed in here.

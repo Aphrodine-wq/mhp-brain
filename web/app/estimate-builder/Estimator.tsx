@@ -8,6 +8,8 @@ import { detailFor, divisionDetailFor, ESTIMATE_SCOPE } from "@/lib/line-detail"
 import ClientPacket, { type ClientInfo } from "./ClientPacket";
 import CollapseSection from "../_components/CollapseSection";
 
+const PLACEHOLDER = "Describe the job — scope, size, finishes.";
+
 interface Line {
   key: number;
   description: string;
@@ -40,9 +42,11 @@ interface SeedResult {
 
 export default function Estimator({
   catalog,
+  initialDesc = "",
   initialClientName = "",
 }: {
   catalog: CatalogRow[];
+  initialDesc?: string;
   initialClientName?: string;
 }) {
   const [view, setView] = useState<"input" | "load" | "result" | "packet">("input");
@@ -95,6 +99,8 @@ export default function Estimator({
       setSaveState("error");
     }
   }
+  const [desc, setDesc] = useState(initialDesc);
+  const [files, setFiles] = useState<FileList | null>(null);
   const [lines, setLines] = useState<Line[]>([]);
   const [notes, setNotes] = useState<string[]>([]);
   const [markup, setMarkup] = useState(18);
@@ -144,6 +150,28 @@ export default function Estimator({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ assembly: asmKey, inputs: asmInputs }),
+    });
+    applyResult(await r.json());
+  }
+
+  async function readFiles() {
+    const docs: { name: string; text?: string }[] = [];
+    if (files) {
+      for (const f of Array.from(files)) {
+        if (/\.(txt|csv|md)$/i.test(f.name)) docs.push({ name: f.name, text: await f.text() });
+        else docs.push({ name: f.name });
+      }
+    }
+    return docs;
+  }
+
+  async function build() {
+    setView("load");
+    const docs = await readFiles();
+    const r = await fetch("/api/estimate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ description: desc, docs }),
     });
     applyResult(await r.json());
   }
@@ -270,6 +298,15 @@ export default function Estimator({
           </div>
         )}
 
+        <div className="or-sep"><span>or describe it</span></div>
+
+        <textarea value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={PLACEHOLDER} />
+        <div className="upload">
+          <input type="file" multiple onChange={(e) => setFiles(e.target.files)} />
+        </div>
+        <div className="row">
+          <button className="btn" onClick={build}>Build Estimate →</button>
+        </div>
       </section>
     );
   }

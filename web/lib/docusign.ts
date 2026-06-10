@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { getValidAccessToken } from "@/lib/oauth";
 import { saveDocument, documentExistsByRef } from "@/lib/documents-store";
 import { matchProject } from "@/lib/match-project";
+import { getSetting } from "@/lib/integration-settings";
 
 const DS_ACCOUNT = "default"; // single-company connection key (see oauth start route)
 
@@ -50,8 +51,9 @@ export async function syncDocusign(): Promise<DocusignSyncResult> {
     name: String(r.name),
   }));
 
-  // last 12 months of envelopes, every status — the brain should know what's out for signature
-  const from = new Date(Date.now() - 365 * 24 * 3600 * 1000).toISOString();
+  // lookback window (Integration settings) — the brain should know what's out for signature
+  const lookback = Number(await getSetting("docusign", "lookback_days", "365")) || 365;
+  const from = new Date(Date.now() - lookback * 24 * 3600 * 1000).toISOString();
   const res = await fetch(`${base}/envelopes?from_date=${encodeURIComponent(from)}&status=any&count=200`, {
     headers: { Authorization: `Bearer ${token}` },
   });

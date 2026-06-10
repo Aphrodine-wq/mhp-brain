@@ -5,10 +5,10 @@
 import { db } from "@/lib/db";
 import { getValidAccessToken } from "@/lib/oauth";
 import { matchProject } from "@/lib/match-project";
+import { getSetting } from "@/lib/integration-settings";
 
 const GRAPH = "https://graph.microsoft.com/v1.0";
 const MS_ACCOUNT = process.env.MS_TENANT_ID ?? "common";
-const WINDOW_DAYS = 30;
 
 interface GraphEvent {
   id: string;
@@ -41,6 +41,7 @@ export interface CalendarSyncResult {
 
 export async function syncCalendar(): Promise<CalendarSyncResult> {
   const token = await getValidAccessToken("microsoft", MS_ACCOUNT);
+  const WINDOW_DAYS = Number(await getSetting("microsoft", "calendar_days", "30")) || 30;
   await ensureEvents();
 
   const projects = (await db.execute("SELECT id, name FROM projects")).rows.map((r) => ({

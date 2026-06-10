@@ -2,6 +2,7 @@ import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { sendAlert } from "@/lib/alerts";
 import { money } from "@/lib/format";
+import { getSetting } from "@/lib/integration-settings";
 
 function slugify(s: string): string {
   return (s || "estimate").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "estimate";
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "save failed", detail: msg }, { status: 500 });
   }
   // FYI to the channel — saves are rare and meaningful. Fire-and-forget by design.
-  void sendAlert({
+  if ((await getSetting("alerts", "estimate_saved", "on")) === "on") void sendAlert({
     title: "New estimate saved",
     facts: [
       { name: "Project", value: String(d.project || "Untitled Project").slice(0, 120) },
