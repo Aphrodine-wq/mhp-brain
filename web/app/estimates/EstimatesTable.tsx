@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { EstimateRow } from "@/lib/queries";
 import { money } from "@/lib/format";
 
@@ -53,7 +54,7 @@ export default function EstimatesTable({ estimates }: { estimates: EstimateRow[]
             ) : (
               list.map((e) => (
                 <tr key={e.id}>
-                  <td>{e.project}</td>
+                  <td><Link href={`/estimates/${e.id}`} className="cell-link">{e.project}</Link></td>
                   <td>{e.date || "—"}</td>
                   <td>
                     {e.hasDoc ? (

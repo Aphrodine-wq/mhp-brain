@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ProjectRow } from "@/lib/queries";
 import { money, BADGE } from "@/lib/format";
@@ -53,7 +54,7 @@ export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) 
             )}
             {list.map((p) => (
               <tr key={p.id}>
-                <td>{p.name}</td>
+                <td><Link href={`/projects/${p.id}`} className="cell-link">{p.name}</Link></td>
                 <td>{p.market || "—"}</td>
                 <td>{p.type || "—"}</td>
                 <td>

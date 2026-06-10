@@ -482,42 +482,143 @@ export interface EstimateRow {
   hasDoc: boolean; // true if the original .xlsx is stored; the URL stays server-side (gated download)
 }
 
+// the SELECT columns every estimate-row consumer needs (estimatesList, estimateDetail, projectDetail)
+const EST_ROW_SQL = `
+  SELECT e.id, e.project_id, e.source_file, e.line_item_count,
+         e.sum_sov_total, e.sum_item_total, e.stated_total, e.parse_confidence, e.est_date,
+         (ef.source_file IS NOT NULL) AS has_doc, p.name
+  FROM estimates e JOIN projects p ON p.id = e.project_id
+  LEFT JOIN estimate_files ef ON ef.source_file = e.source_file`;
+
+function mapEstimateRow(r: Record<string, unknown>): EstimateRow {
+  const sov = r.sum_sov_total as number | null;
+  const item = r.sum_item_total as number | null;
+  const stated = r.stated_total as number | null;
+  const total = sov && sov > 0 ? sov : stated && stated > 0 ? stated : item ?? 0;
+  const d = ((r.est_date as string | null) ?? "").slice(0, 10);
+  // source_file is a long raw path/sheet string — show just the filename, no extension.
+  const src = (((r.source_file as string | null) ?? "").split(/[/\\]/).pop() ?? "").replace(/\.(xlsx?|pdf|csv)$/i, "").trim();
+  return {
+    id: String(r.id),
+    project: String(r.name),
+    projectId: String(r.project_id),
+    date: d.startsWith("0000") ? "" : d,
+    source: src,
+    lineItems: Number(r.line_item_count ?? 0),
+    total: pyRound(total ?? 0),
+    confidence: (r.parse_confidence as string | null) ?? "",
+    hasDoc: Boolean(r.has_doc), // original file stored in private estimate_files (Postgres)
+  };
+}
+
 // Every parsed estimate on file, newest first — the index behind the Estimates tab.
 export async function estimatesList(): Promise<EstimateRow[]> {
   let rows;
   try {
     rows = (
-      await db.execute(`
-        SELECT e.id, e.project_id, e.source_file, e.line_item_count,
-               e.sum_sov_total, e.sum_item_total, e.stated_total, e.parse_confidence, e.est_date,
-               (ef.source_file IS NOT NULL) AS has_doc, p.name
-        FROM estimates e JOIN projects p ON p.id = e.project_id
-        LEFT JOIN estimate_files ef ON ef.source_file = e.source_file
+      await db.execute(`${EST_ROW_SQL}
         WHERE e.parse_confidence != 'FAILED'
         ORDER BY e.est_date DESC NULLS LAST, p.name`)
     ).rows;
   } catch {
     return [];
   }
-  return rows.map((r) => {
-    const sov = r.sum_sov_total as number | null;
-    const item = r.sum_item_total as number | null;
-    const stated = r.stated_total as number | null;
-    const total = sov && sov > 0 ? sov : stated && stated > 0 ? stated : item ?? 0;
-    const d = ((r.est_date as string | null) ?? "").slice(0, 10);
-    // source_file is a long raw path/sheet string — show just the filename, no extension.
-    const src = (((r.source_file as string | null) ?? "").split(/[/\\]/).pop() ?? "").replace(/\.(xlsx?|pdf|csv)$/i, "").trim();
-    return {
-      id: String(r.id),
-      project: String(r.name),
-      projectId: String(r.project_id),
-      date: d.startsWith("0000") ? "" : d,
-      source: src,
-      lineItems: Number(r.line_item_count ?? 0),
-      total: pyRound(total ?? 0),
-      confidence: (r.parse_confidence as string | null) ?? "",
-      hasDoc: Boolean(r.has_doc), // original file stored in private estimate_files (Postgres)
+  return rows.map(mapEstimateRow);
+}
 
+export interface EstimateLineItem {
+  division: string;
+  itemNo: string;
+  description: string;
+  qty: number | null;
+  unit: string;
+  unitPrice: number | null;
+  itemTotal: number | null;
+  sovTotal: number | null;
+  subName: string;
+}
+
+export interface EstimateDetail extends EstimateRow {
+  sumItemTotal: number;
+  sumSovTotal: number;
+  lines: EstimateLineItem[];
+}
+
+// One estimate with its full line-item breakdown — the page behind a clicked Estimates row.
+export async function estimateDetail(id: string): Promise<EstimateDetail | null> {
+  try {
+    const rows = (await db.execute({ sql: `${EST_ROW_SQL} WHERE e.id = ?`, args: [id] })).rows;
+    if (!rows.length) return null;
+    const head = rows[0];
+    const lrows = (
+      await db.execute({
+        sql: `SELECT division, item_no, description, qty, unit, unit_price, item_total, sov_total, sub_name
+              FROM line_items WHERE estimate_id = ? ORDER BY id`,
+        args: [id],
+      })
+    ).rows;
+    return {
+      ...mapEstimateRow(head),
+      sumItemTotal: pyRound((head.sum_item_total as number | null) ?? 0),
+      sumSovTotal: pyRound((head.sum_sov_total as number | null) ?? 0),
+      lines: lrows.map((l) => ({
+        division: (l.division as string | null) ?? "",
+        itemNo: (l.item_no as string | null) ?? "",
+        description: (l.description as string | null) ?? "",
+        qty: l.qty as number | null,
+        unit: (l.unit as string | null) ?? "",
+        unitPrice: l.unit_price as number | null,
+        itemTotal: l.item_total as number | null,
+        sovTotal: l.sov_total as number | null,
+        subName: (l.sub_name as string | null) ?? "",
+      })),
     };
-  });
+  } catch {
+    return null;
+  }
+}
+
+export interface ProjectDetail {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  market: string;
+  last: string;
+  value: number;
+  estimates: EstimateRow[];
+}
+
+// One project with its estimates on file — the page behind a clicked Projects row.
+export async function projectDetail(id: string): Promise<ProjectDetail | null> {
+  try {
+    const prows = (
+      await db.execute({ sql: "SELECT id,name,type,status,market,last_activity FROM projects WHERE id = ?", args: [id] })
+    ).rows;
+    if (!prows.length) return null;
+    const p = prows[0];
+    const ov = await loadOverrides("project");
+    const o = ov.get(String(p.id)); // overlay: status / market / type — same corrections as the list
+    const erows = (
+      await db.execute({
+        sql: `${EST_ROW_SQL}
+          WHERE e.project_id = ? AND e.parse_confidence != 'FAILED'
+          ORDER BY e.est_date DESC NULLS LAST`,
+        args: [id],
+      })
+    ).rows;
+    const ests = erows.map(mapEstimateRow);
+    return {
+      id: String(p.id),
+      name: String(p.name),
+      type: (o?.type ?? (p.type as string | null)) ?? "",
+      status: o?.status ?? String(p.status),
+      market: (o?.market ?? (p.market as string | null)) ?? "",
+      last: (p.last_activity as string | null) ?? "",
+      value: pyRound(projectValue(erows.map((e) => ({ sov: e.sum_sov_total as number | null, date: ((e.est_date as string | null) ?? "") })))),
+      estimates: ests,
+    };
+  } catch {
+    return null;
+  }
 }

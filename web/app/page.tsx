@@ -43,7 +43,7 @@ export default async function Home() {
       <div className="proj-cards">
         {active.length ? (
           active.map((x) => (
-            <Link key={x.id} href="/projects" className="pcard">
+            <Link key={x.id} href={`/projects/${x.id}`} className="pcard">
               <div className="pc-top">
                 <div className="pc-name">{x.name}</div>
                 <span className="badge active">Active</span>
