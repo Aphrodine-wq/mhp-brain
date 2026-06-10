@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import type { ProjectRow } from "@/lib/queries";
 import { money, BADGE } from "@/lib/format";
 import { post } from "@/lib/client";
-import CollapseSection from "../_components/CollapseSection";
+import CollapseSection, { yearOf, sortYears } from "../_components/CollapseSection";
 
 const STATUSES = ["Active", "Aging", "Bid", "Paused", "Likely Done", "Dead", "Unknown"];
 
@@ -57,9 +57,47 @@ function CategorySection({
   setStatus: (p: ProjectRow, status: string) => void;
 }) {
   const total = rows.reduce((s, p) => s + p.value, 0);
+  const byYear = new Map<string, ProjectRow[]>();
+  for (const p of rows) {
+    const y = yearOf(p.last);
+    if (!byYear.has(y)) byYear.set(y, []);
+    byYear.get(y)!.push(p);
+  }
+  const years = sortYears([...byYear.keys()]);
   return (
     <CollapseSection
       title={title}
+      summary={`${rows.length} project${rows.length === 1 ? "" : "s"} · ${money(total)}`}
+      forceOpen={filtering}
+    >
+      {rows.length === 0 && (
+        <div className="empty" style={{ padding: "32px 20px" }}>No {title.toLowerCase()} projects match.</div>
+      )}
+      {years.map((y) => (
+        <YearSection key={y} year={y} rows={byYear.get(y)!} filtering={filtering} busy={busy} setStatus={setStatus} />
+      ))}
+    </CollapseSection>
+  );
+}
+
+function YearSection({
+  year,
+  rows,
+  filtering,
+  busy,
+  setStatus,
+}: {
+  year: string;
+  rows: ProjectRow[];
+  filtering: boolean;
+  busy: string | null;
+  setStatus: (p: ProjectRow, status: string) => void;
+}) {
+  const total = rows.reduce((s, p) => s + p.value, 0);
+  return (
+    <CollapseSection
+      nested
+      title={year}
       summary={`${rows.length} project${rows.length === 1 ? "" : "s"} · ${money(total)}`}
       forceOpen={filtering}
     >
@@ -71,16 +109,7 @@ function CategorySection({
           </tr>
         </thead>
         <tbody>
-          {rows.length === 0 ? (
-            <tr>
-              <td colSpan={7}>
-                <div className="empty" style={{ padding: "32px 20px" }}>
-                  No {title.toLowerCase()} projects match.
-                </div>
-              </td>
-            </tr>
-          ) : (
-            rows.map((p) => (
+          {rows.map((p) => (
               <tr key={p.id}>
                 <td><Link href={`/projects/${p.id}`} className="cell-link">{p.name}</Link></td>
                 <td>{p.market || "—"}</td>
@@ -101,8 +130,7 @@ function CategorySection({
                 <td className="n">{p.value ? money(p.value) : "—"}</td>
                 <td className="n">{p.estimates}</td>
               </tr>
-            ))
-          )}
+          ))}
         </tbody>
       </table>
     </CollapseSection>

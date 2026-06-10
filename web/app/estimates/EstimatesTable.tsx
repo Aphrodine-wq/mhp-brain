@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { EstimateRow } from "@/lib/queries";
 import { money } from "@/lib/format";
-import CollapseSection from "../_components/CollapseSection";
+import CollapseSection, { yearOf, sortYears } from "../_components/CollapseSection";
 
 // parse_confidence -> badge color (unknown values fall back to grey)
 const CONF: Record<string, string> = {
@@ -40,9 +40,35 @@ export default function EstimatesTable({ estimates }: { estimates: EstimateRow[]
 
 function CategorySection({ title, rows, filtering }: { title: string; rows: EstimateRow[]; filtering: boolean }) {
   const total = rows.reduce((s, e) => s + e.total, 0);
+  const byYear = new Map<string, EstimateRow[]>();
+  for (const e of rows) {
+    const y = yearOf(e.date);
+    if (!byYear.has(y)) byYear.set(y, []);
+    byYear.get(y)!.push(e);
+  }
+  const years = sortYears([...byYear.keys()]);
   return (
     <CollapseSection
       title={title}
+      summary={`${rows.length} estimate${rows.length === 1 ? "" : "s"} · ${money(total)}`}
+      forceOpen={filtering}
+    >
+      {rows.length === 0 && (
+        <div className="empty" style={{ padding: "32px 20px" }}>No {title.toLowerCase()} estimates match.</div>
+      )}
+      {years.map((y) => (
+        <YearSection key={y} year={y} rows={byYear.get(y)!} filtering={filtering} />
+      ))}
+    </CollapseSection>
+  );
+}
+
+function YearSection({ year, rows, filtering }: { year: string; rows: EstimateRow[]; filtering: boolean }) {
+  const total = rows.reduce((s, e) => s + e.total, 0);
+  return (
+    <CollapseSection
+      nested
+      title={year}
       summary={`${rows.length} estimate${rows.length === 1 ? "" : "s"} · ${money(total)}`}
       forceOpen={filtering}
     >
@@ -58,16 +84,7 @@ function CategorySection({ title, rows, filtering }: { title: string; rows: Esti
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={6}>
-                  <div className="empty" style={{ padding: "32px 20px" }}>
-                    No {title.toLowerCase()} estimates match.
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              rows.map((e) => (
+            {rows.map((e) => (
                 <tr key={e.id}>
                   <td><Link href={`/estimates/${e.id}`} className="cell-link">{e.project}</Link></td>
                   <td>{e.date || "—"}</td>
@@ -96,8 +113,7 @@ function CategorySection({ title, rows, filtering }: { title: string; rows: Esti
                     <span className={`badge ${CONF[e.confidence] || "unknown"}`}>{e.confidence || "—"}</span>
                   </td>
                 </tr>
-              ))
-            )}
+            ))}
           </tbody>
       </table>
     </CollapseSection>
