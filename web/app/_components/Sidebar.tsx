@@ -35,6 +35,7 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
     { href: "/subs", label: "Subs", icon: i("subs") },
     { href: "/crew", label: "Crew", icon: i("crew") },
     { href: "/documents", label: "Documents", icon: i("documents") },
+    { href: "/pricing", label: "Pricing", icon: i("pricing") },
   ],
   estimator: [
     { href: "/estimate-builder", label: "Estimate Builder", icon: i("estimator") },
@@ -61,6 +62,7 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
     { href: "/subs", label: "Subs", icon: i("subs") },
     { href: "/crew", label: "Crew", icon: i("crew") },
     { href: "/documents", label: "Documents", icon: i("documents") },
+    { href: "/pricing", label: "Pricing", icon: i("pricing") },
   ],
   editor: [
     { href: "/", label: "Home", icon: i("home") },

@@ -33,6 +33,9 @@ const PUBLIC = new Set([
   // CLI connect landing — Intuit's prod redirect lands here with a single-use code; must load
   // without a session so the operator can copy the URL. It only echoes the requester's own query.
   "/api/oauth/manual-callback",
+  // Price-scraper ingest — machine caller, no session. The handler enforces its own
+  // HMAC signature (PRICING_INGEST_SECRET) and rejects everything unsigned.
+  "/api/pricing/ingest",
 ]);
 
 export function proxy(request: NextRequest) {
