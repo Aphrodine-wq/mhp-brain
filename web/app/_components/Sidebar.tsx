@@ -26,9 +26,15 @@ function i(name: string): React.ReactNode { return ICONS[name] ?? ICONS.home; }
 
 // Per-role nav configuration
 const ROLE_NAV: Record<Role, NavItem[]> = {
+  // CEO sees the full admin surface; only the landing differs (Cockpit, not Home).
   ceo: [
     { href: "/", label: "Cockpit", icon: i("home") },
+    { href: "/requests", label: "Requests", icon: i("requests") },
+    { href: "/estimate-builder", label: "Estimate Builder", icon: i("estimator") },
+    { href: "/estimates", label: "Estimates", icon: i("estimates") },
     { href: "/projects", label: "Projects", icon: i("projects") },
+    { href: "/subs", label: "Subs", icon: i("subs") },
+    { href: "/crew", label: "Crew", icon: i("crew") },
   ],
   estimator: [
     { href: "/requests", label: "Requests", icon: i("requests") },
@@ -72,6 +78,10 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
 
 const ROLE_FOOTER: Record<string, NavItem[]> = {
   admin: [
+    { href: "/integrations", label: "Integrations", icon: i("integrations") },
+    { href: "/settings", label: "Settings", icon: i("settings") },
+  ],
+  ceo: [
     { href: "/integrations", label: "Integrations", icon: i("integrations") },
     { href: "/settings", label: "Settings", icon: i("settings") },
   ],

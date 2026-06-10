@@ -132,7 +132,8 @@ export const currentUser = cache(async (): Promise<SessionUser | null> => {
 });
 
 // Authenticated-only gate (any role). Returns the user or null; the caller answers 401. Completes
-// the require* family — read routes use this, write routes use requireRole, oauth uses requireAdmin.
+// the require* family — read routes use this, write routes use requireRole; integration (oauth/teams)
+// routes use requireRole("ceo").
 export async function requireUser(): Promise<SessionUser | null> {
   return currentUser();
 }
@@ -144,10 +145,8 @@ export async function requireRole(min: SessionUser["role"]): Promise<SessionUser
   return RANK[u.role] >= RANK[min] ? u : null;
 }
 
-// Connecting QuickBooks or Gmail mints a months-long key to the company's books/mailbox — admin only.
-export async function requireAdmin(): Promise<SessionUser | null> {
-  return requireRole("admin");
-}
+// Connecting QuickBooks/Gmail/Teams mints a months-long key to the company's books/mailbox —
+// admin or CEO only (it's the CEO's books; integration routes gate with requireRole("ceo")).
 
 // --- self-registration -------------------------------------------------------------------------
 

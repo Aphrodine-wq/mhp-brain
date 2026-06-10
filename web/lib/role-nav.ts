@@ -10,9 +10,14 @@ export interface NavItem {
 
 // What each role sees in the sidebar (admin sees everything).
 const ROLE_NAV: Record<Role, NavItem[]> = {
+  // CEO sees the full admin surface; only the landing differs (Cockpit, not Home).
   ceo: [
     { href: "/", label: "Cockpit" },
+    { href: "/estimate-builder", label: "Estimate Builder" },
+    { href: "/estimates", label: "Estimates" },
     { href: "/projects", label: "Projects" },
+    { href: "/subs", label: "Subs" },
+    { href: "/crew", label: "Crew" },
   ],
   estimator: [
     { href: "/estimate-builder", label: "Estimate Builder" },

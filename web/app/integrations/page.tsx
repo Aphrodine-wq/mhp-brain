@@ -10,7 +10,7 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
   const [{ oauth }, user, conns] = await Promise.all([searchParams, currentUser(), listConnections()]);
   if (!user) redirect("/login");
 
-  if (user.role !== "admin") {
+  if (user.role !== "admin" && user.role !== "ceo") {
     return (
       <section className="view">
         <h2>Connected Services</h2>
