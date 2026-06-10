@@ -83,7 +83,7 @@ export default function Connections({
   const DESCRIPTIONS: Record<string, string> = {
     quickbooks: "Connect your QuickBooks to see real job costs, payments, and margins.",
     gmail: "Connect a dedicated email to automatically capture invoices.",
-    microsoft: "Connect Microsoft to pull in Teams conversations and sync OneDrive paperwork into Documents.",
+    microsoft: "Connect Microsoft to pull in Teams conversations, OneDrive paperwork, and the calendar.",
     trello: "Connect Trello to see where every job sits on the board, right on its project page.",
   };
 
@@ -192,6 +192,19 @@ export default function Connections({
                       }
                     >
                       {syncing === "microsoft" ? "Syncing…" : "Sync OneDrive"}
+                    </button>
+                    <button
+                      className="btn ghost sm"
+                      disabled={syncing !== null}
+                      onClick={() =>
+                        runSync("microsoft", async () => {
+                          const data = await (await fetch("/api/calendar/sync", { method: "POST" })).json();
+                          if (!data.ok) return data.error ?? "Sync had a problem. Try again.";
+                          return `${data.events} event${data.events !== 1 ? "s" : ""} in the next 30 days — ${data.matched} matched to jobs.`;
+                        })
+                      }
+                    >
+                      {syncing === "microsoft" ? "Syncing…" : "Sync calendar"}
                     </button>
                   </>
                 )}

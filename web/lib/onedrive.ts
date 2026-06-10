@@ -5,6 +5,7 @@
 import { db } from "@/lib/db";
 import { getValidAccessToken } from "@/lib/oauth";
 import { saveDocument, documentExistsByRef, MAX_DOC_BYTES } from "@/lib/documents-store";
+import { matchProject } from "@/lib/match-project";
 
 const GRAPH = "https://graph.microsoft.com/v1.0";
 const MS_ACCOUNT = process.env.MS_TENANT_ID ?? "common";
@@ -35,32 +36,6 @@ function categorize(name: string): string | null {
   if (/estimat/.test(n)) return null;
   if (DOC_EXT.test(n)) return "Other";
   return null;
-}
-
-const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-const STOP = new Set([
-  "project", "projects", "house", "home", "build", "building", "master", "file", "docs", "construction",
-  "porch", "room", "remodel", "renovation", "repair", "improvement", "addition", "garage", "kitchen",
-  "bathroom", "deck", "wall", "retaining", "bonus", "custom", "guest", "the", "and", "mhp", "prime",
-  "complete", "with", "docusign", "contract", "permit", "plan", "sign", "active", "dead",
-]);
-
-function matchProject(
-  projects: { id: string; name: string }[],
-  haystack: string,
-): { id: string; name: string } | null {
-  const hayTokens = new Set(norm(haystack).split(" "));
-  let best: { id: string; name: string; hits: number; score: number } | null = null;
-  for (const p of projects) {
-    const tokens = norm(p.name).split(" ").filter((t) => t.length > 3 && !STOP.has(t));
-    if (!tokens.length) continue;
-    const hits = tokens.filter((t) => hayTokens.has(t)).length;
-    const score = hits / tokens.length;
-    if (hits >= 1 && score >= 0.5 && (!best || hits > best.hits || (hits === best.hits && score > best.score))) {
-      best = { id: p.id, name: p.name, hits, score };
-    }
-  }
-  return best;
 }
 
 async function ensureState() {

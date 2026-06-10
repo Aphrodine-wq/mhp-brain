@@ -83,6 +83,7 @@ export function providerConfig(id: ProviderId): ProviderConfig {
           "Team.ReadBasic.All",       // list teams
           "Channel.ReadBasic.All",    // list channels
           "Files.Read.All",           // files shared in Teams / OneDrive
+          "Calendars.Read",           // upcoming events — inspections, crew schedule
         ],
         clientId: need("MS_CLIENT_ID"),
         clientSecret: need("MS_CLIENT_SECRET"),

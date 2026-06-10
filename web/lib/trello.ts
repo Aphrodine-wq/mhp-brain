@@ -4,6 +4,7 @@
 // app-side so project pages can show where each job sits on the board.
 import { db } from "@/lib/db";
 import { loadConnection } from "@/lib/oauth/store";
+import { matchProject } from "@/lib/match-project";
 
 const API = "https://api.trello.com/1";
 
@@ -58,28 +59,6 @@ async function ensureCards() {
   )`);
 }
 
-const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-const STOP = new Set([
-  "project", "projects", "house", "home", "build", "building", "master", "file", "docs", "construction",
-  "porch", "room", "remodel", "renovation", "repair", "improvement", "addition", "garage", "kitchen",
-  "bathroom", "deck", "wall", "retaining", "bonus", "custom", "guest", "the", "and", "mhp", "prime",
-]);
-
-function matchProject(projects: { id: string; name: string }[], cardName: string): string | null {
-  const hayTokens = new Set(norm(cardName).split(" "));
-  let best: { id: string; hits: number; score: number } | null = null;
-  for (const p of projects) {
-    const tokens = norm(p.name).split(" ").filter((t) => t.length > 3 && !STOP.has(t));
-    if (!tokens.length) continue;
-    const hits = tokens.filter((t) => hayTokens.has(t)).length;
-    const score = hits / tokens.length;
-    if (hits >= 1 && score >= 0.5 && (!best || hits > best.hits || (hits === best.hits && score > best.score))) {
-      best = { id: p.id, hits, score };
-    }
-  }
-  return best?.id ?? null;
-}
-
 export interface TrelloSyncResult {
   boards: number;
   cards: number;
@@ -111,7 +90,7 @@ export async function syncTrello(): Promise<TrelloSyncResult> {
     ]);
     const listName = new Map(lists.map((l) => [l.id, l.name]));
     for (const c of boardCards) {
-      const projectId = matchProject(projects, c.name);
+      const projectId = matchProject(projects, c.name)?.id ?? null;
       if (projectId) matched++;
       cards++;
       await db.execute({

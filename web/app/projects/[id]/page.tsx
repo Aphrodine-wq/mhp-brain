@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { projectDetail } from "@/lib/queries";
 import { trelloCardsForProject } from "@/lib/trello";
+import { eventsForProject } from "@/lib/calendar";
 import { money, BADGE } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const proj = await projectDetail(id);
   if (!proj) notFound();
   const trelloCards = await trelloCardsForProject(id).catch(() => []);
+  const events = await eventsForProject(id).catch(() => []);
 
   return (
     <section className="view">
@@ -38,6 +40,25 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         <div><div className="sv">{proj.estimates.length}</div><div className="sk">Documents on file</div></div>
         <div><div className="sv">{proj.last || "—"}</div><div className="sk">Last activity</div></div>
       </div>
+
+      {events.length > 0 && (
+        <div className="panel" style={{ marginTop: 18 }}>
+          <h3>Coming up</h3>
+          {events.map((ev, i) => (
+            <div className="setrow" key={i}>
+              <div>
+                <div className="sl">
+                  {ev.webLink ? <a href={ev.webLink} target="_blank" rel="noreferrer" className="cell-link">{ev.subject}</a> : ev.subject}
+                </div>
+                {ev.location && <div className="sd">{ev.location}</div>}
+              </div>
+              <span className="sd" style={{ whiteSpace: "nowrap" }}>
+                {ev.startAt.slice(0, 10)}{ev.isAllDay ? "" : ` · ${ev.startAt.slice(11, 16)}`}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {trelloCards.length > 0 && (
         <div className="panel" style={{ marginTop: 18 }}>
