@@ -30,7 +30,7 @@ export default async function Home() {
           <h2 style={{ margin: 0 }}>Projects</h2>
           <div className="sub" style={{ margin: "6px 0" }}>North Mississippi Home Pros</div>
         </div>
-        <Link className="btn" href="/estimates">+ New Estimate</Link>
+        <Link className="btn" href="/estimate-builder">+ New Estimate</Link>
       </div>
 
       <div className="sec-h">Active now</div>
