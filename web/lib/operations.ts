@@ -4,6 +4,58 @@
 
 import { db } from "@/lib/db";
 
+export class OpsError extends Error {}
+
+// Allowlisted, audited dynamic UPDATE. Column names only ever come from the
+// `allowed` set (never the request body), old values are captured first, and the
+// whole field loop + audit rows commit as one transaction — same contract as
+// writeOverride() in overrides.ts.
+async function auditedUpdate(opts: {
+  table: string;
+  entityType: string;
+  id: string | number;
+  idCol?: string;
+  updates: Record<string, unknown>;
+  allowed: ReadonlySet<string>;
+  actor: string;
+  label?: string | null;
+  action?: string;
+}): Promise<void> {
+  const fields = Object.entries(opts.updates).filter(([, v]) => v !== undefined);
+  if (fields.length === 0) return;
+  for (const [field] of fields) {
+    if (!opts.allowed.has(field)) throw new OpsError(`bad field ${opts.entityType}.${field}`);
+  }
+  const idCol = opts.idCol ?? "id";
+  const now = new Date().toISOString();
+  const tx = await db.transaction("write");
+  try {
+    const cur = await tx.execute({
+      sql: `SELECT ${fields.map(([f]) => f).join(", ")} FROM ${opts.table} WHERE ${idCol} = ?`,
+      args: [opts.id],
+    });
+    if (cur.rows.length === 0) throw new OpsError(`${opts.entityType} ${opts.id} not found`);
+    const old = cur.rows[0];
+    for (const [field, value] of fields) {
+      await tx.execute({
+        sql: `UPDATE ${opts.table} SET ${field} = ? WHERE ${idCol} = ?`,
+        args: [value, opts.id],
+      });
+      await tx.execute({
+        sql: `INSERT INTO audit_log (ts, actor, entity_type, entity_id, entity_label, field, old_value, new_value, action)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        args: [now, opts.actor, opts.entityType, String(opts.id), opts.label ?? null, field,
+               old[field] == null ? null : String(old[field]), value == null ? null : String(value),
+               opts.action ?? "update"],
+      });
+    }
+    await tx.commit();
+  } catch (e) {
+    await tx.rollback();
+    throw e;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Project operational fields
 // ---------------------------------------------------------------------------
@@ -23,21 +75,17 @@ export interface ProjectUpdate {
   deposit_date?: string | null;
 }
 
-export async function updateProjectOps(projectId: string, updates: ProjectUpdate, actor: string): Promise<void> {
-  const fields = Object.entries(updates).filter(([, v]) => v !== undefined);
-  if (fields.length === 0) return;
+const PROJECT_OPS_FIELDS: ReadonlySet<string> = new Set([
+  "lead_source", "lost_reason", "actual_start", "actual_end", "current_phase",
+  "client_name", "client_phone", "client_email", "address",
+  "contract_value", "deposit_amount", "deposit_date",
+]);
 
-  for (const [field, value] of fields) {
-    await db.execute({
-      sql: `UPDATE projects SET ${field} = ? WHERE id = ?`,
-      args: [value, projectId],
-    });
-    await db.execute({
-      sql: `INSERT INTO audit_log (ts, actor, entity_type, entity_id, entity_label, field, old_value, new_value, action)
-            VALUES (now()::text, ?, 'project', ?, ?, ?, NULL, ?, 'update')`,
-      args: [actor, projectId, field, field, String(value ?? "")],
-    });
-  }
+export async function updateProjectOps(projectId: string, updates: ProjectUpdate, actor: string): Promise<void> {
+  await auditedUpdate({
+    table: "projects", entityType: "project", id: projectId,
+    updates: updates as Record<string, unknown>, allowed: PROJECT_OPS_FIELDS, actor,
+  });
 }
 
 export async function getProjectOps(projectId: string) {
@@ -73,18 +121,50 @@ export async function createChangeOrder(co: ChangeOrderInsert): Promise<number> 
   return Number(res.rows[0].id);
 }
 
-export async function approveChangeOrder(id: number, approved: 1 | -1): Promise<void> {
-  await db.execute({
-    sql: `UPDATE change_orders SET approved = ?, approved_date = now()::text WHERE id = ?`,
-    args: [approved, id],
-  });
+export async function approveChangeOrder(id: number, approved: 1 | -1, actor: string): Promise<void> {
+  const now = new Date().toISOString();
+  const tx = await db.transaction("write");
+  try {
+    const cur = await tx.execute({ sql: `SELECT approved, description FROM change_orders WHERE id = ?`, args: [id] });
+    if (cur.rows.length === 0) throw new OpsError(`change order ${id} not found`);
+    await tx.execute({
+      sql: `UPDATE change_orders SET approved = ?, approved_date = ? WHERE id = ?`,
+      args: [approved, now, id],
+    });
+    await tx.execute({
+      sql: `INSERT INTO audit_log (ts, actor, entity_type, entity_id, entity_label, field, old_value, new_value, action)
+            VALUES (?, ?, 'change_order', ?, ?, 'approved', ?, ?, ?)`,
+      args: [now, actor, String(id), String(cur.rows[0].description ?? ""),
+             String(cur.rows[0].approved ?? "0"), String(approved),
+             approved === 1 ? "approve" : "reject"],
+    });
+    await tx.commit();
+  } catch (e) {
+    await tx.rollback();
+    throw e;
+  }
 }
 
-export async function billChangeOrder(id: number): Promise<void> {
-  await db.execute({
-    sql: `UPDATE change_orders SET billed = 1, billed_date = now()::text WHERE id = ?`,
-    args: [id],
-  });
+export async function billChangeOrder(id: number, actor: string): Promise<void> {
+  const now = new Date().toISOString();
+  const tx = await db.transaction("write");
+  try {
+    const cur = await tx.execute({ sql: `SELECT billed, description FROM change_orders WHERE id = ?`, args: [id] });
+    if (cur.rows.length === 0) throw new OpsError(`change order ${id} not found`);
+    await tx.execute({
+      sql: `UPDATE change_orders SET billed = 1, billed_date = ? WHERE id = ?`,
+      args: [now, id],
+    });
+    await tx.execute({
+      sql: `INSERT INTO audit_log (ts, actor, entity_type, entity_id, entity_label, field, old_value, new_value, action)
+            VALUES (?, ?, 'change_order', ?, ?, 'billed', ?, '1', 'bill')`,
+      args: [now, actor, String(id), String(cur.rows[0].description ?? ""), String(cur.rows[0].billed ?? "0")],
+    });
+    await tx.commit();
+  } catch (e) {
+    await tx.rollback();
+    throw e;
+  }
 }
 
 export async function getChangeOrders(projectId: string) {
@@ -203,11 +283,16 @@ export async function createPermit(p: PermitInsert): Promise<number> {
   return Number(res.rows[0].id);
 }
 
-export async function updatePermit(id: number, updates: Partial<PermitInsert>): Promise<void> {
-  const fields = Object.entries(updates).filter(([, v]) => v !== undefined);
-  for (const [field, value] of fields) {
-    await db.execute({ sql: `UPDATE permits SET ${field} = ? WHERE id = ?`, args: [value, id] });
-  }
+const PERMIT_FIELDS: ReadonlySet<string> = new Set([
+  "permit_type", "permit_number", "applied_date", "approved_date",
+  "expires_date", "inspection_date", "inspection_result", "notes",
+]);
+
+export async function updatePermit(id: number, updates: Partial<PermitInsert>, actor: string): Promise<void> {
+  await auditedUpdate({
+    table: "permits", entityType: "permit", id,
+    updates: updates as Record<string, unknown>, allowed: PERMIT_FIELDS, actor,
+  });
 }
 
 export async function getPermits(projectId: string) {
@@ -260,11 +345,27 @@ export async function createCallback(cb: CallbackInsert): Promise<number> {
   return Number(res.rows[0].id);
 }
 
-export async function resolveCallback(id: number, resolution: string, cost: number | null): Promise<void> {
-  await db.execute({
-    sql: `UPDATE callbacks SET resolution = ?, resolved_date = now()::text, cost_to_fix = ? WHERE id = ?`,
-    args: [resolution, cost, id],
-  });
+export async function resolveCallback(id: number, resolution: string, cost: number | null, actor: string): Promise<void> {
+  const now = new Date().toISOString();
+  const tx = await db.transaction("write");
+  try {
+    const cur = await tx.execute({ sql: `SELECT issue, resolution FROM callbacks WHERE id = ?`, args: [id] });
+    if (cur.rows.length === 0) throw new OpsError(`callback ${id} not found`);
+    await tx.execute({
+      sql: `UPDATE callbacks SET resolution = ?, resolved_date = ?, cost_to_fix = ? WHERE id = ?`,
+      args: [resolution, now, cost, id],
+    });
+    await tx.execute({
+      sql: `INSERT INTO audit_log (ts, actor, entity_type, entity_id, entity_label, field, old_value, new_value, action)
+            VALUES (?, ?, 'callback', ?, ?, 'resolution', ?, ?, 'resolve')`,
+      args: [now, actor, String(id), String(cur.rows[0].issue ?? ""),
+             cur.rows[0].resolution == null ? null : String(cur.rows[0].resolution), resolution],
+    });
+    await tx.commit();
+  } catch (e) {
+    await tx.rollback();
+    throw e;
+  }
 }
 
 export async function getCallbacks(projectId: string) {
@@ -316,14 +417,19 @@ export async function createSubAssignment(sa: SubAssignmentInsert): Promise<numb
   return Number(res.rows[0].id);
 }
 
+const SUB_ASSIGNMENT_FIELDS: ReadonlySet<string> = new Set([
+  "showed_up", "actual_amount", "performance", "notes", "scheduled_date", "trade",
+]);
+
 export async function updateSubAssignment(
   id: number,
-  updates: { showed_up?: number; actual_amount?: number; performance?: number; notes?: string },
+  updates: { showed_up?: number; actual_amount?: number; performance?: number; notes?: string; scheduled_date?: string; trade?: string },
+  actor: string,
 ): Promise<void> {
-  const fields = Object.entries(updates).filter(([, v]) => v !== undefined);
-  for (const [field, value] of fields) {
-    await db.execute({ sql: `UPDATE sub_assignments SET ${field} = ? WHERE id = ?`, args: [value, id] });
-  }
+  await auditedUpdate({
+    table: "sub_assignments", entityType: "sub_assignment", id,
+    updates: updates as Record<string, unknown>, allowed: SUB_ASSIGNMENT_FIELDS, actor,
+  });
 }
 
 export async function getSubAssignments(projectId: string) {

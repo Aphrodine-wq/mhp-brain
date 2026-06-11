@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { currentUser, requireRole } from "@/lib/auth";
-import { createChangeOrder, getChangeOrders, approveChangeOrder, billChangeOrder } from "@/lib/operations";
+import { createChangeOrder, getChangeOrders, approveChangeOrder, billChangeOrder, OpsError } from "@/lib/operations";
 
 // GET /api/jobs/change-orders?project=<id>
 export async function GET(req: NextRequest) {
@@ -30,7 +30,15 @@ export async function PATCH(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "editor role required" }, { status: 401 });
   const body = await req.json();
   if (!body.id) return NextResponse.json({ error: "id required" }, { status: 400 });
-  if (body.approved != null) await approveChangeOrder(body.id, body.approved);
-  if (body.billed) await billChangeOrder(body.id);
+  if (body.approved != null && body.approved !== 1 && body.approved !== -1) {
+    return NextResponse.json({ error: "approved must be 1 or -1" }, { status: 400 });
+  }
+  try {
+    if (body.approved != null) await approveChangeOrder(body.id, body.approved, user.name);
+    if (body.billed) await billChangeOrder(body.id, user.name);
+  } catch (e) {
+    if (e instanceof OpsError) return NextResponse.json({ error: e.message }, { status: 400 });
+    throw e;
+  }
   return NextResponse.json({ ok: true });
 }

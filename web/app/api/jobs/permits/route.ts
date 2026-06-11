@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { currentUser, requireRole } from "@/lib/auth";
-import { createPermit, getPermits, updatePermit, getUpcomingInspections } from "@/lib/operations";
+import { createPermit, getPermits, updatePermit, getUpcomingInspections, OpsError } from "@/lib/operations";
 
 // GET /api/jobs/permits?project=<id>     — permits for one project
 // GET /api/jobs/permits?upcoming=1       — upcoming inspections across all projects
@@ -39,6 +39,11 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json();
   if (!body.id) return NextResponse.json({ error: "id required" }, { status: 400 });
   const { id, ...updates } = body;
-  await updatePermit(id, updates);
+  try {
+    await updatePermit(id, updates, user.name);
+  } catch (e) {
+    if (e instanceof OpsError) return NextResponse.json({ error: e.message }, { status: 400 });
+    throw e;
+  }
   return NextResponse.json({ ok: true });
 }

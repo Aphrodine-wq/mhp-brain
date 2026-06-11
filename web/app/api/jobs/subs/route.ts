@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { currentUser, requireRole } from "@/lib/auth";
-import { createSubAssignment, getSubAssignments, updateSubAssignment, getSubScorecard } from "@/lib/operations";
+import { createSubAssignment, getSubAssignments, updateSubAssignment, getSubScorecard, OpsError } from "@/lib/operations";
 
 // GET /api/jobs/subs?project=<id>    — sub assignments for a project
 // GET /api/jobs/subs?scorecard=<name> — performance scorecard for a sub
@@ -39,6 +39,11 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json();
   if (!body.id) return NextResponse.json({ error: "id required" }, { status: 400 });
   const { id, ...updates } = body;
-  await updateSubAssignment(id, updates);
+  try {
+    await updateSubAssignment(id, updates, user.name);
+  } catch (e) {
+    if (e instanceof OpsError) return NextResponse.json({ error: e.message }, { status: 400 });
+    throw e;
+  }
   return NextResponse.json({ ok: true });
 }

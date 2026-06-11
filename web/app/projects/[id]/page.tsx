@@ -1,11 +1,24 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { projectDetail } from "@/lib/queries";
+import {
+  getProjectOps,
+  getChangeOrders,
+  getJobEvents,
+  getPermits,
+  getPayments,
+} from "@/lib/operations";
+import { requireRole } from "@/lib/auth";
 import { trelloCardsForProject } from "@/lib/trello";
 import { eventsForProject } from "@/lib/calendar";
 import { envelopesForProject } from "@/lib/docusign";
 import { ccForProject } from "@/lib/companycam";
 import { money, BADGE } from "@/lib/format";
+import HeaderEdit, { type ProjectOps } from "./HeaderEdit";
+import ChangeOrderPanel, { type ChangeOrder } from "./ChangeOrderPanel";
+import EventLogForm, { type JobEvent } from "./EventLogForm";
+import PaymentForm, { type Payment } from "./PaymentForm";
+import PermitPanel, { type Permit } from "./PermitPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -25,11 +38,25 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const envelopes = await envelopesForProject(id).catch(() => []);
   const ccProjects = await ccForProject(id).catch(() => []);
 
+  // operational layer: app-owned tables written through lib/operations (audited)
+  const canWrite = !!(await requireRole("editor"));
+  const [ops, changeOrders, jobEvents, permits, payments] = await Promise.all([
+    getProjectOps(id).catch(() => null) as Promise<ProjectOps | null>,
+    getChangeOrders(id).catch(() => []) as Promise<unknown> as Promise<ChangeOrder[]>,
+    getJobEvents(id).catch(() => []) as Promise<unknown> as Promise<JobEvent[]>,
+    getPermits(id).catch(() => []) as Promise<unknown> as Promise<Permit[]>,
+    getPayments(id).catch(() => []) as Promise<unknown> as Promise<Payment[]>,
+  ]);
+
   return (
     <section className="view">
       <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
         <h2 style={{ margin: 0 }}>{proj.name}</h2>
-        <span className={`badge ${BADGE[proj.status] || "unknown"}`}>{proj.status}</span>
+        {canWrite ? (
+          <HeaderEdit projectId={id} projectName={proj.name} status={proj.status} ops={ops} />
+        ) : (
+          <span className={`badge ${BADGE[proj.status] || "unknown"}`}>{proj.status}</span>
+        )}
       </div>
       <div className="sub" style={{ marginTop: 6 }}>
         {proj.market || "—"} · {proj.type || "—"} · last activity {proj.last || "—"}
@@ -43,6 +70,26 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         <div><div className="sv">{proj.value ? money(proj.value) : "—"}</div><div className="sk">Current bid value</div></div>
         <div><div className="sv">{proj.estimates.length}</div><div className="sk">Documents on file</div></div>
         <div><div className="sv">{proj.last || "—"}</div><div className="sk">Last activity</div></div>
+      </div>
+
+      <div className="panel" style={{ marginTop: 18 }}>
+        <h3>Job log</h3>
+        <EventLogForm projectId={id} events={jobEvents} canWrite={canWrite} />
+      </div>
+
+      <div className="panel" style={{ marginTop: 18 }}>
+        <h3>Change orders</h3>
+        <ChangeOrderPanel projectId={id} changeOrders={changeOrders} canWrite={canWrite} />
+      </div>
+
+      <div className="panel" style={{ marginTop: 18 }}>
+        <h3>Payments</h3>
+        <PaymentForm projectId={id} payments={payments} contractValue={ops?.contract_value ?? null} canWrite={canWrite} />
+      </div>
+
+      <div className="panel" style={{ marginTop: 18 }}>
+        <h3>Permits & inspections</h3>
+        <PermitPanel projectId={id} permits={permits} canWrite={canWrite} />
       </div>
 
       {events.length > 0 && (

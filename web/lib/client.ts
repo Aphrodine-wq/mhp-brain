@@ -1,8 +1,16 @@
 // Shared client-side writer. The X-MHP-Write header is a cheap CSRF guard: a cross-site form
 // or <img> can't set a custom header without a CORS preflight, which this server fails.
 export async function post<T = unknown>(path: string, body: unknown): Promise<T> {
+  return send("POST", path, body);
+}
+
+export async function patch<T = unknown>(path: string, body: unknown): Promise<T> {
+  return send("PATCH", path, body);
+}
+
+async function send<T>(method: string, path: string, body: unknown): Promise<T> {
   const r = await fetch(path, {
-    method: "POST",
+    method,
     headers: { "Content-Type": "application/json", "X-MHP-Write": "1" },
     body: JSON.stringify(body),
   });

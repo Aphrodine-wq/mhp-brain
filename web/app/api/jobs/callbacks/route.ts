@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { currentUser, requireRole } from "@/lib/auth";
-import { createCallback, getCallbacks, resolveCallback } from "@/lib/operations";
+import { createCallback, getCallbacks, resolveCallback, OpsError } from "@/lib/operations";
 
 // GET /api/jobs/callbacks?project=<id>
 export async function GET(req: NextRequest) {
@@ -32,6 +32,11 @@ export async function PATCH(req: NextRequest) {
   if (!body.id || !body.resolution) {
     return NextResponse.json({ error: "id, resolution required" }, { status: 400 });
   }
-  await resolveCallback(body.id, body.resolution, body.cost_to_fix ?? null);
+  try {
+    await resolveCallback(body.id, body.resolution, body.cost_to_fix ?? null, user.name);
+  } catch (e) {
+    if (e instanceof OpsError) return NextResponse.json({ error: e.message }, { status: 400 });
+    throw e;
+  }
   return NextResponse.json({ ok: true });
 }

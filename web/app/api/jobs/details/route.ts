@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { currentUser, requireRole } from "@/lib/auth";
-import { getProjectOps, updateProjectOps } from "@/lib/operations";
+import { getProjectOps, updateProjectOps, OpsError } from "@/lib/operations";
 
 // GET /api/jobs/details?project=<id> — operational fields for a project
 export async function GET(req: NextRequest) {
@@ -19,6 +19,11 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json();
   const { project_id, ...updates } = body;
   if (!project_id) return NextResponse.json({ error: "project_id required" }, { status: 400 });
-  await updateProjectOps(project_id, updates, user.name);
+  try {
+    await updateProjectOps(project_id, updates, user.name);
+  } catch (e) {
+    if (e instanceof OpsError) return NextResponse.json({ error: e.message }, { status: 400 });
+    throw e;
+  }
   return NextResponse.json({ ok: true });
 }
