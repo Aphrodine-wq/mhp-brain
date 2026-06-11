@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { estimateDetail } from "@/lib/queries";
+import { getProjectOps, getChangeOrders } from "@/lib/operations";
 import { money } from "@/lib/format";
 import { isAllowance } from "@/lib/documents";
 import PrintButton from "./PrintButton";
+import DownloadPdf from "./DownloadPdf";
+import type { PdfJobInfo, PdfChangeOrderRow } from "@/lib/pdf/map";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +21,9 @@ export default async function EstimateDetailPage({ params }: { params: Promise<{
   const { id } = await params;
   const est = await estimateDetail(id);
   if (!est) notFound();
+  // client info + change orders feed the branded packet (lib/pdf); both are project-level
+  const job = (await getProjectOps(est.projectId).catch(() => null)) as PdfJobInfo | null;
+  const changeOrders = (await getChangeOrders(est.projectId).catch(() => [])) as unknown as PdfChangeOrderRow[];
 
   // group consecutive lines by division for header band rows, same shape as the builder table
   const groups: { division: string; lines: typeof est.lines }[] = [];
@@ -43,6 +49,7 @@ export default async function EstimateDetailPage({ params }: { params: Promise<{
           <a className="btn ghost" href={`/api/estimates/${est.id}/document`}>Download original ↓</a>
         )}
         <PrintButton />
+        <DownloadPdf est={est} job={job} changeOrders={changeOrders} />
         <span className={`badge ${CONF[est.confidence] || "unknown"}`} style={{ marginLeft: "auto" }} title="Parse confidence">
           {est.confidence || "—"}
         </span>
