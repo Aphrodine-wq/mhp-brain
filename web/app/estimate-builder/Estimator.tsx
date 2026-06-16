@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { CatalogRow } from "@/lib/queries";
 import { money } from "@/lib/format";
 import { ASSEMBLY_LIST, ASSEMBLY_CATEGORIES } from "@/lib/assemblies";
@@ -54,7 +55,7 @@ export default function Estimator({
   const setC = (k: keyof ClientInfo, v: string) => setClient((c) => ({ ...c, [k]: v }));
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   // Bid Guard exit gate — which outbound action is awaiting explicit confirmation
-  const [confirmAction, setConfirmAction] = useState<null | "export" | "save" | "packet">(null);
+  const [confirmAction, setConfirmAction] = useState<null | "export" | "save" | "packet" | "createJob">(null);
 
   // user defaults from the Settings page (markup/contingency/display) — same localStorage
   // hydration pattern as SettingsForm: must run post-mount because this component SSRs.
@@ -99,6 +100,33 @@ export default function Estimator({
       setSaveState("error");
     }
   }
+
+  // Win the estimate → spawn/link the job and jump to its project page. Goes through Bid Guard
+  // (guarded("createJob")) so a money-losing bid warns before it becomes a committed contract.
+  async function createJob() {
+    setJobState("creating");
+    try {
+      const total = lines.reduce((s, l) => s + (parseFloat(l.qty) || 0) * (parseFloat(l.rate) || 0), 0) * (1 + (markup || 0) / 100);
+      const r = await fetch("/api/estimates/accept", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          project: client.project,
+          clientName: client.clientName,
+          address: client.address,
+          estDate: client.date,
+          markup,
+          bid: total,
+          lines: lines.map((l) => ({ description: l.description, qty: l.qty, rate: l.rate, division: l.division, item_no: l.item_no, unit: l.unit })),
+        }),
+      });
+      const d = await r.json();
+      if (r.ok && d.projectId) router.push(`/projects/${d.projectId}`);
+      else setJobState("error");
+    } catch {
+      setJobState("error");
+    }
+  }
   const [desc, setDesc] = useState(initialDesc);
   const [files, setFiles] = useState<FileList | null>(null);
   const [lines, setLines] = useState<Line[]>([]);
@@ -111,6 +139,8 @@ export default function Estimator({
   const [asmInputs, setAsmInputs] = useState<Record<string, number>>({});
   // templates are opt-in — hidden by default so the describe-it flow owns the top of the page
   const [showTemplates, setShowTemplates] = useState(false);
+  const router = useRouter();
+  const [jobState, setJobState] = useState<"idle" | "creating" | "error">("idle");
   const keyRef = useRef(0);
   const nextKey = () => ++keyRef.current;
 
@@ -157,11 +187,20 @@ export default function Estimator({
   }
 
   async function readFiles() {
-    const docs: { name: string; text?: string }[] = [];
+    const docs: { name: string; text?: string; mime?: string; data?: string }[] = [];
     if (files) {
       for (const f of Array.from(files)) {
-        if (/\.(txt|csv|md)$/i.test(f.name)) docs.push({ name: f.name, text: await f.text() });
-        else docs.push({ name: f.name });
+        if (/\.(txt|csv|md)$/i.test(f.name)) {
+          docs.push({ name: f.name, text: await f.text() });
+        } else if (/\.(png|jpe?g|webp)$/i.test(f.name)) {
+          // base64 for the vision pass — strip the data: prefix the API doesn't want
+          const buf = await f.arrayBuffer();
+          const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+          const mime = f.type || (/\.png$/i.test(f.name) ? "image/png" : /\.webp$/i.test(f.name) ? "image/webp" : "image/jpeg");
+          docs.push({ name: f.name, mime, data: b64 });
+        } else {
+          docs.push({ name: f.name });
+        }
       }
     }
     return docs;
@@ -240,12 +279,13 @@ export default function Estimator({
   // requires an explicit "deliberate" confirmation. Nothing underpriced leaves by accident;
   // a chosen underprice (loyalty work) is one click — per MARGIN_GUARD.md, never a hard block.
   const guardActive = totalShort > 0 || markup <= 0;
-  const runAction = (a: "export" | "save" | "packet") => {
+  const runAction = (a: "export" | "save" | "packet" | "createJob") => {
     if (a === "export") exportx();
     else if (a === "save") saveProject();
+    else if (a === "createJob") createJob();
     else setView("packet");
   };
-  const guarded = (a: "export" | "save" | "packet") => (guardActive ? setConfirmAction(a) : runAction(a));
+  const guarded = (a: "export" | "save" | "packet" | "createJob") => (guardActive ? setConfirmAction(a) : runAction(a));
 
   // group consecutive lines by division for header rows
   const groups: { division: string; lines: Line[] }[] = [];
@@ -366,7 +406,10 @@ export default function Estimator({
         <button className="btn ghost sm" onClick={() => setView("input")}>← New</button>
         <button className="btn ghost sm" onClick={() => guarded("export")}>Export to Excel</button>
         <button className="btn ghost sm" onClick={() => guarded("save")} disabled={saveState === "saving"}>
-          {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved ✓" : saveState === "error" ? "Retry save" : "Save as Project"}
+          {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved ✓" : saveState === "error" ? "Retry save" : "Save"}
+        </button>
+        <button className="btn ghost sm" onClick={() => guarded("createJob")} disabled={jobState === "creating"}>
+          {jobState === "creating" ? "Creating…" : jobState === "error" ? "Retry job" : "Create Job →"}
         </button>
         {totalShort > 0 && <span className="doc-bar-warn" title="Lines priced under MHP's historical baseline">{money(totalShort)} under baseline</span>}
         <div className="doc-bar-bid"><span>Bid</span><b>{money(bid)}</b></div>
