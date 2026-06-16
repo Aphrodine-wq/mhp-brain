@@ -15,6 +15,16 @@ export function trelloKey(): string {
   return k;
 }
 
+// Base URL the Trello token flow returns to. APP_BASE_URL wins if set; otherwise we fall
+// back to Vercel's auto-injected production domain so Connect works with zero extra config.
+// localhost is the last resort (local dev only). This removes the old footgun where an
+// unset APP_BASE_URL silently sent the token grant to localhost and dropped it.
+export function appBaseUrl(): string {
+  if (process.env.APP_BASE_URL) return process.env.APP_BASE_URL.replace(/\/+$/, "");
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  return "http://localhost:3000";
+}
+
 // The authorize URL the Connect button opens. Trello returns the token in the URL
 // fragment of return_url, which /integrations/trello catches client-side.
 export function trelloAuthorizeUrl(returnUrl: string): string {

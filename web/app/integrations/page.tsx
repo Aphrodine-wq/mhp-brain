@@ -36,9 +36,8 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
   const trelloConfigured = isConfigured("trello");
   let trelloConnectUrl: string | null = null;
   if (trelloConfigured) {
-    const { trelloAuthorizeUrl } = await import("@/lib/trello");
-    const base = process.env.APP_BASE_URL ?? "http://localhost:3000";
-    trelloConnectUrl = trelloAuthorizeUrl(`${base}/integrations/trello`);
+    const { trelloAuthorizeUrl, appBaseUrl } = await import("@/lib/trello");
+    trelloConnectUrl = trelloAuthorizeUrl(`${appBaseUrl()}/integrations/trello`);
   }
   const providers: ProviderState[] = [
     { id: "quickbooks", label: "QuickBooks", configured: isConfigured("quickbooks"), connection: conn("quickbooks") },

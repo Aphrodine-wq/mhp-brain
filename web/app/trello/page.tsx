@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { isConfigured } from "@/lib/oauth/providers";
-import { trelloTabData, trelloConnected } from "@/lib/trello";
+import { trelloTabData, trelloConnected, trelloAuthorizeUrl, appBaseUrl } from "@/lib/trello";
 import SyncButton from "./SyncButton";
 
 export const dynamic = "force-dynamic";
@@ -36,13 +36,24 @@ export default async function TrelloPage() {
   // Without it the sync can't authenticate, so say that plainly instead of "no cards".
   const connected = await trelloConnected().catch(() => false);
   if (!connected) {
+    const connectUrl = trelloAuthorizeUrl(`${appBaseUrl()}/integrations/trello`);
     return (
       <section className="view">
         <h2>Trello</h2>
         <div className="sub">
-          The API key is set, but access hasn&apos;t been authorized yet. Go to{" "}
-          <Link href="/integrations">Integrations</Link>, click <strong>Connect Trello</strong> and
-          approve read access — then come back and sync.
+          The API key is set, but access hasn&apos;t been authorized yet. Click below, approve
+          read-only access on Trello, then come back here and sync.
+        </div>
+        <div className="panel" style={{ marginTop: 18 }}>
+          <div className="setrow">
+            <div>
+              <div className="sl">Authorize Trello</div>
+              <div className="sd">Read-only, never expires. You can revoke it anytime in Trello.</div>
+            </div>
+            <div className="actions">
+              <a className="btn" href={connectUrl}>Connect Trello</a>
+            </div>
+          </div>
         </div>
       </section>
     );
