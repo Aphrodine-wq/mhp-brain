@@ -55,7 +55,11 @@ export async function POST(req: Request) {
   (await cookies()).set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    // Lax (not Strict) so the session survives top-level cross-site redirects back into the
+    // app — e.g. returning from Trello's authorize screen. Strict made proxy.ts see "no
+    // session" on that hop and bounce to /login, killing the OAuth grant. Matches every other
+    // login path (Google/Microsoft/QuickBooks/dev-login all use Lax).
+    sameSite: "lax",
     path: "/",
     maxAge: 12 * 60 * 60,
   });
