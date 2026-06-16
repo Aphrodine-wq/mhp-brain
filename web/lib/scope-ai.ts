@@ -12,7 +12,8 @@ export interface AiScope {
 }
 
 // CSV row contract from constructionai/api/service.py: division|description|quantity|unit|unit_cost|total
-function parseCsv(text: string): AiScope {
+// Exported for unit testing (the public aiScope wraps it behind a fetch).
+export function parseCsv(text: string): AiScope {
   const descriptions: string[] = [];
   const qtyByCanon = new Map<string, number>();
   for (const raw of text.split("\n")) {
