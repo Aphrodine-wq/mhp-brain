@@ -20,6 +20,8 @@ const ICONS: Record<string, React.ReactNode> = {
   settings: (<><circle cx="12" cy="12" r="3" /><path d="M19 12a7 7 0 00-.1-1l2-1.6-2-3.4-2.4 1a7 7 0 00-1.7-1l-.4-2.5h-4l-.4 2.5a7 7 0 00-1.7 1l-2.4-1-2 3.4 2 1.6a7 7 0 000 2l-2 1.6 2 3.4 2.4-1a7 7 0 001.7 1l.4 2.5h4l.4-2.5a7 7 0 001.7-1l2.4 1 2-3.4-2-1.6a7 7 0 00.1-1z" /></>),
   pipeline: (<><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></>),
   pricing: (<><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" /></>),
+  time: (<><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>),
+  radar: (<><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" /><path d="M12 12l6-4" /></>),
 };
 
 function i(name: string): React.ReactNode { return ICONS[name] ?? ICONS.home; }
@@ -36,6 +38,8 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
     { href: "/crew", label: "Crew", icon: i("crew") },
     { href: "/documents", label: "Documents", icon: i("documents") },
     { href: "/pricing", label: "Pricing", icon: i("pricing") },
+    { href: "/time", label: "Time", icon: i("time") },
+    { href: "/money-radar", label: "Money Radar", icon: i("radar") },
   ],
   estimator: [
     { href: "/estimate-builder", label: "Estimate Builder", icon: i("estimator") },
@@ -63,11 +67,14 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
     { href: "/crew", label: "Crew", icon: i("crew") },
     { href: "/documents", label: "Documents", icon: i("documents") },
     { href: "/pricing", label: "Pricing", icon: i("pricing") },
+    { href: "/time", label: "Time", icon: i("time") },
+    { href: "/money-radar", label: "Money Radar", icon: i("radar") },
   ],
   editor: [
     { href: "/", label: "Home", icon: i("home") },
     { href: "/projects", label: "Projects", icon: i("projects") },
     { href: "/estimates", label: "Estimates", icon: i("estimates") },
+    { href: "/time", label: "Time", icon: i("time") },
   ],
   viewer: [
     { href: "/", label: "Home", icon: i("home") },
