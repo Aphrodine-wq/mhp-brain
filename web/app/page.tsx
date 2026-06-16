@@ -47,17 +47,37 @@ export default async function Home() {
     for (const r of pays) collectedById.set(String(r.project_id), Number(r.total ?? 0));
   } catch { /* payments table arrives with the QB pipe */ }
 
+  // top-of-home rollup — book value of what's active, collected against it, and the headcounts
+  const activeValue = active.reduce((sum, x) => sum + (x.value || 0), 0);
+  const collected = active.reduce((sum, x) => sum + (collectedById.get(x.id) ?? 0), 0);
+
   return (
     <section className="view">
       <div className="row" style={{ justifyContent: "space-between", marginTop: 0, alignItems: "flex-start" }}>
-        <div>
-          <h2 style={{ margin: 0 }}>Projects</h2>
-          <div className="sub" style={{ margin: "6px 0" }}>North Mississippi Home Pros</div>
-        </div>
+        <h2 style={{ margin: 0 }}>North Mississippi Home Pros</h2>
         <Link className="btn" href="/estimate-builder">+ New Estimate</Link>
       </div>
 
       <WeatherBanner />
+
+      <div className="home-bento">
+        <div className="metric accent hero">
+          <div className="v">{activeValue ? money(activeValue) : "—"}</div>
+          <div className="k">Active book value</div>
+        </div>
+        <div className="metric">
+          <div className="v">{active.length}</div>
+          <div className="k">Active jobs</div>
+        </div>
+        <div className="metric">
+          <div className="v">{collected ? money(collected) : "—"}</div>
+          <div className="k">Collected</div>
+        </div>
+        <div className="metric wide">
+          <div className="v">{s.projects}</div>
+          <div className="k">Total projects</div>
+        </div>
+      </div>
 
       <div className="sec-h">Active now</div>
       <div className="proj-cards">
