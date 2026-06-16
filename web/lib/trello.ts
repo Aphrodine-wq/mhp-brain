@@ -5,6 +5,7 @@
 import { db } from "@/lib/db";
 import { loadConnection } from "@/lib/oauth/store";
 import { matchProject } from "@/lib/match-project";
+import { getSetting } from "@/lib/integration-settings";
 
 const API = "https://api.trello.com/1";
 
@@ -70,9 +71,24 @@ export async function syncTrello(): Promise<TrelloSyncResult> {
   const key = trelloKey();
   await ensureCards();
 
-  const boards = (await (
-    await fetch(`${API}/members/me/boards?key=${key}&token=${token}&filter=open&fields=name`)
-  ).json()) as { id: string; name: string }[];
+  // Scope to one board if configured (Integration settings → Trello board);
+  // otherwise sync every open board the member can see (back-compat default).
+  const boardId = (await getSetting("trello", "board_id", "")).trim();
+  let boards: { id: string; name: string }[];
+  if (boardId) {
+    const res = await fetch(`${API}/boards/${boardId}?key=${key}&token=${token}&fields=name`);
+    if (!res.ok) {
+      throw new Error(
+        `Trello board "${boardId}" not found — check Integration settings → Trello board (${res.status}).`,
+      );
+    }
+    const b = (await res.json()) as { id: string; name: string };
+    boards = [{ id: b.id, name: b.name }];
+  } else {
+    boards = (await (
+      await fetch(`${API}/members/me/boards?key=${key}&token=${token}&filter=open&fields=name`)
+    ).json()) as { id: string; name: string }[];
+  }
 
   const projects = (await db.execute("SELECT id, name FROM projects")).rows.map((r) => ({
     id: String(r.id),
