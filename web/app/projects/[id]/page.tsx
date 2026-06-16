@@ -11,12 +11,15 @@ import {
 import { requireRole } from "@/lib/auth";
 import { trelloCardsForProject } from "@/lib/trello";
 import { eventsForProject } from "@/lib/calendar";
+import { projectMargin } from "@/lib/margin";
+import { hasActiveShareLink } from "@/lib/share";
 import { money, BADGE } from "@/lib/format";
 import HeaderEdit, { type ProjectOps } from "./HeaderEdit";
 import ChangeOrderPanel, { type ChangeOrder } from "./ChangeOrderPanel";
 import EventLogForm, { type JobEvent } from "./EventLogForm";
 import PaymentForm, { type Payment } from "./PaymentForm";
 import PermitPanel, { type Permit } from "./PermitPanel";
+import ShareLink from "./ShareLink";
 
 export const dynamic = "force-dynamic";
 
@@ -36,13 +39,16 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
   // operational layer: app-owned tables written through lib/operations (audited)
   const canWrite = !!(await requireRole("editor"));
-  const [ops, changeOrders, jobEvents, permits, payments] = await Promise.all([
+  const [ops, changeOrders, jobEvents, permits, payments, margin, shareActive] = await Promise.all([
     getProjectOps(id).catch(() => null) as Promise<ProjectOps | null>,
     getChangeOrders(id).catch(() => []) as Promise<unknown> as Promise<ChangeOrder[]>,
     getJobEvents(id).catch(() => []) as Promise<unknown> as Promise<JobEvent[]>,
     getPermits(id).catch(() => []) as Promise<unknown> as Promise<Permit[]>,
     getPayments(id).catch(() => []) as Promise<unknown> as Promise<Payment[]>,
+    projectMargin(id).catch(() => null),
+    canWrite ? hasActiveShareLink(id).catch(() => false) : Promise.resolve(false),
   ]);
+  const pct = (n: number | null) => (n == null ? "—" : `${Math.round(n * 100)}%`);
 
   return (
     <section className="view">
@@ -58,8 +64,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         {proj.market || "—"} · {proj.type || "—"} · last activity {proj.last || "—"}
       </div>
 
-      <div className="row" style={{ marginTop: 0 }}>
+      <div className="row" style={{ marginTop: 0, justifyContent: "space-between" }}>
         <Link className="btn ghost" href="/projects">← All projects</Link>
+        {canWrite && <ShareLink projectId={id} hasActive={shareActive} />}
       </div>
 
       <div className="stat-strip">
@@ -67,6 +74,19 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         <div><div className="sv">{proj.estimates.length}</div><div className="sk">Documents on file</div></div>
         <div><div className="sv">{proj.last || "—"}</div><div className="sk">Last activity</div></div>
       </div>
+
+      {margin && (margin.bid != null || margin.collected > 0) && (
+        <div className="panel" style={{ marginTop: 18 }}>
+          <h3>Margin (estimated)</h3>
+          <div className="stat-strip" style={{ margin: 0, border: 0, padding: "8px 2px" }}>
+            <div><div className="sv">{margin.bid != null ? money(margin.bid) : "—"}</div><div className="sk">Bid</div></div>
+            <div><div className="sv">{margin.estimatedCost != null ? money(margin.estimatedCost) : "—"}</div><div className="sk">Est. cost</div></div>
+            <div><div className="sv">{margin.marginDollars != null ? money(margin.marginDollars) : "—"}</div><div className="sk">Est. margin · {pct(margin.marginPct)}</div></div>
+            <div><div className="sv">{money(margin.collected)}</div><div className="sk">Collected · {pct(margin.collectedPct)}</div></div>
+          </div>
+          <div className="setrow"><div className="sd">Estimated from the bid — actual cost lands when QuickBooks is connected.</div></div>
+        </div>
+      )}
 
       <div className="panel" style={{ marginTop: 18 }}>
         <h3>Job log</h3>

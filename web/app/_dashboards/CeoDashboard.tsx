@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { money } from "@/lib/format";
+import { marginBySegment } from "@/lib/margin";
 import WeatherBanner from "./WeatherBanner";
 
 // Rick's cockpit. One screen, answers four questions:
@@ -64,6 +65,10 @@ export default async function CeoDashboard() {
     (p) => (Number(p.bid_value ?? 0) > 50000 && Number(p.collected ?? 0) === 0) || Number(p.pending_cos ?? 0) > 0 || Number(p.open_callbacks ?? 0) > 0,
   );
 
+  // Estimated-margin roll-up (bid vs estimated cost from the estimate line totals — not actuals)
+  const margin = await marginBySegment().catch(() => null);
+  const mpct = (n: number | null) => (n == null ? "—" : `${Math.round(n * 100)}%`);
+
   return (
     <section className="view">
       <h2>Morning Cockpit</h2>
@@ -90,6 +95,34 @@ export default async function CeoDashboard() {
           <div className="sk">Active jobs</div>
         </div>
       </div>
+
+      {/* Estimated margin — which job types/markets make money on paper */}
+      {margin && margin.byType.length > 0 && (
+        <div className="panel" style={{ marginTop: 18 }}>
+          <h3>Margin (estimated) · {mpct(margin.portfolioMarginPct)} portfolio</h3>
+          <div className="cols">
+            <div>
+              <div className="sec-h" style={{ marginTop: 0 }}>By job type</div>
+              {margin.byType.slice(0, 6).map((s) => (
+                <div className="setrow" key={s.label}>
+                  <div><div className="sl">{s.label}</div><div className="sd">{s.jobs} job{s.jobs === 1 ? "" : "s"} · {money(s.bid)} bid</div></div>
+                  <div className="actions"><span className="sd">{money(s.marginDollars)}</span><span className="badge bid">{mpct(s.marginPct)}</span></div>
+                </div>
+              ))}
+            </div>
+            <div>
+              <div className="sec-h" style={{ marginTop: 0 }}>By market</div>
+              {margin.byMarket.slice(0, 6).map((s) => (
+                <div className="setrow" key={s.label}>
+                  <div><div className="sl">{s.label}</div><div className="sd">{s.jobs} job{s.jobs === 1 ? "" : "s"} · {money(s.bid)} bid</div></div>
+                  <div className="actions"><span className="sd">{money(s.marginDollars)}</span><span className="badge bid">{mpct(s.marginPct)}</span></div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="setrow"><div className="sd">Estimated from bids (sell minus pre-markup cost) — not actual job costs.</div></div>
+        </div>
+      )}
 
       <div className="cols">
         {/* Left column: Needs attention */}
