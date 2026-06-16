@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { money } from "@/lib/format";
 import CeoDashboard from "./_dashboards/CeoDashboard";
 import SalesDashboard from "./_dashboards/SalesDashboard";
+import WeatherBanner from "./_dashboards/WeatherBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +56,8 @@ export default async function Home() {
         </div>
         <Link className="btn" href="/estimate-builder">+ New Estimate</Link>
       </div>
+
+      <WeatherBanner />
 
       <div className="sec-h">Active now</div>
       <div className="proj-cards">

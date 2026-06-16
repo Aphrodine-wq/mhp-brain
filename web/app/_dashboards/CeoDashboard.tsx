@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { money } from "@/lib/format";
+import WeatherBanner from "./WeatherBanner";
 
 // Rick's cockpit. One screen, answers four questions:
 // 1. How's the money? (cash in, cash out, margins)
@@ -67,6 +68,8 @@ export default async function CeoDashboard() {
     <section className="view">
       <h2>Morning Cockpit</h2>
       <div className="sub">What matters right now. {projects.length} active jobs.</div>
+
+      <WeatherBanner />
 
       {/* Money strip */}
       <div className="stat-strip">

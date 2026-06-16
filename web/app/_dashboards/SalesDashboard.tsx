@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { money } from "@/lib/format";
+import WeatherBanner from "./WeatherBanner";
 
 // Todd's screen. Leads, follow-ups, conversion tracking.
 
@@ -45,6 +46,8 @@ export default async function SalesDashboard() {
     <section className="view">
       <h2>Sales Pipeline</h2>
       <div className="sub">Every lead, where it stands, what needs follow-up.</div>
+
+      <WeatherBanner />
 
       {/* Pipeline funnel */}
       <div className="stat-strip">

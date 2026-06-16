@@ -15,8 +15,13 @@ export async function GET() {
     const periods = (fc.properties.periods as {
       name: string; temperature: number; probabilityOfPrecipitation?: { value: number | null }; shortForecast: string; isDaytime: boolean;
     }[]).filter((p) => p.isDaytime).slice(0, 7);
+    // weather.gov hands back the nearest place name on the points lookup — use it so the banner
+    // names the actual configured market instead of a hardcoded city that goes stale with lat/lon.
+    const rl = point.properties?.relativeLocation?.properties;
+    const location = rl?.city && rl?.state ? `${rl.city}, ${rl.state}` : "";
     return NextResponse.json({
       ok: true,
+      location,
       days: periods.map((p) => ({
         name: p.name,
         temp: p.temperature,
