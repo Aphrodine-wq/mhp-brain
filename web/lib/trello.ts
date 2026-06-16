@@ -132,6 +132,64 @@ export interface TrelloCardRow {
   lastActivity: string;
 }
 
+export interface TrelloTabCard {
+  name: string;
+  list: string;
+  url: string;
+  due: string | null;
+  lastActivity: string;
+  projectId: string | null;
+  projectName: string | null;
+}
+
+export interface TrelloBoardGroup {
+  board: string;
+  cards: TrelloTabCard[];
+}
+
+export interface TrelloTabData {
+  boards: TrelloBoardGroup[];
+  totalCards: number;
+  matched: number;
+  lastSynced: string | null;
+}
+
+// Everything the Trello tab needs in one read: open cards grouped by board, with the
+// linked project (if matched) joined in, plus headline counts and the last sync time.
+export async function trelloTabData(): Promise<TrelloTabData> {
+  await ensureCards();
+  const rows = (
+    await db.execute(`SELECT c.name, c.board, c.list, c.url, c.due, c.last_activity, c.project_id,
+                             c.synced_at, p.name AS project_name
+                      FROM trello_cards c
+                      LEFT JOIN projects p ON p.id = c.project_id
+                      WHERE c.closed = FALSE
+                      ORDER BY c.board ASC, c.list ASC, c.last_activity DESC`)
+  ).rows;
+
+  const byBoard = new Map<string, TrelloBoardGroup>();
+  let matched = 0;
+  let lastSynced: string | null = null;
+  for (const r of rows) {
+    const board = String(r.board ?? "—");
+    if (!byBoard.has(board)) byBoard.set(board, { board, cards: [] });
+    const projectId = r.project_id ? String(r.project_id) : null;
+    if (projectId) matched++;
+    const syncedAt = r.synced_at ? String(r.synced_at) : null;
+    if (syncedAt && (!lastSynced || syncedAt > lastSynced)) lastSynced = syncedAt;
+    byBoard.get(board)!.cards.push({
+      name: String(r.name),
+      list: String(r.list ?? ""),
+      url: String(r.url ?? ""),
+      due: (r.due as string | null)?.slice(0, 10) ?? null,
+      lastActivity: String(r.last_activity ?? "").slice(0, 10),
+      projectId,
+      projectName: r.project_name ? String(r.project_name) : null,
+    });
+  }
+  return { boards: [...byBoard.values()], totalCards: rows.length, matched, lastSynced };
+}
+
 export async function trelloCardsForProject(projectId: string): Promise<TrelloCardRow[]> {
   await ensureCards();
   const rows = (

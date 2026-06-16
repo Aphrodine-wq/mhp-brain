@@ -22,6 +22,7 @@ const ICONS: Record<string, React.ReactNode> = {
   pricing: (<><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" /></>),
   time: (<><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>),
   radar: (<><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" /><path d="M12 12l6-4" /></>),
+  trello: (<><rect x="3" y="3" width="18" height="18" rx="2" /><rect x="7" y="7" width="3.5" height="10" rx="1" /><rect x="13.5" y="7" width="3.5" height="6" rx="1" /></>),
 };
 
 function i(name: string): React.ReactNode { return ICONS[name] ?? ICONS.home; }
@@ -39,7 +40,7 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
     { href: "/documents", label: "Documents", icon: i("documents") },
     { href: "/pricing", label: "Pricing", icon: i("pricing") },
     { href: "/time", label: "Time", icon: i("time") },
-    { href: "/money-radar", label: "Money Radar", icon: i("radar") },
+    { href: "/trello", label: "Trello", icon: i("trello") },
   ],
   estimator: [
     { href: "/estimate-builder", label: "Estimate Builder", icon: i("estimator") },
@@ -68,7 +69,7 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
     { href: "/documents", label: "Documents", icon: i("documents") },
     { href: "/pricing", label: "Pricing", icon: i("pricing") },
     { href: "/time", label: "Time", icon: i("time") },
-    { href: "/money-radar", label: "Money Radar", icon: i("radar") },
+    { href: "/trello", label: "Trello", icon: i("trello") },
   ],
   editor: [
     { href: "/", label: "Home", icon: i("home") },
