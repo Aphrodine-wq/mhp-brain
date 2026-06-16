@@ -11,8 +11,6 @@ import {
 import { requireRole } from "@/lib/auth";
 import { trelloCardsForProject } from "@/lib/trello";
 import { eventsForProject } from "@/lib/calendar";
-import { envelopesForProject } from "@/lib/docusign";
-import { ccForProject } from "@/lib/companycam";
 import { money, BADGE } from "@/lib/format";
 import HeaderEdit, { type ProjectOps } from "./HeaderEdit";
 import ChangeOrderPanel, { type ChangeOrder } from "./ChangeOrderPanel";
@@ -35,8 +33,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   if (!proj) notFound();
   const trelloCards = await trelloCardsForProject(id).catch(() => []);
   const events = await eventsForProject(id).catch(() => []);
-  const envelopes = await envelopesForProject(id).catch(() => []);
-  const ccProjects = await ccForProject(id).catch(() => []);
 
   // operational layer: app-owned tables written through lib/operations (audited)
   const canWrite = !!(await requireRole("editor"));
@@ -106,40 +102,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               <span className="sd" style={{ whiteSpace: "nowrap" }}>
                 {ev.startAt.slice(0, 10)}{ev.isAllDay ? "" : ` · ${ev.startAt.slice(11, 16)}`}
               </span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {envelopes.length > 0 && (
-        <div className="panel" style={{ marginTop: 18 }}>
-          <h3>Signatures</h3>
-          {envelopes.map((ev, i) => (
-            <div className="setrow" key={i}>
-              <div>
-                <div className="sl">{ev.subject || "Envelope"}</div>
-                <div className="sd">sent {ev.sentAt || "—"}{ev.completedAt ? ` · signed ${ev.completedAt}` : ""}</div>
-              </div>
-              <span className={`badge ${ev.status === "completed" ? "active" : ev.status === "declined" || ev.status === "voided" ? "dead" : "aging"}`}>
-                {ev.status}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {ccProjects.length > 0 && (
-        <div className="panel" style={{ marginTop: 18 }}>
-          <h3>Job photos</h3>
-          {ccProjects.map((c, i) => (
-            <div className="setrow" key={i}>
-              <div>
-                <div className="sl">
-                  {c.galleryUrl ? <a href={c.galleryUrl} target="_blank" rel="noreferrer" className="cell-link">{c.name}</a> : c.name}
-                </div>
-                <div className="sd">last photo {c.lastPhotoAt || "—"}</div>
-              </div>
-              <span className="badge bid">{c.photoCount} photos</span>
             </div>
           ))}
         </div>

@@ -1,6 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { currentUser, requireRole } from "@/lib/auth";
 import { createChangeOrder, getChangeOrders, approveChangeOrder, billChangeOrder, OpsError } from "@/lib/operations";
+import { notifyProject } from "@/lib/alerts";
+import { money } from "@/lib/format";
+import { db } from "@/lib/db";
 
 // GET /api/jobs/change-orders?project=<id>
 export async function GET(req: NextRequest) {
@@ -21,6 +24,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "project_id, description, amount required" }, { status: 400 });
   }
   const id = await createChangeOrder({ ...body, created_by: user.name });
+  notifyProject("change_order_new", body.project_id, (project) => ({
+    title: "Change order submitted",
+    facts: [
+      { name: "Project", value: project.slice(0, 120) },
+      { name: "Amount", value: money(Number(body.amount) || 0) },
+      { name: "Description", value: String(body.description).slice(0, 160) },
+    ],
+  }));
   return NextResponse.json({ ok: true, id });
 }
 
@@ -39,6 +50,18 @@ export async function PATCH(req: NextRequest) {
   } catch (e) {
     if (e instanceof OpsError) return NextResponse.json({ error: e.message }, { status: 400 });
     throw e;
+  }
+  // decided (approved/rejected) — PATCH only carries the CO id, so look up its job + amount for the card
+  if (body.approved != null) {
+    const co = (await db.execute({ sql: "SELECT project_id, amount FROM change_orders WHERE id = ? LIMIT 1", args: [body.id] })).rows[0];
+    if (co?.project_id) notifyProject("change_order_decided", String(co.project_id), (project) => ({
+      title: body.approved === 1 ? "Change order approved" : "Change order rejected",
+      facts: [
+        { name: "Project", value: project.slice(0, 120) },
+        { name: "Amount", value: money(Number(co.amount) || 0) },
+        { name: "By", value: user.name },
+      ],
+    }));
   }
   return NextResponse.json({ ok: true });
 }

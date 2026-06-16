@@ -8,7 +8,7 @@ const STOP = new Set([
   "project", "projects", "house", "home", "build", "building", "master", "file", "docs", "construction",
   "porch", "room", "remodel", "renovation", "repair", "improvement", "addition", "garage", "kitchen",
   "bathroom", "deck", "wall", "retaining", "bonus", "custom", "guest", "the", "and", "mhp", "prime",
-  "complete", "with", "docusign", "contract", "permit", "plan", "sign", "active", "dead",
+  "complete", "with", "contract", "permit", "plan", "sign", "active", "dead",
 ]);
 
 export interface ProjectRef {

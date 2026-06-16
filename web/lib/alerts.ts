@@ -3,6 +3,9 @@
 // scopes on anyone's data). Alerts are fire-and-forget: a dead webhook must never
 // break the work that triggered it.
 
+import { db } from "./db";
+import { getSetting } from "./integration-settings";
+
 export function alertsConfigured(): boolean {
   return Boolean(process.env.TEAMS_WEBHOOK_URL);
 }
@@ -58,4 +61,28 @@ export async function sendAlert(a: Alert): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+// Cheap project-name lookup for alert cards; falls back to the id if the row's gone.
+async function projectName(id: string): Promise<string> {
+  try {
+    const r = await db.execute({ sql: "SELECT name FROM projects WHERE id = ? LIMIT 1", args: [id] });
+    return r.rows[0]?.name ? String(r.rows[0].name) : id;
+  } catch {
+    return id;
+  }
+}
+
+// Fire a project-scoped alert IF its toggle is on (default off — owner opts in on /settings).
+// Fully non-blocking: the toggle read, name lookup, and webhook POST all run after the caller's
+// response, so a notification never adds latency to (or breaks) the mutation that triggered it.
+export function notifyProject(key: string, projectId: string, build: (name: string) => Alert): void {
+  void (async () => {
+    try {
+      if ((await getSetting("alerts", key, "off")) !== "on") return;
+      await sendAlert(build(await projectName(projectId)));
+    } catch {
+      /* alerts never break the work */
+    }
+  })();
 }

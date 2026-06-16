@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { currentUser, requireRole } from "@/lib/auth";
 import { createPermit, getPermits, updatePermit, getUpcomingInspections, OpsError } from "@/lib/operations";
+import { notifyProject } from "@/lib/alerts";
 
 // GET /api/jobs/permits?project=<id>     — permits for one project
 // GET /api/jobs/permits?upcoming=1       — upcoming inspections across all projects
@@ -29,6 +30,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "project_id, permit_type required" }, { status: 400 });
   }
   const id = await createPermit({ ...body, created_by: user.name });
+  // only a meaningful event when a date is actually set
+  if (body.inspection_date) notifyProject("inspection_scheduled", body.project_id, (project) => ({
+    title: "Inspection scheduled",
+    facts: [
+      { name: "Project", value: project.slice(0, 120) },
+      { name: "Type", value: String(body.permit_type).slice(0, 80) },
+      { name: "Date", value: String(body.inspection_date).slice(0, 10) },
+    ],
+  }));
   return NextResponse.json({ ok: true, id });
 }
 

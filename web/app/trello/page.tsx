@@ -4,6 +4,7 @@ import { currentUser } from "@/lib/auth";
 import { isConfigured } from "@/lib/oauth/providers";
 import { trelloTabData, trelloConnected, trelloAuthorizeUrl, appBaseUrl } from "@/lib/trello";
 import SyncButton from "./SyncButton";
+import CollapseSection from "@/app/_components/CollapseSection";
 
 export const dynamic = "force-dynamic";
 
@@ -87,38 +88,43 @@ export default async function TrelloPage() {
               <div className="big" style={{ fontSize: 28 }}>{data.matched}</div>
             </div>
             <div className="panel" style={{ flex: 1, minWidth: 160 }}>
-              <div className="sd">Boards</div>
-              <div className="big" style={{ fontSize: 28 }}>{data.boards.length}</div>
+              <div className="sd">Jobs</div>
+              <div className="big" style={{ fontSize: 28 }}>{data.projects.length}</div>
             </div>
           </div>
           {lastSynced ? <div className="sd" style={{ marginTop: 8 }}>Last synced {lastSynced}</div> : null}
 
-          {data.boards.map((b) => (
-            <div className="panel" style={{ marginTop: 18 }} key={b.board}>
-              <h3>{b.board}</h3>
-              {b.cards.map((c, idx) => (
-                <div className="setrow" key={`${b.board}-${idx}`}>
-                  <div>
-                    <div className="sl">
-                      <a href={c.url} target="_blank" rel="noopener noreferrer">{c.name}</a>
+          <div style={{ marginTop: 18 }}>
+            {data.projects.map((pg) => (
+              <CollapseSection
+                key={pg.projectId ?? "__unmatched"}
+                title={pg.projectName}
+                summary={`${pg.cards.length} card${pg.cards.length === 1 ? "" : "s"}`}
+              >
+                {pg.cards.map((c, idx) => (
+                  <div className="setrow" key={`${pg.projectId ?? "u"}-${idx}`}>
+                    <div>
+                      <div className="sl">
+                        <a href={c.url} target="_blank" rel="noopener noreferrer">{c.name}</a>
+                      </div>
+                      <div className="sd">
+                        {c.projectId ? (
+                          <Link href={`/projects/${c.projectId}`}>{c.projectName}</Link>
+                        ) : (
+                          <span style={{ opacity: 0.6 }}>unmatched</span>
+                        )}
+                        {c.due ? ` · due ${c.due}` : ""}
+                        {c.lastActivity ? ` · active ${c.lastActivity}` : ""}
+                      </div>
                     </div>
-                    <div className="sd">
-                      {c.projectId ? (
-                        <Link href={`/projects/${c.projectId}`}>{c.projectName}</Link>
-                      ) : (
-                        <span style={{ opacity: 0.6 }}>unmatched</span>
-                      )}
-                      {c.due ? ` · due ${c.due}` : ""}
-                      {c.lastActivity ? ` · active ${c.lastActivity}` : ""}
+                    <div className="actions">
+                      <span className="badge bid">{c.list || "—"}</span>
                     </div>
                   </div>
-                  <div className="actions">
-                    <span className="badge bid">{c.list || "—"}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ))}
+                ))}
+              </CollapseSection>
+            ))}
+          </div>
         </>
       ) : (
         <div className="panel" style={{ marginTop: 18 }}>

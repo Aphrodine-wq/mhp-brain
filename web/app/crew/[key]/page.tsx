@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { crewList } from "@/lib/queries";
 import { listDocuments } from "@/lib/documents-store";
-import { commsForEntity } from "@/lib/twilio";
 import { initials } from "@/lib/format";
 import EntityDocs from "../../_components/EntityDocs";
 import CrewProfile from "./CrewProfile";
@@ -15,7 +14,6 @@ export default async function CrewDetailPage({ params }: { params: Promise<{ key
   const member = (await crewList()).find((c) => c.key === decoded);
   if (!member) notFound();
   const docs = await listDocuments({ entityType: "crew", entityId: member.key });
-  const comms = await commsForEntity("crew", member.key).catch(() => []);
 
   return (
     <section className="view">
@@ -34,21 +32,6 @@ export default async function CrewDetailPage({ params }: { params: Promise<{ key
       </div>
 
       <CrewProfile member={member} />
-
-      {comms.length > 0 && (
-        <div className="panel" style={{ marginTop: 18 }}>
-          <h3>Recent texts &amp; calls</h3>
-          {comms.map((c, i) => (
-            <div className="setrow" key={i}>
-              <div>
-                <div className="sl">{c.kind === "call" ? (c.direction === "in" ? "Call in" : "Call out") : c.direction === "in" ? "Text in" : "Text out"}</div>
-                <div className="sd">{c.body || "—"}</div>
-              </div>
-              <span className="sd" style={{ whiteSpace: "nowrap" }}>{c.at}</span>
-            </div>
-          ))}
-        </div>
-      )}
 
       <EntityDocs
         entityType="crew"

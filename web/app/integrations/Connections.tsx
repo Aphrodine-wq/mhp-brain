@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 export type ProviderState = {
-  id: "quickbooks" | "gmail" | "microsoft" | "trello" | "docusign" | "gbp" | "companycam";
+  id: "quickbooks" | "gmail" | "microsoft" | "trello" | "gbp";
   label: string;
   configured: boolean;
   connection: { account: string; expiresAt: string } | null;
@@ -40,22 +40,6 @@ const ICONS: Record<ProviderState["id"], React.ReactNode> = {
       <rect x="0" y="0" width="24" height="24" rx="4" fill="#0079BF" />
       <rect x="3.5" y="3.5" width="7" height="14" rx="1.5" fill="#fff" />
       <rect x="13.5" y="3.5" width="7" height="9" rx="1.5" fill="#fff" />
-    </svg>
-  ),
-  docusign: (
-    <svg viewBox="0 0 24 24" aria-hidden>
-      <rect x="0" y="0" width="24" height="24" rx="4" fill="#FFCC22" />
-      <path d="M12 4v9M8.5 9.5L12 13l3.5-3.5" stroke="#191823" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M5 17.5h14" stroke="#191823" strokeWidth="2.2" strokeLinecap="round" />
-    </svg>
-  ),
-  companycam: (
-    <svg viewBox="0 0 24 24" aria-hidden>
-      <rect x="0" y="0" width="24" height="24" rx="5" fill="#1B2A4A" />
-      <rect x="4" y="7.5" width="16" height="11" rx="2" fill="#fff" />
-      <path d="M9 7.5l1.4-2h3.2L15 7.5" stroke="#fff" strokeWidth="1.8" fill="none" />
-      <circle cx="12" cy="13" r="3.2" fill="#1B2A4A" />
-      <circle cx="12" cy="13" r="1.4" fill="#4da3ff" />
     </svg>
   ),
   gbp: (
@@ -111,9 +95,7 @@ export default function Connections({
     gmail: "Connect a dedicated email to automatically capture invoices.",
     microsoft: "Connect Microsoft to pull in Teams conversations, OneDrive paperwork, and the calendar.",
     trello: "Connect Trello to see where every job sits on the board, right on its project page.",
-    docusign: "Connect DocuSign — envelope status per project, signed contracts auto-filed into Documents.",
     gbp: "Connect the Google Business Profile to pull reviews into the brain.",
-    companycam: "Connect CompanyCam — every jobsite photo set linked to its project.",
   };
 
   const NOT_READY: Record<string, string> = {
@@ -121,9 +103,7 @@ export default function Connections({
     gmail: "Gmail connection needs to be set up by your admin.",
     microsoft: "Microsoft connection needs to be set up by your admin.",
     trello: "Trello needs a TRELLO_API_KEY — grab one at trello.com/power-ups/admin.",
-    docusign: "DocuSign needs DS_CLIENT_ID / DS_CLIENT_SECRET / DS_REDIRECT_URI in the env.",
     gbp: "GBP needs GBP_CLIENT_ID / GBP_CLIENT_SECRET / GBP_REDIRECT_URI (Google also gates the API behind an access request).",
-    companycam: "CompanyCam needs CC_CLIENT_ID / CC_CLIENT_SECRET / CC_REDIRECT_URI in the env.",
   };
 
   return (
@@ -243,7 +223,7 @@ export default function Connections({
               </>
             )}
 
-            {p.configured && (p.id === "docusign" || p.id === "gbp" || p.id === "companycam") && (
+            {p.configured && p.id === "gbp" && (
               <>
                 <a className="btn ghost sm" href={`/api/oauth/${p.id}/start`}>
                   {p.connection ? "Reconnect" : "Connect"}
@@ -256,15 +236,11 @@ export default function Connections({
                       runSync(p.id, async () => {
                         const data = await (await fetch(`/api/${p.id}/sync`, { method: "POST" })).json();
                         if (!data.ok) return data.error ?? "Sync had a problem. Try again.";
-                        if (p.id === "docusign")
-                          return `${data.envelopes} envelopes — ${data.filed} signed PDFs filed, ${data.matched} matched to jobs.`;
-                        if (p.id === "companycam")
-                          return `${data.projects} photo projects, ${data.photos} photos — ${data.matched} matched to jobs.`;
                         return `${data.locations} location${data.locations !== 1 ? "s" : ""}, ${data.reviews} reviews${data.average ? ` — ${data.average}★ average` : ""}.`;
                       })
                     }
                   >
-                    {syncing === p.id ? "Syncing…" : p.id === "docusign" ? "Sync envelopes" : p.id === "companycam" ? "Sync photos" : "Sync reviews"}
+                    {syncing === p.id ? "Syncing…" : "Sync reviews"}
                   </button>
                 )}
               </>

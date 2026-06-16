@@ -3,12 +3,7 @@ import { currentUser } from "@/lib/auth";
 import { isConfigured } from "@/lib/oauth/providers";
 import { listConnections } from "@/lib/oauth/store";
 import Connections, { type ProviderState } from "./Connections";
-import AlertsPanel from "./AlertsPanel";
-import TwilioPanel from "./TwilioPanel";
 import ReviewsPanel from "./ReviewsPanel";
-import { alertsConfigured } from "@/lib/alerts";
-import { twilioConfigured } from "@/lib/twilio";
-import { openphoneConfigured } from "@/lib/openphone";
 import { recentReviews } from "@/lib/gbp";
 import { allSettings } from "@/lib/integration-settings";
 import SettingsPanel from "./SettingsPanel";
@@ -44,9 +39,7 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
     { id: "gmail", label: "Gmail (Invoice Capture)", configured: isConfigured("gmail"), connection: conn("gmail") },
     { id: "microsoft", label: "Microsoft Teams + OneDrive", configured: isConfigured("microsoft"), connection: conn("microsoft") },
     { id: "trello", label: "Trello (Project Boards)", configured: trelloConfigured, connection: conn("trello"), connectUrl: trelloConnectUrl },
-    { id: "docusign", label: "DocuSign", configured: isConfigured("docusign"), connection: conn("docusign") },
     { id: "gbp", label: "Google Business Profile", configured: isConfigured("gbp"), connection: conn("gbp") },
-    { id: "companycam", label: "CompanyCam (Job Photos)", configured: isConfigured("companycam"), connection: conn("companycam") },
   ];
   const reviews = await recentReviews(8).catch(() => []);
   const settings = await allSettings().catch(() => ({}));
@@ -59,8 +52,6 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
         conversations. Every connection is read-only: nothing is ever changed in the source system.
       </div>
       <Connections providers={providers} oauthResult={oauth ?? null} oauthDetail={detail ?? null} />
-      <TwilioPanel configured={twilioConfigured()} openphone={openphoneConfigured()} />
-      <AlertsPanel configured={alertsConfigured()} />
       <WeatherPanel />
       <SiteCheckPanel />
       <SettingsPanel values={settings} />

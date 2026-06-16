@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { currentUser, requireRole } from "@/lib/auth";
 import { createCallback, getCallbacks, resolveCallback, OpsError } from "@/lib/operations";
+import { notifyProject } from "@/lib/alerts";
 
 // GET /api/jobs/callbacks?project=<id>
 export async function GET(req: NextRequest) {
@@ -21,6 +22,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "project_id, reported_date, issue required" }, { status: 400 });
   }
   const id = await createCallback({ ...body, logged_by: user.name });
+  notifyProject("callback_new", body.project_id, (project) => ({
+    title: "Warranty callback opened",
+    urgent: true,
+    facts: [
+      { name: "Project", value: project.slice(0, 120) },
+      { name: "Issue", value: String(body.issue).slice(0, 200) },
+      { name: "Logged by", value: user.name },
+    ],
+  }));
   return NextResponse.json({ ok: true, id });
 }
 

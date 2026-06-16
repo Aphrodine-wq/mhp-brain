@@ -30,7 +30,7 @@ function categorize(name: string): string | null {
   if (/w-?4/.test(n)) return "W-4";
   if (/certificate of liability|liability insurance|\bcoi\b/.test(n)) return "Insurance (COI)";
   if (/permit/.test(n)) return "Permit";
-  if (/contract|agreement|docusign|binder/.test(n)) return "Contract";
+  if (/contract|agreement|binder/.test(n)) return "Contract";
   if (/\bplans?\b|blueprint|architect/.test(n)) return "Plan";
   // estimates belong to the estimate pipeline (estimate_files), not the documents store
   if (/estimat/.test(n)) return null;

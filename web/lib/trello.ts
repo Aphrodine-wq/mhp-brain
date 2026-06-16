@@ -173,20 +173,23 @@ export interface TrelloTabCard {
   projectName: string | null;
 }
 
-export interface TrelloBoardGroup {
-  board: string;
+export interface TrelloProjectGroup {
+  projectId: string | null;
+  projectName: string;
   cards: TrelloTabCard[];
 }
 
 export interface TrelloTabData {
-  boards: TrelloBoardGroup[];
+  projects: TrelloProjectGroup[];
   totalCards: number;
   matched: number;
   lastSynced: string | null;
 }
 
-// Everything the Trello tab needs in one read: open cards grouped by board, with the
-// linked project (if matched) joined in, plus headline counts and the last sync time.
+// Everything the Trello tab needs in one read: open cards grouped by the job they're matched
+// to (the board/list ride along on each card as a badge), plus headline counts and last sync.
+// Grouping by project keeps the tab scannable — one collapsible dropdown per job instead of a
+// flat wall of cards. Cards that haven't matched a job collect in a trailing "Unmatched" group.
 export async function trelloTabData(): Promise<TrelloTabData> {
   await ensureCards();
   const rows = (
@@ -195,20 +198,23 @@ export async function trelloTabData(): Promise<TrelloTabData> {
                       FROM trello_cards c
                       LEFT JOIN projects p ON p.id = c.project_id
                       WHERE c.closed = FALSE
-                      ORDER BY c.board ASC, c.list ASC, c.last_activity DESC`)
+                      ORDER BY c.list ASC, c.last_activity DESC`)
   ).rows;
 
-  const byBoard = new Map<string, TrelloBoardGroup>();
+  const byProject = new Map<string, TrelloProjectGroup>();
   let matched = 0;
   let lastSynced: string | null = null;
   for (const r of rows) {
-    const board = String(r.board ?? "—");
-    if (!byBoard.has(board)) byBoard.set(board, { board, cards: [] });
     const projectId = r.project_id ? String(r.project_id) : null;
     if (projectId) matched++;
     const syncedAt = r.synced_at ? String(r.synced_at) : null;
     if (syncedAt && (!lastSynced || syncedAt > lastSynced)) lastSynced = syncedAt;
-    byBoard.get(board)!.cards.push({
+    // null project_id all funnels into one "__unmatched" bucket keyed apart from real jobs
+    const key = projectId ?? "__unmatched";
+    if (!byProject.has(key)) {
+      byProject.set(key, { projectId, projectName: r.project_name ? String(r.project_name) : "Unmatched", cards: [] });
+    }
+    byProject.get(key)!.cards.push({
       name: String(r.name),
       list: String(r.list ?? ""),
       url: String(r.url ?? ""),
@@ -218,7 +224,13 @@ export async function trelloTabData(): Promise<TrelloTabData> {
       projectName: r.project_name ? String(r.project_name) : null,
     });
   }
-  return { boards: [...byBoard.values()], totalCards: rows.length, matched, lastSynced };
+  // matched jobs A→Z, the unmatched bucket pinned last
+  const projects = [...byProject.values()].sort((a, b) => {
+    if (!a.projectId) return 1;
+    if (!b.projectId) return -1;
+    return a.projectName.localeCompare(b.projectName);
+  });
+  return { projects, totalCards: rows.length, matched, lastSynced };
 }
 
 export async function trelloCardsForProject(projectId: string): Promise<TrelloCardRow[]> {
