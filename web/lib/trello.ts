@@ -39,6 +39,16 @@ export async function trelloToken(): Promise<string> {
   return conn.accessToken;
 }
 
+// True only once the member token has been granted (Connect flow on Integrations).
+// isConfigured("trello") only checks the API key env — that's the lock; this is the key.
+export async function trelloConnected(): Promise<boolean> {
+  const r = await db.execute({
+    sql: "SELECT 1 FROM oauth_connections WHERE provider = ? LIMIT 1",
+    args: ["trello"],
+  });
+  return r.rows.length > 0;
+}
+
 export async function trelloMe(token: string): Promise<{ username: string; fullName: string }> {
   const res = await fetch(`${API}/members/me?key=${trelloKey()}&token=${token}&fields=username,fullName`);
   if (!res.ok) throw new Error(`Trello token check failed: ${res.status}`);
