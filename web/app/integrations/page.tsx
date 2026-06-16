@@ -17,8 +17,8 @@ import SiteCheckPanel from "./SiteCheckPanel";
 
 export const dynamic = "force-dynamic";
 
-export default async function IntegrationsPage({ searchParams }: { searchParams: Promise<{ oauth?: string }> }) {
-  const [{ oauth }, user, conns] = await Promise.all([searchParams, currentUser(), listConnections()]);
+export default async function IntegrationsPage({ searchParams }: { searchParams: Promise<{ oauth?: string; detail?: string }> }) {
+  const [{ oauth, detail }, user, conns] = await Promise.all([searchParams, currentUser(), listConnections()]);
   if (!user) redirect("/login");
 
   if (user.role !== "admin" && user.role !== "ceo") {
@@ -37,7 +37,7 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
   let trelloConnectUrl: string | null = null;
   if (trelloConfigured) {
     const { trelloAuthorizeUrl, appBaseUrl } = await import("@/lib/trello");
-    trelloConnectUrl = trelloAuthorizeUrl(`${appBaseUrl()}/integrations/trello`);
+    trelloConnectUrl = trelloAuthorizeUrl(`${await appBaseUrl()}/integrations/trello`);
   }
   const providers: ProviderState[] = [
     { id: "quickbooks", label: "QuickBooks", configured: isConfigured("quickbooks"), connection: conn("quickbooks") },
@@ -58,7 +58,7 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
         Connect company accounts to feed the brain real numbers — job costs, invoices, and team
         conversations. Every connection is read-only: nothing is ever changed in the source system.
       </div>
-      <Connections providers={providers} oauthResult={oauth ?? null} />
+      <Connections providers={providers} oauthResult={oauth ?? null} oauthDetail={detail ?? null} />
       <TwilioPanel configured={twilioConfigured()} openphone={openphoneConfigured()} />
       <AlertsPanel configured={alertsConfigured()} />
       <WeatherPanel />

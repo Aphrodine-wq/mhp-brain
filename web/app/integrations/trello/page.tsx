@@ -13,8 +13,12 @@ export default function TrelloCallbackPage() {
   useEffect(() => {
     const token = new URLSearchParams(window.location.hash.slice(1)).get("token");
     if (!token) {
-      setStatus("No token returned — Trello may have been denied.");
-      const t = setTimeout(() => router.replace("/integrations?oauth=error-trello"), 1500);
+      const detail = "Trello returned no token — the API key may be wrong, or access wasn't approved.";
+      setStatus(detail);
+      const t = setTimeout(
+        () => router.replace(`/integrations?oauth=error-trello&detail=${encodeURIComponent(detail)}`),
+        1500,
+      );
       return () => clearTimeout(t);
     }
     (async () => {
@@ -23,7 +27,13 @@ export default function TrelloCallbackPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),
       });
-      router.replace(r.ok ? "/integrations?oauth=connected-trello" : "/integrations?oauth=error-trello");
+      if (r.ok) {
+        router.replace("/integrations?oauth=connected-trello");
+        return;
+      }
+      const data = await r.json().catch(() => ({}));
+      const detail = (data as { error?: string }).error ?? "Connection failed.";
+      router.replace(`/integrations?oauth=error-trello&detail=${encodeURIComponent(detail)}`);
     })();
   }, [router]);
   /* eslint-enable react-hooks/set-state-in-effect */

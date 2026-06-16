@@ -71,9 +71,11 @@ const ICONS: Record<ProviderState["id"], React.ReactNode> = {
 export default function Connections({
   providers,
   oauthResult,
+  oauthDetail,
 }: {
   providers: ProviderState[];
   oauthResult: string | null;
+  oauthDetail?: string | null;
 }) {
   const [gmailBox, setGmailBox] = useState("");
   const [syncing, setSyncing] = useState<string | null>(null); // which sync is running
@@ -97,7 +99,7 @@ export default function Connections({
       ? { ok: true, text: `Connected successfully.` }
       : oauthResult.startsWith("disconnected")
         ? { ok: true, text: `Disconnected.` }
-        : { ok: false, text: `Connection failed. Try again or check your settings.` }
+        : { ok: false, text: oauthDetail ? `Connection failed: ${oauthDetail}` : `Connection failed. Try again or check your settings.` }
     : null;
 
   useEffect(() => {

@@ -36,7 +36,7 @@ export default async function TrelloPage() {
   // Without it the sync can't authenticate, so say that plainly instead of "no cards".
   const connected = await trelloConnected().catch(() => false);
   if (!connected) {
-    const connectUrl = trelloAuthorizeUrl(`${appBaseUrl()}/integrations/trello`);
+    const connectUrl = trelloAuthorizeUrl(`${await appBaseUrl()}/integrations/trello`);
     return (
       <section className="view">
         <h2>Trello</h2>

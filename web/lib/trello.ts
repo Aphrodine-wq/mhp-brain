@@ -2,6 +2,7 @@
 // user-granted member token (read-only, never expires) captured by /integrations/trello.
 // Sync pulls every open card, matches cards to brain projects by name, and stores them
 // app-side so project pages can show where each job sits on the board.
+import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { loadConnection } from "@/lib/oauth/store";
 import { matchProject } from "@/lib/match-project";
@@ -15,11 +16,21 @@ export function trelloKey(): string {
   return k;
 }
 
-// Base URL the Trello token flow returns to. APP_BASE_URL wins if set; otherwise we fall
-// back to Vercel's auto-injected production domain so Connect works with zero extra config.
-// localhost is the last resort (local dev only). This removes the old footgun where an
-// unset APP_BASE_URL silently sent the token grant to localhost and dropped it.
-export function appBaseUrl(): string {
+// Base URL the Trello token flow returns to. CRITICAL: it must match the domain the user
+// is actually on, or the token grant lands on a different host where the session cookie
+// doesn't exist and /api/trello/connect 401s. So we derive it from the live request host
+// first; env/Vercel/localhost are only fallbacks when no request scope is available.
+export async function appBaseUrl(): Promise<string> {
+  try {
+    const h = await headers();
+    const host = h.get("host");
+    if (host) {
+      const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+      return `${proto}://${host}`;
+    }
+  } catch {
+    /* not inside a request — fall through to configured values */
+  }
   if (process.env.APP_BASE_URL) return process.env.APP_BASE_URL.replace(/\/+$/, "");
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
   return "http://localhost:3000";
