@@ -34,7 +34,7 @@ export default function WeatherBanner() {
   const wet = days.find((d) => d.rain >= 40);
 
   return (
-    <div className="banner" style={{ marginTop: 14 }}>
+    <div className="wx-banner">
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden>
         <circle cx="9" cy="9" r="4.5" fill="#FBBC04" />
         <path d="M7 18a4.2 4.2 0 0 1 .4-8.4 5.4 5.4 0 0 1 10.4 1.5A3.5 3.5 0 0 1 17.5 18z" fill="#9bb7e6" stroke="#5b87c9" strokeWidth=".8" />

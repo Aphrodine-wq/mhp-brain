@@ -286,7 +286,12 @@ small.j{color:var(--muted);font-size:11px}
 .banner{background:#eef3fb;border:1px solid #d6e2f4;border-radius:var(--r-lg);padding:14px 18px;margin:18px 0 6px;
   font-size:13.5px;color:var(--navy);display:flex;gap:10px;align-items:center}
 .banner b{color:var(--navy)}
-.banner .wx-flag{color:var(--warn);font-weight:600}
+/* home weather line — deliberately quiet: a thin bordered strip, not the heavy navy banner,
+   with breathing room above/below so it doesn't crowd the title or the "Active now" header */
+.wx-banner{display:flex;align-items:center;gap:9px;margin:18px 0 22px;padding:10px 14px;
+  background:var(--paper);border:1px solid var(--line);border-radius:var(--r);
+  font-size:13.5px;color:var(--ink-2)}
+.wx-banner .wx-flag{color:var(--warn);font-weight:600}
 .prio-panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;
   box-shadow:var(--shadow-sm);margin-bottom:26px}
 .prio-panel h3{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);

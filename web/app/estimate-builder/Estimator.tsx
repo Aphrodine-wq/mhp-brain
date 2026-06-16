@@ -109,6 +109,8 @@ export default function Estimator({
   const [detailKey, setDetailKey] = useState<number | null>(null);
   const [asmKey, setAsmKey] = useState<string>("");
   const [asmInputs, setAsmInputs] = useState<Record<string, number>>({});
+  // templates are opt-in — hidden by default so the describe-it flow owns the top of the page
+  const [showTemplates, setShowTemplates] = useState(false);
   const keyRef = useRef(0);
   const nextKey = () => ++keyRef.current;
 
@@ -258,7 +260,17 @@ export default function Estimator({
     const asm = ASSEMBLY_LIST.find((a) => a.key === asmKey);
     return (
       <section className="view">
-        {ASSEMBLY_CATEGORIES.map((cat) => {
+        <div className="row" style={{ justifyContent: "space-between", marginTop: 0, alignItems: "flex-start" }}>
+          <div>
+            <h2 style={{ margin: 0 }}>Estimate Builder</h2>
+            <div className="sub" style={{ margin: "6px 0" }}>Describe the job, or start from a template.</div>
+          </div>
+          <button className="btn ghost" aria-expanded={showTemplates} onClick={() => setShowTemplates((v) => !v)}>
+            {showTemplates ? "Hide templates" : "Templates"}
+          </button>
+        </div>
+
+        {showTemplates && ASSEMBLY_CATEGORIES.map((cat) => {
           const items = ASSEMBLY_LIST.filter((a) => a.category === cat);
           return (
             <CollapseSection
@@ -298,7 +310,7 @@ export default function Estimator({
           </div>
         )}
 
-        <div className="or-sep"><span>or describe it</span></div>
+        {(showTemplates || asm) && <div className="or-sep"><span>or describe it</span></div>}
 
         <textarea value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={PLACEHOLDER} />
         <div className="upload">

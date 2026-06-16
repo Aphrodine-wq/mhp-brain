@@ -137,7 +137,11 @@ export async function syncTrello(): Promise<TrelloSyncResult> {
     ]);
     const listName = new Map(lists.map((l) => [l.id, l.name]));
     for (const c of boardCards) {
-      const projectId = matchProject(projects, c.name)?.id ?? null;
+      // Match on the card name AND its board — boards are usually named for the client/job, so a
+      // generic card ("kitchen demo") on a board called "Kingery Reno" still ties to the right job.
+      // Additive only: the 50%-distinctive-token bar still has to clear, so it widens hits without
+      // loosening precision.
+      const projectId = matchProject(projects, `${c.name} ${board.name}`)?.id ?? null;
       if (projectId) matched++;
       cards++;
       await db.execute({
