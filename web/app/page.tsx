@@ -8,6 +8,7 @@ import { money } from "@/lib/format";
 import CeoDashboard from "./_dashboards/CeoDashboard";
 import SalesDashboard from "./_dashboards/SalesDashboard";
 import WeatherBanner from "./_dashboards/WeatherBanner";
+import GbpReviews from "./_dashboards/GbpReviews";
 
 export const dynamic = "force-dynamic";
 
@@ -53,7 +54,7 @@ export default async function Home() {
 
   return (
     <section className="view">
-      <div className="row" style={{ justifyContent: "space-between", marginTop: 0, alignItems: "flex-start" }}>
+      <div className="row" style={{ justifyContent: "flex-end", marginTop: 0, alignItems: "flex-start" }}>
         <Link className="btn" href="/estimate-builder">+ New Estimate</Link>
       </div>
 
@@ -111,6 +112,8 @@ export default async function Home() {
       <div className="morelink">
         <Link href="/projects">View all {s.projects} projects →</Link>
       </div>
+
+      <GbpReviews />
     </section>
   );
 }
