@@ -16,7 +16,6 @@ export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) 
   const [busy, setBusy] = useState<string | null>(null);
   const q = f.toLowerCase();
   const list = projects.filter((p) => p.name.toLowerCase().includes(q));
-  const activeCount = projects.filter((p) => p.status === "Active").length;
   const residential = list.filter((p) => p.category === "Residential");
   const commercial = list.filter((p) => p.category === "Commercial");
 
@@ -35,7 +34,6 @@ export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) 
     <>
       <div className="filterbar">
         <input placeholder="Filter projects…" value={f} onChange={(e) => setF(e.target.value)} />
-        <span className="sub" style={{ margin: 0 }}>{list.length} shown · {activeCount} active now</span>
       </div>
       <CategorySection title="Residential" rows={residential} filtering={q !== ""} busy={busy} setStatus={setStatus} />
       <CategorySection title="Commercial" rows={commercial} filtering={q !== ""} busy={busy} setStatus={setStatus} />

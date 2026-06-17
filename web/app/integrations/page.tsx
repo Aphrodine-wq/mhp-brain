@@ -47,10 +47,6 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
   return (
     <section className="view">
       <h2>Integrations</h2>
-      <div className="sub">
-        Connect company accounts to feed the brain real numbers — job costs, invoices, and team
-        conversations. Every connection is read-only: nothing is ever changed in the source system.
-      </div>
       <Connections providers={providers} oauthResult={oauth ?? null} oauthDetail={detail ?? null} />
       <WeatherPanel />
       <SiteCheckPanel />

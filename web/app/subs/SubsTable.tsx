@@ -98,7 +98,6 @@ export default function SubsTable({ subs }: { subs: SubRow[] }) {
     <>
       <div className="filterbar">
         <input placeholder="Filter subs…" value={f} onChange={(e) => setF(e.target.value)} />
-        <span className="sub" style={{ margin: 0 }}>{list.length} on the bench</span>
         <button className="btn" style={{ marginLeft: "auto" }} onClick={() => setShowAdd(true)}>+ Add Sub</button>
       </div>
 

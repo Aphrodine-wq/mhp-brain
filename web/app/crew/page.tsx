@@ -9,7 +9,6 @@ export default async function CrewPage() {
   return (
     <section className="view">
       <h2>Crew</h2>
-      <div className="sub">The MHP team — roles and contacts from the personnel directory.</div>
       <div className="crew-grid">
         {crew.map((m) => (
           <Link key={m.key} href={`/crew/${encodeURIComponent(m.key)}`} className="crew-card" style={{ display: "block" }}>

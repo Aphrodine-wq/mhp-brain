@@ -54,7 +54,6 @@ export default async function Home() {
   return (
     <section className="view">
       <div className="row" style={{ justifyContent: "space-between", marginTop: 0, alignItems: "flex-start" }}>
-        <h2 style={{ margin: 0 }}>North Mississippi Home Pros</h2>
         <Link className="btn" href="/estimate-builder">+ New Estimate</Link>
       </div>
 

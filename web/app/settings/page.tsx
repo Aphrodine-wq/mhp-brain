@@ -22,7 +22,6 @@ export default async function SettingsPage() {
   return (
     <section className="view">
       <h2>Settings</h2>
-      <div className="sub">Defaults for the estimator, notifications, and company info. (QuickBooks &amp; Gmail moved to Integrations.)</div>
 
       <SettingsForm />
 

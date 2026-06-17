@@ -21,10 +21,6 @@ export default async function TimePage() {
   return (
     <section className="view">
       <h2>Time</h2>
-      <div className="sub">
-        Log crew hours against jobs — the BusyBusy replacement. Hours roll up by worker (payroll)
-        and by job (costing). Read-only crews and clients never see this.
-      </div>
 
       <TimeForm
         canWrite={canWrite}

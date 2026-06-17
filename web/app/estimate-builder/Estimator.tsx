@@ -303,7 +303,6 @@ export default function Estimator({
         <div className="row" style={{ justifyContent: "space-between", marginTop: 0, alignItems: "flex-start" }}>
           <div>
             <h2 style={{ margin: 0 }}>Estimate Builder</h2>
-            <div className="sub" style={{ margin: "6px 0" }}>Describe the job, or start from a template.</div>
           </div>
           <button className="btn ghost" aria-expanded={showTemplates} onClick={() => setShowTemplates((v) => !v)}>
             {showTemplates ? "Hide templates" : "Templates"}

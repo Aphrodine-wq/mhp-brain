@@ -24,7 +24,6 @@ export default async function DocumentsPage() {
   return (
     <section className="view">
       <h2>Documents</h2>
-      <div className="sub">Everything on file, by category. Sub paperwork uploads from each sub&apos;s page too.</div>
 
       <div className="row" style={{ marginTop: 0 }}>
         <DocsUpload />

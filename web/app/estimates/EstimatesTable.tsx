@@ -20,7 +20,6 @@ export default function EstimatesTable({ estimates }: { estimates: EstimateRow[]
   const list = estimates.filter(
     (e) => e.project.toLowerCase().includes(q) || e.source.toLowerCase().includes(q),
   );
-  const total = list.reduce((s, e) => s + e.total, 0);
   const residential = list.filter((e) => e.category === "Residential");
   const commercial = list.filter((e) => e.category === "Commercial");
 
@@ -28,9 +27,6 @@ export default function EstimatesTable({ estimates }: { estimates: EstimateRow[]
     <>
       <div className="filterbar">
         <input placeholder="Filter by project or file…" value={f} onChange={(e) => setF(e.target.value)} />
-        <span className="sub" style={{ margin: 0 }}>
-          {list.length} estimates · {money(total)} total
-        </span>
       </div>
       <CategorySection title="Residential" rows={residential} filtering={q !== ""} />
       <CategorySection title="Commercial" rows={commercial} filtering={q !== ""} />

@@ -13,10 +13,6 @@ export default async function PricingPage() {
   return (
     <section className="view">
       <h2>Pricing</h2>
-      <div className="sub">
-        Tracked materials, three signals each: live market price, MHP&apos;s rate over the last 12
-        months, and the all-time baseline the estimator charges. Drift means reprice.
-      </div>
       <PricingTable materials={materials} />
     </section>
   );
