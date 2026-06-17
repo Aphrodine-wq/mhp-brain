@@ -15,9 +15,9 @@ import type { Estimate, EstimateLineItem, Client, EstimateChangeOrder } from "./
 import {
   createMHPStyles,
   groupByDivision,
-  extractAllowanceItems,
   PROJECT_TYPE_LABELS,
 } from "./mhp-styles";
+import { groupFinishSelections } from "@/lib/documents";
 import { MHPPageHeader, MHPPageFooter } from "./MHPPageLayout";
 import { MHPSectionDivider } from "./MHPSectionDivider";
 import { MHPCoverPage } from "./MHPCoverPage";
@@ -71,7 +71,18 @@ async function buildDoc(
 
   const s = createMHPStyles(StyleSheet);
   const divisions = groupByDivision(lineItems);
-  const allowanceItems = extractAllowanceItems(lineItems);
+  // Schedule A — the client-selectable finishes, grouped by selection category.
+  // These lines already live in the estimate; this is a second view, not a charge.
+  const finishGroups = groupFinishSelections(
+    lineItems,
+    (li) => li.description,
+    (li) => Number(li.extended_price) || (Number(li.quantity) || 0) * (Number(li.unit_price) || 0),
+  );
+  const allowanceTotal = finishGroups.reduce((sum, g) => sum + g.total, 0);
+  // Descriptions on Schedule A — used to flag the matching lines in the estimate sheet.
+  const allowanceDescriptions = new Set(
+    finishGroups.flatMap((g) => g.items.map((i) => i.description)),
+  );
   const projectDesc = buildProjectDesc(estimate);
 
   const estimateDate = new Date(estimate.created_at).toLocaleDateString("en-US", {
@@ -177,6 +188,7 @@ async function buildDoc(
           grandTotal={Number(estimate.grand_total)}
           squareFootage={estimate.square_footage}
           costPerSqft={estimate.cost_per_sqft}
+          allowanceDescriptions={allowanceDescriptions}
           s={s}
           View={View}
           Text={Text}
@@ -207,7 +219,8 @@ async function buildDoc(
       <Page size="LETTER" style={s.page}>
         <MHPPageHeader {...headerFooterProps} />
         <MHPAllowancesPayment
-          allowanceItems={allowanceItems}
+          finishGroups={finishGroups}
+          allowanceTotal={allowanceTotal}
           grandTotal={Number(estimate.grand_total)}
           s={s}
           View={View}

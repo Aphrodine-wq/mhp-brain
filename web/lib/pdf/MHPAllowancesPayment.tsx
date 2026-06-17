@@ -1,12 +1,16 @@
 /**
- * Section 3: Materials Allowance Worksheet + Payment Schedule
- * Owner allowance items table + payment schedule by construction phase.
+ * Section 3: Finish Selections & Allowance Schedule (Schedule A) + Payment Schedule.
+ * The finish schedule is grouped by selection category (cabinetry, counters,
+ * flooring, fixtures, ...) with a budgeted allowance and a blank column the owner
+ * fills in with their actual selection. These lines are already priced in the
+ * estimate — this is a second VIEW of them, not a second charge.
  */
-import type { EstimateLineItem } from "./types";
+import type { FinishGroup } from "@/lib/documents";
 import { fmtCurrency, fmtCurrencyDec } from "./mhp-styles";
 
 interface MHPAllowancesPaymentProps {
-  allowanceItems: EstimateLineItem[];
+  finishGroups: FinishGroup[];
+  allowanceTotal: number;
   grandTotal: number;
   s: any;
   View: any;
@@ -28,18 +32,13 @@ const PAYMENT_PHASES = [
 ];
 
 export function MHPAllowancesPayment({
-  allowanceItems,
+  finishGroups,
+  allowanceTotal,
   grandTotal,
   s,
   View,
   Text,
 }: MHPAllowancesPaymentProps) {
-  const totalAllowances = allowanceItems.reduce(
-    (sum, li) =>
-      sum + (Number(li.extended_price) || (Number(li.quantity) || 0) * (Number(li.unit_price) || 0)),
-    0
-  );
-
   // Calculate payment schedule amounts
   const phases = PAYMENT_PHASES.map((phase, idx) => {
     if (idx === PAYMENT_PHASES.length - 1) {
@@ -52,39 +51,62 @@ export function MHPAllowancesPayment({
 
   return (
     <>
-      {/* Owner Allowances */}
-      <Text style={s.sectionTitle}>Owner Allowances</Text>
+      {/* ── Finish Selections & Allowance Schedule (Schedule A) ── */}
+      <Text style={s.sectionTitle}>Finish Selections &amp; Allowance Schedule</Text>
 
       <Text style={s.bodyText}>
-        The following items are included in the contract as allowances. The owner will select specific products/materials. If selections exceed the allowance, the owner pays the difference. If under, the savings are credited to the owner.
+        The budgets below are carried in the contract for the finishes you select. Make your selections within each
+        budget; if a selection comes in over its allowance, the difference is added by change order (plus 12% overhead
+        and profit), and any amount under is credited back to you. Use the right column to record your selection.
       </Text>
 
-      <View style={s.allowanceHeader}>
-        <Text style={[s.tableHeaderText, s.allowanceColItem]}>Allowance Item</Text>
-        <Text style={[s.tableHeaderText, s.allowanceColAmount]}>Budget Amount</Text>
-      </View>
-
-      {allowanceItems.map((li, idx) => {
-        const extended = Number(li.extended_price) || (Number(li.quantity) || 0) * (Number(li.unit_price) || 0);
-        return (
-          <View
-            key={li.id ?? idx}
-            style={[s.allowanceRow, idx % 2 === 1 ? s.tableRowAlt : {}]}
-          >
-            <Text style={[s.tableCell, s.allowanceColItem]}>{li.description}</Text>
-            <Text style={[s.tableCellRight, s.allowanceColAmount]}>
-              {fmtCurrency(extended)}
-            </Text>
+      {finishGroups.length === 0 ? (
+        <Text style={s.bodyText}>No selection-dependent finishes on this estimate.</Text>
+      ) : (
+        <>
+          {/* Column header */}
+          <View style={s.allowanceHeader}>
+            <Text style={[s.tableHeaderText, s.allowanceColItem]}>Finish Item</Text>
+            <Text style={[s.tableHeaderText, s.allowanceColAmount]}>Budget Allowance</Text>
+            <Text style={[s.tableHeaderText, s.allowanceColSelect]}>Your Selection</Text>
           </View>
-        );
-      })}
 
-      <View style={s.allowanceTotalRow}>
-        <Text style={s.divisionTotalLabel}>Total Allowances:</Text>
-        <Text style={s.divisionTotalValue}>{fmtCurrency(totalAllowances)}</Text>
-      </View>
+          {finishGroups.map((group) => (
+            <View key={group.category} wrap={false}>
+              {/* Category subhead */}
+              <View style={s.allowanceCategoryRow}>
+                <Text style={s.allowanceCategoryName}>{group.category}</Text>
+                <Text style={s.allowanceCategoryTotal}>{fmtCurrency(group.total)}</Text>
+              </View>
 
-      {/* Payment Schedule */}
+              {/* Items */}
+              {group.items.map((item, idx) => (
+                <View key={idx} style={[s.allowanceRow, idx % 2 === 1 ? s.tableRowAlt : {}]}>
+                  <Text style={[s.tableCell, s.allowanceColItem]}>{item.description}</Text>
+                  <Text style={[s.tableCellRight, s.allowanceColAmount]}>{fmtCurrency(item.amount)}</Text>
+                  <View style={[s.allowanceColSelect]}>
+                    <View style={s.allowanceSelectLine} />
+                  </View>
+                </View>
+              ))}
+            </View>
+          ))}
+
+          {/* Grand total */}
+          <View style={s.allowanceTotalRow}>
+            <Text style={s.divisionTotalLabel}>Total Allowances Carried:</Text>
+            <Text style={s.divisionTotalValue}>{fmtCurrency(allowanceTotal)}</Text>
+          </View>
+
+          <Text style={s.reconcileNote}>
+            Allowances are included in the contract price and reconciled to your actual selections at the time they are
+            made. Over-allowance selections are billed by signed change order at cost plus 12%; under-allowance savings
+            are credited in the final payment. No markup games — just the real number.
+          </Text>
+        </>
+      )}
+
+      {/* ── Payment Schedule ── */}
       <Text style={s.sectionTitle}>Payment Schedule</Text>
 
       <View style={s.paymentHeader}>

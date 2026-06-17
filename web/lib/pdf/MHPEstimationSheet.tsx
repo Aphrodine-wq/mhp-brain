@@ -12,6 +12,9 @@ interface MHPEstimationSheetProps {
   grandTotal: number;
   squareFootage: number | null;
   costPerSqft: number | null;
+  // Descriptions that map to Schedule A (finish selections) — flagged inline so the
+  // client can see which estimate lines they get to choose. Membership by description.
+  allowanceDescriptions?: Set<string>;
   s: any;
   View: any;
   Text: any;
@@ -22,6 +25,7 @@ export function MHPEstimationSheet({
   grandTotal,
   squareFootage,
   costPerSqft,
+  allowanceDescriptions,
   s,
   View,
   Text,
@@ -61,7 +65,12 @@ export function MHPEstimationSheet({
                 style={[s.tableRow, idx % 2 === 1 ? s.tableRowAlt : {}]}
               >
                 <Text style={[s.tableCell, s.colNum]}>{lineNum}</Text>
-                <Text style={[s.tableCell, s.colDesc]}>{li.description}</Text>
+                <Text style={[s.tableCell, s.colDesc]}>
+                  {li.description}
+                  {allowanceDescriptions?.has(li.description) ? (
+                    <Text style={s.allowanceMarker}>  (selection)</Text>
+                  ) : null}
+                </Text>
                 <Text style={[s.tableCellRight, s.colQty]}>
                   {qty.toLocaleString("en-US")}
                 </Text>
@@ -109,17 +118,17 @@ export function MHPEstimationSheet({
 
         {/* Grand total */}
         <View style={s.summaryGrandRow}>
-          <Text style={s.summaryGrandLabel}>**TOTAL ESTIMATE</Text>
-          <Text style={s.summaryGrandValue}>**{fmtCurrency(grandTotal)}</Text>
+          <Text style={s.summaryGrandLabel}>TOTAL ESTIMATE</Text>
+          <Text style={s.summaryGrandValue}>{fmtCurrency(grandTotal)}</Text>
         </View>
 
         {squareFootage && squareFootage > 0 ? (
           <View style={[s.summaryGrandRow, { marginTop: 0 }]}>
             <Text style={s.summaryGrandLabel}>
-              **Cost Per Sqft ({squareFootage.toLocaleString("en-US")} sqft)
+              Cost Per Sqft ({squareFootage.toLocaleString("en-US")} sqft)
             </Text>
             <Text style={s.summaryGrandValue}>
-              **${fmtDec(costPerSqft ?? grandTotal / squareFootage)}/sqft
+              ${fmtDec(costPerSqft ?? grandTotal / squareFootage)}/sqft
             </Text>
           </View>
         ) : null}

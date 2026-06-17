@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { money } from "@/lib/format";
-import { isAllowance, scopeOfServices, buildContractArticles, MHP_CONTRACTOR } from "@/lib/documents";
+import { groupFinishSelections, scopeOfServices, buildContractArticles, MHP_CONTRACTOR, type FinishGroup } from "@/lib/documents";
 import { ESTIMATE_SCOPE } from "@/lib/line-detail";
 
 export interface PacketLine {
@@ -67,8 +67,11 @@ export default function ClientPacket({
   const tax = bid * ((taxPct || 0) / 100);
   const grand = bid + tax;
 
-  const allowances = priced.filter(isAllowance);
-  const allowanceTotal = allowances.reduce((s, l) => s + total(l), 0);
+  // Schedule A — client-selectable finishes grouped by category. These lines are
+  // already in the estimate; this is a second view, and its total is what the
+  // contract references as the allowance amount.
+  const finishGroups = groupFinishSelections(priced, (l) => l.description, (l) => total(l));
+  const allowanceTotal = finishGroups.reduce((s, g) => s + g.total, 0);
   const scope = scopeOfServices(lines.map((l) => l.division));
 
   return (
@@ -128,29 +131,39 @@ export default function ClientPacket({
         <p className="contract-foot">{MHP_CONTRACTOR.entity} · {MHP_CONTRACTOR.address} · {MHP_CONTRACTOR.license}</p>
       </article>
 
-      {/* ── 3. PROJECT ALLOWANCES ── */}
+      {/* ── 3. FINISH SELECTIONS & ALLOWANCE SCHEDULE ── */}
       <article className="doc-page">
-        <h2 className="doc-h">Project Allowances</h2>
+        <h2 className="doc-h">Finish Selections &amp; Allowance Schedule</h2>
         <p className="doc-lead">
-          Allowances are budget figures for selection-dependent items. The final cost follows your selections and
-          adjusts the contract sum up or down by change order — no markup games, just the real number.
+          The budgets below are carried in the contract for the finishes you select. Make your selections within each
+          budget — if a selection comes in over its allowance, the difference is added by change order (plus 12%
+          overhead and profit), and any amount under is credited back to you. Use the right column to record your
+          selection.
         </p>
         <table className="doc-table">
-          <thead><tr><th>Allowance</th><th className="n">Budget</th></tr></thead>
+          <thead>
+            <tr>
+              <th>Finish Item</th>
+              <th className="n">Budget Allowance</th>
+              <th>Your Selection</th>
+            </tr>
+          </thead>
           <tbody>
-            {allowances.length ? allowances.map((l, i) => (
-              <tr key={i}>
-                <td>{l.description}{l.detail && <div className="line-detail">{l.detail}</div>}</td>
-                <td className="n">{money(total(l))}</td>
-              </tr>
+            {finishGroups.length ? finishGroups.map((group) => (
+              <FinishGroupRows key={group.category} group={group} />
             )) : (
-              <tr><td colSpan={2}>No allowance items on this estimate.</td></tr>
+              <tr><td colSpan={3}>No selection-dependent finishes on this estimate.</td></tr>
             )}
           </tbody>
-          {allowances.length > 0 && (
-            <tfoot><tr><td>Total allowances carried</td><td className="n"><b>{money(allowanceTotal)}</b></td></tr></tfoot>
+          {finishGroups.length > 0 && (
+            <tfoot><tr><td>Total allowances carried</td><td className="n"><b>{money(allowanceTotal)}</b></td><td /></tr></tfoot>
           )}
         </table>
+        <p className="line-detail" style={{ marginTop: 14 }}>
+          Allowances are included in the contract price and reconciled to your actual selections at the time they are
+          made. Over-allowance selections are billed by signed change order at cost plus 12%; under-allowance savings
+          are credited in the final payment.
+        </p>
       </article>
 
       {/* ── 4. CLIENT ESTIMATE ── */}
@@ -183,6 +196,25 @@ export default function ClientPacket({
         </div>
       </article>
     </section>
+  );
+}
+
+function FinishGroupRows({ group }: { group: FinishGroup }) {
+  return (
+    <>
+      <tr className="div-sum">
+        <td>{group.category}</td>
+        <td className="n">{money(group.total)}</td>
+        <td />
+      </tr>
+      {group.items.map((item, i) => (
+        <tr key={i} className="sub-line">
+          <td>&nbsp;&nbsp;{item.description}</td>
+          <td className="n">{money(item.amount)}</td>
+          <td><span style={{ display: "block", borderBottom: "1px solid #d0d5dd", minHeight: 16 }} /></td>
+        </tr>
+      ))}
+    </>
   );
 }
 

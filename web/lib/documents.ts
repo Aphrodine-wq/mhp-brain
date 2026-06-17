@@ -22,6 +22,100 @@ export function isAllowance(line: { description: string; jobs?: number; unit?: s
   return line.jobs === 0 || norm(line.unit) === "allowance" || ALLOWANCE_NAMES.has(norm(line.description));
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// FINISH SELECTIONS (Schedule A) — the items the owner actually picks. Each is a
+// line already priced in the estimate; this is a second VIEW of those lines, not
+// a second charge. The budgeted amount is the material/fixture side (labor lines
+// stay in the estimate and never appear here). Over a budget → change order +12%;
+// under → credit (contract Articles 2 & 4).
+//
+// Keyed by canon(description) — the same normalization the catalog uses — so the
+// proven catalog line descriptions map straight onto a client-facing category.
+// ─────────────────────────────────────────────────────────────────────────────
+export const FINISH_CATEGORY_ORDER = [
+  "Cabinetry",
+  "Countertops & Backsplash",
+  "Flooring",
+  "Tile & Surrounds",
+  "Plumbing Fixtures",
+  "Lighting",
+  "Appliances",
+  "Doors & Hardware",
+  "Windows",
+  "Interior Paint & Color",
+  "Exterior Finish",
+] as const;
+
+export type FinishCategory = (typeof FINISH_CATEGORY_ORDER)[number];
+
+// canon(description) → finish category. Only material/fixture/selection lines are
+// listed; labor lines (e.g. "countertop labor") are intentionally absent.
+const FINISH_CATEGORIES: Record<string, FinishCategory> = {
+  "kitchen cabinets": "Cabinetry",
+  "laundry cabinets": "Cabinetry",
+  "cabinet & drawer hardware": "Cabinetry",
+  "countertop material": "Countertops & Backsplash",
+  "backsplash material": "Countertops & Backsplash",
+  "lvt flooring - materials": "Flooring",
+  "floor tile": "Flooring",
+  "shower tile": "Tile & Surrounds",
+  "plumbing fixtures": "Plumbing Fixtures",
+  "lighting fixtures": "Lighting",
+  appliances: "Appliances",
+  "kitchen appliances": "Appliances",
+  "laundry appliances": "Appliances",
+  "interior doors": "Doors & Hardware",
+  "exterior doors": "Doors & Hardware",
+  "door hardware": "Doors & Hardware",
+  windows: "Windows",
+  "interior paint material": "Interior Paint & Color",
+  "siding material": "Exterior Finish",
+  "shingle roofing material": "Exterior Finish",
+};
+
+/** The finish category a line belongs to (for Schedule A), or null if it isn't a
+ *  client-selectable finish. */
+export function classifyFinish(description: string): FinishCategory | null {
+  return FINISH_CATEGORIES[norm(description)] ?? null;
+}
+
+export interface FinishItem {
+  description: string;
+  amount: number;
+}
+export interface FinishGroup {
+  category: FinishCategory;
+  items: FinishItem[];
+  total: number;
+}
+
+/** Group any line shape into the finish-selection schedule. Callers supply the
+ *  description + budgeted amount accessors so this stays decoupled from the two
+ *  line types (PacketLine and the PDF's EstimateLineItem). Empty groups dropped;
+ *  output follows FINISH_CATEGORY_ORDER. */
+export function groupFinishSelections<T>(
+  lines: T[],
+  getDescription: (l: T) => string,
+  getAmount: (l: T) => number,
+): FinishGroup[] {
+  const byCategory = new Map<FinishCategory, FinishItem[]>();
+  for (const line of lines) {
+    const category = classifyFinish(getDescription(line));
+    if (!category) continue;
+    const amount = getAmount(line);
+    if (!(amount > 0)) continue;
+    if (!byCategory.has(category)) byCategory.set(category, []);
+    byCategory.get(category)!.push({ description: getDescription(line), amount });
+  }
+  const out: FinishGroup[] = [];
+  for (const category of FINISH_CATEGORY_ORDER) {
+    const items = byCategory.get(category);
+    if (!items?.length) continue;
+    out.push({ category, items, total: items.reduce((s, i) => s + i.amount, 0) });
+  }
+  return out;
+}
+
 export interface ScopeItem {
   division: string;
   summary: string;

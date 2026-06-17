@@ -81,105 +81,65 @@ export interface DivisionGroup {
   total: number;
 }
 
+// Pull the leading CSI number out of a division string ("Division 9: Finishes" → 9,
+// "Division 22: Plumbing" → 22). Returns null when there's no number to parse.
+function divNumberOf(division: string): number | null {
+  const m = String(division ?? "").match(/(\d+)/);
+  return m ? Number(m[1]) : null;
+}
+
+// Strip the "Division N:" prefix to get the human name ("Division 9: Finishes" →
+// "Finishes"). Falls back to the raw string, then "Other".
+function divNameOf(division: string): string {
+  return String(division ?? "").replace(/^Division\s*\d+:\s*/i, "").trim() || division || "Other";
+}
+
+const lineAmount = (li: EstimateLineItem): number =>
+  Number(li.extended_price) || (Number(li.quantity) || 0) * (Number(li.unit_price) || 0);
+
 /**
- * Groups line items by division based on the line_number prefix.
- * Line numbers like 1.xx, 3.11, 17.15 map to DIV 1, DIV 3, DIV 17.
- * Falls back to grouping by category if no line numbers exist.
+ * Group line items by their real CSI division — the `category` field carries the
+ * full division string ("Division 9: Finishes") straight from the catalog, so we
+ * group on that and parse the leading number ONLY for sort order + the "DIV N"
+ * label. This is the standard CSI scheme the data actually uses; do NOT re-derive
+ * divisions from floored line numbers (that mislabeled 9=Finishes as "Cabinetry"
+ * and dropped 22/23/26/31–33 entirely).
  */
 export function groupByDivision(lineItems: EstimateLineItem[]): DivisionGroup[] {
   const divMap = new Map<string, EstimateLineItem[]>();
+  const order: string[] = []; // first-seen order, used as the tiebreak below
 
   for (const li of lineItems) {
-    // Extract division number from line_number (e.g., 3.11 -> "3", 17.15 -> "17")
-    const lineNum = li.line_number;
-    let divNum: string;
-
-    if (lineNum && lineNum > 0) {
-      divNum = String(Math.floor(lineNum));
-    } else {
-      // Fallback: use category
-      divNum = li.category ?? "other";
+    const key = li.category || "Other";
+    if (!divMap.has(key)) {
+      divMap.set(key, []);
+      order.push(key);
     }
-
-    if (!divMap.has(divNum)) divMap.set(divNum, []);
-    divMap.get(divNum)!.push(li);
+    divMap.get(key)!.push(li);
   }
 
-  // Sort divisions numerically
+  // Sort by CSI division number; numberless divisions sort last, in first-seen order.
   const sortedKeys = Array.from(divMap.keys()).sort((a, b) => {
-    const na = Number(a);
-    const nb = Number(b);
-    if (!isNaN(na) && !isNaN(nb)) return na - nb;
-    return a.localeCompare(b);
+    const na = divNumberOf(a);
+    const nb = divNumberOf(b);
+    if (na != null && nb != null) return na - nb;
+    if (na != null) return -1;
+    if (nb != null) return 1;
+    return order.indexOf(a) - order.indexOf(b);
   });
 
   return sortedKeys.map((key) => {
     const items = divMap.get(key)!;
-    // Sort items by line_number within division
+    // Stable in-division ordering by line_number (CSI item_no), original order on ties.
     items.sort((a, b) => (a.line_number ?? 0) - (b.line_number ?? 0));
 
-    const total = items.reduce(
-      (sum, li) =>
-        sum + (Number(li.extended_price) || (Number(li.quantity) || 0) * (Number(li.unit_price) || 0)),
-      0
-    );
-
-    // Try to extract a division name from the first item's category/description
-    const divName = deriveDivisionName(key, items);
-
+    const num = divNumberOf(key);
     return {
-      divisionNumber: key,
-      divisionName: divName,
+      divisionNumber: num != null ? String(num) : divNameOf(key),
+      divisionName: divNameOf(key),
       items,
-      total,
+      total: items.reduce((sum, li) => sum + lineAmount(li), 0),
     };
-  });
-}
-
-/** Derive a human-readable division name from the division number and items. */
-function deriveDivisionName(divNum: string, items: EstimateLineItem[]): string {
-  // Check if all items share a category that hints at the division name
-  const categories = new Set(items.map((i) => i.category).filter(Boolean));
-
-  // Common MHP division names by number
-  const KNOWN_DIVISIONS: Record<string, string> = {
-    "1": "General Requirements",
-    "2": "Sitework",
-    "3": "Concrete Foundation",
-    "4": "Metal Building Structure",
-    "5": "Roofing & Gutters",
-    "6": "Exterior Finish",
-    "7": "Insulation",
-    "8": "Interior Finish",
-    "9": "Cabinetry & Countertops",
-    "10": "Tile Work",
-    "11": "Flooring & Painting",
-    "12": "Plumbing",
-    "13": "Electrical",
-    "14": "HVAC",
-    "15": "Appliances",
-    "16": "Site Improvements",
-    "17": "Specialty Features",
-  };
-
-  if (KNOWN_DIVISIONS[divNum]) return KNOWN_DIVISIONS[divNum];
-
-  // Use category if only one unique category
-  if (categories.size === 1) {
-    const cat = Array.from(categories)[0]!;
-    return cat.charAt(0).toUpperCase() + cat.slice(1);
-  }
-
-  return `Division ${divNum}`;
-}
-
-/**
- * Identify allowance items from line items (items with "ALLOWANCE" or "ALLOW" in description).
- */
-export function extractAllowanceItems(lineItems: EstimateLineItem[]): EstimateLineItem[] {
-  return lineItems.filter((li) => {
-    const desc = (li.description ?? "").toUpperCase();
-    return desc.includes("ALLOWANCE") || desc.includes("ALLOW.");
   });
 }
 
@@ -571,21 +531,49 @@ export function createMHPStyles(StyleSheet: { create: (styles: Record<string, an
       lineHeight: 1.5,
     },
 
-    /* ── Allowance table ── */
+    /* ── Allowance / finish-selection schedule ── */
     allowanceHeader: {
       flexDirection: "row",
       backgroundColor: MHP_CYAN,
       paddingVertical: 5,
       paddingHorizontal: 8,
     },
-    allowanceColItem: { width: "70%" },
-    allowanceColAmount: { width: "30%", textAlign: "right" },
+    // Three-column layout: finish item · budget allowance · owner's selection (blank).
+    allowanceColItem: { width: "46%" },
+    allowanceColAmount: { width: "22%", textAlign: "right" },
+    allowanceColSelect: { width: "32%", paddingLeft: 8 },
     allowanceRow: {
       flexDirection: "row",
-      paddingVertical: 4,
+      paddingVertical: 5,
       paddingHorizontal: 8,
       borderBottomWidth: 0.5,
       borderBottomColor: GRAY_BORDER,
+      alignItems: "flex-end",
+    },
+    // Category subhead band that opens each finish group.
+    allowanceCategoryRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      backgroundColor: GRAY_LIGHT,
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+      marginTop: 8,
+    },
+    allowanceCategoryName: {
+      fontSize: 9,
+      fontFamily: "Helvetica-Bold",
+      color: DARK,
+    },
+    allowanceCategoryTotal: {
+      fontSize: 9,
+      fontFamily: "Helvetica-Bold",
+      color: GRAY_TEXT,
+    },
+    // The write-in line in the selection column.
+    allowanceSelectLine: {
+      borderBottomWidth: 0.5,
+      borderBottomColor: GRAY_BORDER,
+      minHeight: 10,
     },
     allowanceTotalRow: {
       flexDirection: "row",
@@ -593,6 +581,14 @@ export function createMHPStyles(StyleSheet: { create: (styles: Record<string, an
       paddingVertical: 6,
       paddingHorizontal: 8,
       marginTop: 4,
+      borderTopWidth: 1,
+      borderTopColor: MHP_CYAN,
+    },
+    reconcileNote: {
+      fontSize: 8,
+      color: GRAY_TEXT,
+      lineHeight: 1.5,
+      marginTop: 8,
       marginBottom: 16,
     },
 
@@ -730,6 +726,13 @@ export function createMHPStyles(StyleSheet: { create: (styles: Record<string, an
       paddingLeft: 8,
       lineHeight: 1.5,
       marginBottom: 4,
+    },
+
+    /* ── Inline marker on estimate lines that map to Schedule A ── */
+    allowanceMarker: {
+      fontSize: 7,
+      fontFamily: "Helvetica-Oblique",
+      color: MHP_CYAN_DARK,
     },
   });
 }
