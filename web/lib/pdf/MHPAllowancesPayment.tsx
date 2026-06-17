@@ -17,20 +17,6 @@ interface MHPAllowancesPaymentProps {
   Text: any;
 }
 
-/** Default payment schedule phases (percentage of grand total) */
-const PAYMENT_PHASES = [
-  { label: "1. Project Mobilization (10%)", pct: 0.10 },
-  { label: "2. Site Prep / Foundation / Slab", pct: 0.1224 },
-  { label: "3. Metal Building Erection + Roofing / Exterior", pct: 0.1335 },
-  { label: "4. Rough-in (HVAC / Electrical / Plumbing / Insulation)", pct: 0.1112 },
-  { label: "5. Drywall + Interior Finish", pct: 0.1001 },
-  { label: "6. Interior Trim / Cabinetry / Interior Painting", pct: 0.1001 },
-  { label: "7. Countertops / Tile / Flooring", pct: 0.1001 },
-  { label: "8. Appliances / MEP Top-out / Fixtures", pct: 0.0890 },
-  { label: "9. Specialty Features / Fireplace / Wood Beams", pct: 0.0668 },
-  { label: "10. Final Punchlist / Cleaning / CO", pct: 0 }, // remainder
-];
-
 export function MHPAllowancesPayment({
   finishGroups,
   allowanceTotal,
@@ -39,15 +25,19 @@ export function MHPAllowancesPayment({
   View,
   Text,
 }: MHPAllowancesPaymentProps) {
-  // Calculate payment schedule amounts
-  const phases = PAYMENT_PHASES.map((phase, idx) => {
-    if (idx === PAYMENT_PHASES.length - 1) {
-      // Last phase gets the remainder
-      const usedPct = PAYMENT_PHASES.slice(0, -1).reduce((s, p) => s + p.pct, 0);
-      return { label: phase.label, amount: Math.round(grandTotal * (1 - usedPct)) };
-    }
-    return { label: phase.label, amount: Math.round(grandTotal * phase.pct) };
-  });
+  // Canonical draw schedule — matches contract Article 2.3 and the HTML packet:
+  // 20% deposit, two equal progress draws, 5% final. The last row absorbs rounding so
+  // the rows always sum exactly to the printed total.
+  const deposit = Math.round(grandTotal * 0.2);
+  const finalPay = Math.round(grandTotal * 0.05);
+  const draw1 = Math.round((grandTotal - deposit - finalPay) / 2);
+  const draw2 = grandTotal - deposit - finalPay - draw1;
+  const phases = [
+    { label: "Initial Deposit (20% — due at signing)", amount: deposit },
+    { label: "Progress Draw — Rough-in complete", amount: draw1 },
+    { label: "Progress Draw — Finish complete", amount: draw2 },
+    { label: "Final Payment (5% — at completion)", amount: finalPay },
+  ];
 
   return (
     <>

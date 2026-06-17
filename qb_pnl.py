@@ -89,10 +89,12 @@ def load_bid_data():
     if not DB_PATH.exists():
         return bids
     conn = sqlite3.connect(DB_PATH)
+    # Only CLEAN estimates are trustworthy bids — FLAGGED (PHASE_ONLY, DUPLICATE_EXPORT)
+    # or FAILED estimates would over/double-count a project's bid.
     rows = conn.execute("""
         SELECT project_id, MAX(sum_sov_total) AS bid
         FROM estimates
-        WHERE sum_sov_total > 0
+        WHERE sum_sov_total > 0 AND parse_confidence = 'CLEAN'
         GROUP BY project_id
     """).fetchall()
     conn.close()
@@ -195,8 +197,10 @@ def compute_pnl():
         gross_margin = revenue - cost
         gross_pct = (gross_margin / revenue * 100) if revenue > 0 else 0
 
-        # Bid comparison (if mapped to a brain project)
-        bid = bids.get(project_id) if project_id else None
+        # Bid comparison (only on a TRUSTED match — a low/medium-confidence QB↔brain
+        # match would attach the wrong project's bid and fabricate a cost variance).
+        trusted_match = confidence in ("exact", "high")
+        bid = bids.get(project_id) if (project_id and trusted_match) else None
         bid_vs_actual = None
         if bid and bid > 0:
             bid_vs_actual = {

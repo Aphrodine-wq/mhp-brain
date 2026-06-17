@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { money } from "@/lib/format";
-import { groupFinishSelections, scopeOfServices, buildContractArticles, MHP_CONTRACTOR, type FinishGroup } from "@/lib/documents";
+import { groupFinishSelections, scopeOfServices, buildContractArticles, applySalesTax, MS_SALES_TAX_PCT, MHP_CONTRACTOR, type FinishGroup } from "@/lib/documents";
 import { ESTIMATE_SCOPE } from "@/lib/line-detail";
 
 export interface PacketLine {
@@ -27,7 +27,7 @@ const divName = (d: string) => d.replace(/^Division\s*\d+:\s*/, "") || "Other";
 export default function ClientPacket({
   lines,
   markup,
-  taxPct = 7,
+  taxPct = MS_SALES_TAX_PCT,
   initialShowLines = false,
   client,
   onBack,
@@ -64,8 +64,7 @@ export default function ClientPacket({
   const subtotal = priced.reduce((s, l) => s + total(l), 0);
   const bid = subtotal * (1 + (markup || 0) / 100);
   const oandp = bid - subtotal;
-  const tax = bid * ((taxPct || 0) / 100);
-  const grand = bid + tax;
+  const { tax, grand } = applySalesTax(bid, taxPct);
 
   // Schedule A — client-selectable finishes grouped by category. These lines are
   // already in the estimate; this is a second view, and its total is what the

@@ -566,7 +566,7 @@ export default function Estimator({
 
         <div className="sheet-totals">
           <div><span>Subtotal cost</span><b>{money(sub)}</b></div>
-          {prefs.cont && <div><span>Contingency ({prefs.contPct}%)</span><b>{money(cont)}</b></div>}
+          {prefs.cont && <div><span>Contingency ({prefs.contPct}%) <small className="j">internal — not in bid</small></span><b>{money(cont)}</b></div>}
           <div>
             <span>
               Markup <input className="mk" type="number" value={markup} style={{ width: 52 }} onChange={(e) => setMarkup(Number(e.target.value))} /> %

@@ -55,7 +55,10 @@ export async function projectsList(): Promise<ProjectRow[]> {
   const ov = await loadOverrides("project");
   const prows = (await db.execute("SELECT id,name,type,status,market,last_activity FROM projects")).rows;
   const erows = (
-    await db.execute("SELECT project_id,sum_sov_total,est_date FROM estimates WHERE parse_confidence!='FAILED'")
+    // Project value math: only CLEAN estimates count. FLAGGED (PHASE_ONLY / DUPLICATE_EXPORT)
+    // would overstate or double-count a project's value. List/detail views below keep FLAGGED
+    // visible with a confidence badge — this is the value rollup, not a list.
+    await db.execute("SELECT project_id,sum_sov_total,est_date FROM estimates WHERE parse_confidence='CLEAN'")
   ).rows;
 
   const estByProject = new Map<string, Est[]>();
@@ -299,7 +302,7 @@ export async function margin(): Promise<MarginResult> {
     await db.execute(`
       SELECT e.source_file,p.name,p.status,e.sum_item_total,e.sum_sov_total,e.est_date
       FROM estimates e JOIN projects p ON p.id=e.project_id
-      WHERE e.parse_confidence!='FAILED' AND e.sum_item_total>0 AND e.sum_sov_total>0
+      WHERE e.parse_confidence='CLEAN' AND e.sum_item_total>0 AND e.sum_sov_total>0
         AND p.status IN ('Active','Aging','Bid')`)
   ).rows;
   for (const r of mkRows) {
@@ -321,7 +324,7 @@ export async function margin(): Promise<MarginResult> {
       SELECT li.canon_desc,li.description,li.qty,li.unit_price,li.norm_unit
       FROM line_items li JOIN estimates e ON e.id=li.estimate_id
       WHERE li.price_kind='UNIT_RATE' AND li.qty>0 AND li.unit_price>0
-        AND e.parse_confidence!='FAILED'`)
+        AND e.parse_confidence='CLEAN'`)
   ).rows;
   for (const r of liRows) {
     const cd = r.canon_desc == null ? "" : String(r.canon_desc);
@@ -398,7 +401,7 @@ export async function liveData(): Promise<LiveResult> {
   const placeholders = pids.map(() => "?").join(",");
   const estRows = (
     await db.execute({
-      sql: `SELECT project_id,id,sum_sov_total,est_date FROM estimates WHERE parse_confidence!='FAILED' AND project_id IN (${placeholders})`,
+      sql: `SELECT project_id,id,sum_sov_total,est_date FROM estimates WHERE parse_confidence='CLEAN' AND project_id IN (${placeholders})`,
       args: pids,
     })
   ).rows;

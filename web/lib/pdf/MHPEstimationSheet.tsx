@@ -5,10 +5,16 @@
  * Division Total at bottom. Then an ESTIMATE TOTAL summary page.
  */
 import type { DivisionGroup } from "./mhp-styles";
-import { fmtCurrency, fmtCurrencyDec, fmtDec } from "./mhp-styles";
+import { fmtCurrency, fmtCurrencyDec, fmtDec, GRAY_TEXT } from "./mhp-styles";
 
 interface MHPEstimationSheetProps {
   divisions: DivisionGroup[];
+  // The reconciling breakdown — division line tables are at cost, so the summary must
+  // show cost → O&P → tax → grand or the client's own addition won't match the total.
+  costSubtotal: number;
+  overheadProfit: number;
+  salesTax: number;
+  taxPct: number;
   grandTotal: number;
   squareFootage: number | null;
   costPerSqft: number | null;
@@ -22,6 +28,10 @@ interface MHPEstimationSheetProps {
 
 export function MHPEstimationSheet({
   divisions,
+  costSubtotal,
+  overheadProfit,
+  salesTax,
+  taxPct,
   grandTotal,
   squareFootage,
   costPerSqft,
@@ -115,6 +125,21 @@ export function MHPEstimationSheet({
             </Text>
           </View>
         ))}
+
+        {/* Cost → Overhead & Profit → Tax → Grand. Mirrors the client packet so the
+            division subtotals above add up to the printed total. */}
+        <View style={[s.summaryGrandRow, { marginTop: 8 }]}>
+          <Text style={[s.summaryGrandLabel, { fontFamily: "Helvetica", color: GRAY_TEXT }]}>Subtotal (cost)</Text>
+          <Text style={[s.summaryGrandValue, { fontFamily: "Helvetica", color: GRAY_TEXT }]}>{fmtCurrency(costSubtotal)}</Text>
+        </View>
+        <View style={[s.summaryGrandRow, { marginTop: 0 }]}>
+          <Text style={[s.summaryGrandLabel, { fontFamily: "Helvetica", color: GRAY_TEXT }]}>Overhead &amp; Profit</Text>
+          <Text style={[s.summaryGrandValue, { fontFamily: "Helvetica", color: GRAY_TEXT }]}>{fmtCurrency(overheadProfit)}</Text>
+        </View>
+        <View style={[s.summaryGrandRow, { marginTop: 0 }]}>
+          <Text style={[s.summaryGrandLabel, { fontFamily: "Helvetica", color: GRAY_TEXT }]}>MS Sales Tax ({taxPct}%)</Text>
+          <Text style={[s.summaryGrandValue, { fontFamily: "Helvetica", color: GRAY_TEXT }]}>{fmtCurrency(salesTax)}</Text>
+        </View>
 
         {/* Grand total */}
         <View style={s.summaryGrandRow}>

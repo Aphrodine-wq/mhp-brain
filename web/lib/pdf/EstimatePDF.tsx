@@ -17,7 +17,7 @@ import {
   groupByDivision,
   PROJECT_TYPE_LABELS,
 } from "./mhp-styles";
-import { groupFinishSelections } from "@/lib/documents";
+import { groupFinishSelections, applySalesTax } from "@/lib/documents";
 import { MHPPageHeader, MHPPageFooter } from "./MHPPageLayout";
 import { MHPSectionDivider } from "./MHPSectionDivider";
 import { MHPCoverPage } from "./MHPCoverPage";
@@ -83,6 +83,20 @@ async function buildDoc(
   const allowanceDescriptions = new Set(
     finishGroups.flatMap((g) => g.items.map((i) => i.description)),
   );
+
+  // Reconciling money breakdown — line/division tables render at COST (item_total), but
+  // estimate.grand_total is the marked-up SELL (sov). Show cost → O&P → tax → grand so
+  // the document adds up, and make the grand total tax-inclusive to match the HTML packet.
+  const costSubtotal = lineItems.reduce(
+    (sum, li) => sum + (Number(li.extended_price) || (Number(li.quantity) || 0) * (Number(li.unit_price) || 0)),
+    0,
+  );
+  const bid = Number(estimate.grand_total) || 0; // marked-up sell, pre-tax
+  const overheadProfit = bid - costSubtotal;
+  const { taxPct, tax: salesTax, grand } = applySalesTax(bid);
+  // One display object carries the tax-inclusive total to every section that prints a total.
+  const displayEstimate = { ...estimate, grand_total: grand };
+
   const projectDesc = buildProjectDesc(estimate);
 
   const estimateDate = new Date(estimate.created_at).toLocaleDateString("en-US", {
@@ -112,7 +126,7 @@ async function buildDoc(
       <Page size="LETTER" style={s.pageCover}>
         <MHPPageHeader {...headerFooterProps} />
         <MHPCoverPage
-          estimate={estimate}
+          estimate={displayEstimate}
           projectDesc={projectDesc}
           estimateDate={estimateDate}
           lineItemCount={lineItems.length}
@@ -135,7 +149,7 @@ async function buildDoc(
         <MHPSectionDivider
           sectionNumber={1}
           title="PROJECT PROPOSAL ESTIMATE"
-          subtitle={`${projectDesc} New Construction`}
+          subtitle={projectDesc}
           logoSrc={logoSrc}
           s={s}
           View={View}
@@ -149,7 +163,7 @@ async function buildDoc(
       <Page size="LETTER" style={s.page}>
         <MHPPageHeader {...headerFooterProps} />
         <MHPProposal
-          estimate={estimate}
+          estimate={displayEstimate}
           client={client}
           projectDesc={projectDesc}
           estimateDate={estimateDate}
@@ -185,7 +199,11 @@ async function buildDoc(
         <MHPPageHeader {...headerFooterProps} />
         <MHPEstimationSheet
           divisions={divisions}
-          grandTotal={Number(estimate.grand_total)}
+          costSubtotal={costSubtotal}
+          overheadProfit={overheadProfit}
+          salesTax={salesTax}
+          taxPct={taxPct}
+          grandTotal={grand}
           squareFootage={estimate.square_footage}
           costPerSqft={estimate.cost_per_sqft}
           allowanceDescriptions={allowanceDescriptions}
@@ -221,7 +239,7 @@ async function buildDoc(
         <MHPAllowancesPayment
           finishGroups={finishGroups}
           allowanceTotal={allowanceTotal}
-          grandTotal={Number(estimate.grand_total)}
+          grandTotal={grand}
           s={s}
           View={View}
           Text={Text}
@@ -237,7 +255,7 @@ async function buildDoc(
         <MHPPageHeader {...headerFooterProps} />
         <MHPSectionDivider
           sectionNumber={4}
-          title="PRIME CONSTRUCTION CONTRACT"
+          title="CONSTRUCTION CONTRACT"
           subtitle="Fixed Cost with Allowances"
           logoSrc={logoSrc}
           s={s}
@@ -252,8 +270,9 @@ async function buildDoc(
       <Page size="LETTER" style={s.page}>
         <MHPPageHeader {...headerFooterProps} />
         <MHPContract
-          estimate={estimate}
+          estimate={displayEstimate}
           client={client}
+          allowanceTotal={allowanceTotal}
           projectDesc={projectDesc}
           s={s}
           View={View}
@@ -286,7 +305,7 @@ async function buildDoc(
         <MHPPageHeader {...headerFooterProps} />
         <MHPChangeOrders
           estimateNumber={estimate.estimate_number}
-          grandTotal={Number(estimate.grand_total)}
+          grandTotal={grand}
           changeOrders={changeOrders}
           s={s}
           View={View}

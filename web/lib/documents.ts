@@ -116,6 +116,18 @@ export function groupFinishSelections<T>(
   return out;
 }
 
+// MS sales-tax rate applied to the bid on the client-facing total. Single source for
+// BOTH the HTML packet and the PDF packet so they never diverge. NOTE: confirm the
+// rate/applicability for residential construction with Josh's accountant — this is the
+// figure the HTML packet has always used; it's now shared rather than duplicated.
+export const MS_SALES_TAX_PCT = 7;
+
+/** Bid (marked-up sell, pre-tax) → { tax, grand } with the tax-inclusive total. */
+export function applySalesTax(bid: number, taxPct: number = MS_SALES_TAX_PCT): { taxPct: number; tax: number; grand: number } {
+  const tax = bid * (taxPct / 100);
+  return { taxPct, tax, grand: bid + tax };
+}
+
 export interface ScopeItem {
   division: string;
   summary: string;

@@ -14,7 +14,7 @@ const transaction = db.transaction as ReturnType<typeof vi.fn>;
 // the first execute inside writeOverride is the "read old value" SELECT.
 function fakeTx(oldValue: string | null = null) {
   const tx = {
-    execute: vi.fn(async (q: { sql: string }) => {
+    execute: vi.fn(async (q: { sql: string; args: unknown[] }) => {
       if (/SELECT value FROM overrides/i.test(q.sql)) {
         return { rows: oldValue === null ? [] : [{ value: oldValue }] };
       }

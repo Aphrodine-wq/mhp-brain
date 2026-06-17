@@ -12,7 +12,7 @@ const transaction = db.transaction as ReturnType<typeof vi.fn>;
 
 function fakeTx(newId = 42) {
   return {
-    execute: vi.fn(async (q: { sql: string }) => {
+    execute: vi.fn(async (q: { sql: string; args: unknown[] }) => {
       if (/INSERT INTO time_entries/i.test(q.sql)) return { rows: [{ id: newId }] };
       return { rows: [] };
     }),

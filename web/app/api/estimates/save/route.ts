@@ -1,4 +1,4 @@
-import { requireUser } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { sendAlert } from "@/lib/alerts";
 import { money } from "@/lib/format";
@@ -10,8 +10,9 @@ function slugify(s: string): string {
 
 // Save the working estimate as a project record (app-owned saved_estimates table).
 export async function POST(req: Request) {
-  const user = await requireUser();
-  if (!user) return Response.json({ error: "unauthorized" }, { status: 401 });
+  // Writing a saved_estimates row is a mutation — editor minimum, not any logged-in user.
+  const user = await requireRole("editor");
+  if (!user) return Response.json({ error: "forbidden" }, { status: 403 });
   const d = await req.json();
   const now = new Date().toISOString();
   const id = `${slugify(d.project)}-${crypto.randomUUID().slice(0, 8)}`;

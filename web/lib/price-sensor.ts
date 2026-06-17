@@ -200,7 +200,8 @@ export async function recomputeRates(): Promise<{ updated: number }> {
               FROM line_items li
               JOIN estimates e ON e.id = li.estimate_id
               WHERE LOWER(regexp_replace(li.description, '\\s+', ' ', 'g')) = ?
-                AND li.unit_price IS NOT NULL AND li.unit_price > 0`,
+                AND li.unit_price IS NOT NULL AND li.unit_price > 0
+                AND e.parse_confidence = 'CLEAN'`,
         args: [desc],
       })
     ).rows[0];
