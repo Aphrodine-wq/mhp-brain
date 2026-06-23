@@ -1,6 +1,6 @@
 # MHP Brain — What To Do (the clear board)
 
-_Updated 2026-06-16. When you feel lost or behind, read THIS, not your gut. Three
+_Updated 2026-06-23. When you feel lost or behind, read THIS, not your gut. Three
 buckets. Most of what feels "undone" is already in the first one._
 
 ## ✅ DONE — needs nothing (stop re-checking these)
@@ -10,6 +10,10 @@ buckets. Most of what feels "undone" is already in the first one._
 - **Trello board-scoping** (pull the right board, not all boards) — committed.
 - **GBP reviews display** (`ReviewsPanel`) — built; lights up automatically on first sync.
 - **Per-job P&L pipeline, daily logs, change orders, estimates, catalog** — built.
+- **Time tracking Phase 1 — the spine + foreman hour entry** — DONE & GREEN (2026-06-23).
+  `lib/time.ts` spine, `/time` form, `/api/time` route (editor+, server-side actor),
+  migration `008_time_tracking.sql`, 12 passing tests. The `actualLaborHours()` Phase 2
+  hook is already in place. Stop carrying this as a todo.
 
 ## ⏳ WAITING ON OTHER PEOPLE — you can only START these, never finish them alone
 
@@ -27,14 +31,18 @@ they're not your work anymore once you've kicked them off.
 ## 🔨 YOUR BUILD QUEUE — actually undone, 100% in your control, in order
 
 1. **Time tracking (replace BusyBusy)** ← the real project
-   - **Phase 1 — the spine + foreman hour entry**  ← IN PROGRESS (schema + `lib/time.ts` done)
-   - Phase 2 — estimate vs actual labor per job (the loop that makes the brain smarter)
+   - ✅ Phase 1 — the spine + foreman hour entry — DONE (see bucket 1)
+   - **Phase 2 — estimate vs actual labor per job (the loop that makes the brain smarter)** ← NEXT
+     Set actual hours (`actualLaborHours(projectId)`) beside the estimate's labor-hour total,
+     surface the variance per job. This is the readout that turns logged hours into a smarter
+     next bid.
    - Phase 3 — field self-punch (mobile) + payroll export
-2. _(next thing lands here when Phase 1 ships)_
+2. _(next thing lands here when Phase 2 ships)_
 
 ## 👉 RIGHT NOW
 
-Build **time-tracking Phase 1**. One thing. Don't open a second door until this one's shut.
+Build **time-tracking Phase 2** — estimate-vs-actual labor variance per job. One thing.
+Don't open a second door until this one's shut.
 
 ---
 

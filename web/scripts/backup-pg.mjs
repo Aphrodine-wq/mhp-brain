@@ -133,7 +133,9 @@ async function main() {
     ...present.flatMap((t) => ["-t", `public.${t}`]),
     "-f", raw,
   ];
-  execFileSync("pg_dump", args, { stdio: ["ignore", "inherit", "inherit"] });
+  // launchd runs with a bare PATH (no /usr/local/bin), so resolve pg_dump
+  // absolutely or the nightly backup dies with spawnSync ENOENT. Fixed 2026-06-18.
+  execFileSync(process.env.PG_DUMP ?? "/usr/local/bin/pg_dump", args, { stdio: ["ignore", "inherit", "inherit"] });
 
   await pipeline(createReadStream(raw), createGzip({ level: 9 }), createWriteStream(out));
   unlinkSync(raw);
