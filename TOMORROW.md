@@ -41,6 +41,13 @@ This is the one that unlocks per-job P&L, the loss list, and Margin Radar.
 to the 149 projects, computes per-job P&L, syncs to the dashboards. Output: the job→project map
 for your review, then the loss list, worst-first, every number traceable to a QB transaction.
 
+- [ ] **One-time after the first pull: verify the labor-account list.** The labor-variance
+      panel (Phase 2) counts QB expense lines posted to a labor account. The match list lives in
+      `LABOR_ACCOUNT_PATTERNS` in `qb_pnl.py` (currently labor/wages/payroll/crew). Dump the
+      real account names with the one-liner in that file's comment and add/remove patterns to
+      match MHP's actual chart of accounts — wrong accounts would fabricate a labor number.
+      Re-run `./qb_refresh.sh` after editing. (Code is done; this is just confirming the names.)
+
 ### Two answers to collect while you have them (admin/accountant/brother)
 
 - [ ] **Does the bookkeeper tag bills to Customer:Job?** Tagged = near-automatic matching;

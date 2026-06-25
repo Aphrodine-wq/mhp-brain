@@ -17,6 +17,9 @@ Reads:
 
 Writes:
   qb_data/qb_pnl.json            (per-job P&L with completeness scores)
+  mhp.db  qb_job_costs           (per-job actual labor/total cost, trusted matches only;
+                                  synced to Postgres by web/scripts/sync_to_pg.mjs, read
+                                  by the job page's labor-variance panel)
 """
 
 import json
@@ -83,6 +86,42 @@ def line_amounts_by_customer(txn):
     return dict(amounts)
 
 
+# Expense accounts that represent LABOR cost (vs material/other). Matched case-
+# insensitively against each expense line's AccountRef name. This is the one
+# assumption in the labor-variance path: it must be reconciled against MHP's
+# actual QuickBooks chart of accounts the first time the book is pulled — wrong
+# accounts here would fabricate a labor number, which is worse than none.
+# To verify after the QB connect:
+#   ./qb.sh -c "import json;print(sorted({l.get('AccountBasedExpenseLineDetail',{}).get('AccountRef',{}).get('name','') for b in json.load(open('qb_data/qb_bills.json')) for l in b.get('Line',[])}))"
+# then add/remove patterns below to match the real labor/payroll accounts.
+LABOR_ACCOUNT_PATTERNS = ("labor", "wages", "payroll", "crew")
+
+
+def _is_labor_account(name):
+    n = (name or "").lower()
+    return any(p in n for p in LABOR_ACCOUNT_PATTERNS)
+
+
+def labor_cost_by_customer(txn):
+    """
+    {customer_id: labor_dollars} — the subset of an expense txn's lines posted to
+    a labor account (LABOR_ACCOUNT_PATTERNS). Dollars-to-dollars, no rate assumed.
+    Only AccountBasedExpenseLineDetail lines carry an AccountRef; item-based lines
+    are skipped (they're material/assemblies, not booked labor).
+    """
+    amounts = defaultdict(float)
+    for line in txn.get("Line", []):
+        detail = line.get("AccountBasedExpenseLineDetail")
+        if not detail:
+            continue
+        if not _is_labor_account(detail.get("AccountRef", {}).get("name", "")):
+            continue
+        cid = str((detail.get("CustomerRef") or {}).get("value", "")) or customer_ref_id(txn)
+        if cid:
+            amounts[cid] += float(line.get("Amount", 0))
+    return dict(amounts)
+
+
 def load_bid_data():
     """Load bid totals per project from mhp.db (the brain's estimate data)."""
     bids = {}
@@ -127,6 +166,7 @@ def compute_pnl():
 
     # Accumulate per-job
     job_costs = defaultdict(float)       # bills + purchases
+    job_labor_cost = defaultdict(float)  # bills posted to a labor account (dollars)
     job_revenue = defaultdict(float)     # invoices
     job_collected = defaultdict(float)   # payments received
     job_credits = defaultdict(float)     # vendor credits (reduce cost)
@@ -147,6 +187,8 @@ def compute_pnl():
         for cid, amt in amounts.items():
             job_costs[cid] += amt
             job_cost_txns[cid] += 1
+        for cid, amt in labor_cost_by_customer(bill).items():
+            job_labor_cost[cid] += amt
 
     # Process vendor credits (reduce cost)
     for vc in vendor_credits:
@@ -191,6 +233,7 @@ def compute_pnl():
         cost = job_costs.get(cid, 0) - job_credits.get(cid, 0)
         revenue = job_revenue.get(cid, 0)
         collected = job_collected.get(cid, 0)
+        labor_cost = job_labor_cost.get(cid, 0)
         labor_hrs = job_labor_hours.get(cid, 0)
         has_labor = job_has_labor.get(cid, False)
 
@@ -240,6 +283,7 @@ def compute_pnl():
             "match_confidence": confidence,
             "revenue": round(revenue, 2),
             "cost": round(cost, 2),
+            "labor_cost": round(labor_cost, 2),
             "collected": round(collected, 2),
             "gross_margin": round(gross_margin, 2),
             "gross_pct": round(gross_pct, 1),
@@ -258,6 +302,47 @@ def compute_pnl():
     return results, untagged_cost, untagged_rev
 
 
+def write_job_costs(results):
+    """
+    Persist per-job actual cost to mhp.db (job_costs table) so the ETL
+    (web/scripts/sync_to_pg.mjs) carries it into Postgres, where the job page's
+    labor-variance panel reads labor_cost. Only TRUSTED matches (exact/high) with
+    a project_id are written — a loose match would attach the wrong job's cost.
+    """
+    if not DB_PATH.exists():
+        return 0
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS qb_job_costs (
+            project_id   TEXT PRIMARY KEY,
+            qb_id        TEXT,
+            labor_cost   REAL,
+            total_cost   REAL,
+            labor_hours  REAL,
+            updated_at   TEXT
+        )
+    """)
+    # Full rebuild each run — qb_pnl recomputes from the whole book every time.
+    conn.execute("DELETE FROM qb_job_costs")
+    written = 0
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc).isoformat()
+    for r in results:
+        if r.get("match_confidence") not in ("exact", "high"):
+            continue
+        pid = r.get("project_id")
+        if not pid:
+            continue
+        conn.execute(
+            "INSERT OR REPLACE INTO qb_job_costs (project_id, qb_id, labor_cost, total_cost, labor_hours, updated_at) VALUES (?,?,?,?,?,?)",
+            (pid, r.get("qb_id"), r.get("labor_cost", 0), r.get("cost", 0), r.get("labor_hours", 0), now),
+        )
+        written += 1
+    conn.commit()
+    conn.close()
+    return written
+
+
 def main():
     losses_only = "--losses" in sys.argv
     single_job = None
@@ -272,6 +357,10 @@ def main():
     out = DATA_DIR / "qb_pnl.json"
     out.write_text(json.dumps(results, indent=2))
     print(f"\n  P&L for {len(results)} jobs saved to {out}")
+
+    # Persist per-job actual cost for the dashboards (labor-variance panel reads this)
+    written = write_job_costs(results)
+    print(f"  job_costs: {written} trusted-match jobs written to mhp.db")
 
     # Summary
     profitable = [r for r in results if r["loss_tier"] == "PROFITABLE"]

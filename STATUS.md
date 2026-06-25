@@ -32,25 +32,29 @@ they're not your work anymore once you've kicked them off.
 
 1. **Time tracking (replace BusyBusy)** ← the real project
    - ✅ Phase 1 — the spine + foreman hour entry — DONE (see bucket 1)
-   - ⏳ **Phase 2 — estimate vs actual labor per job** — ESTIMATED SIDE DONE (2026-06-25).
-     Two decisions made: variance is **dollars-to-dollars from QuickBooks** (book-accurate,
-     no rate assumption), and combined "Material & Labor" estimate lines count their labor
-     **fraction** (`COMBINED_LINE_LABOR_FRACTION = 0.4`). Built `lib/labor-variance.ts`
-     (`estimatedLabor`, `laborVariance`) + "Labor (estimate vs actual)" panel on the job
-     page + 12 tests (140 total green). The estimated-labor readout is live now; the
-     **actual** side lights up the moment QuickBooks is authorized — it reads `qb_job_costs`
-     (table arrives with the QB pipe), same pattern as Margin/Collected.
-     → Remaining for Phase 2: the QB Authorize click (bucket 2) + the QB→web `qb_job_costs`
-       cost write in `qb_refresh.sh`.
+   - ⏳ **Phase 2 — estimate vs actual labor per job** — FULLY BUILT, gated on QB (2026-06-25).
+     Two decisions: variance is **dollars-to-dollars from QuickBooks** (book-accurate, no
+     rate assumption), and combined "Material & Labor" estimate lines count their labor
+     **fraction** (`COMBINED_LINE_LABOR_FRACTION = 0.4`).
+       • Estimated side (live now): `lib/labor-variance.ts` + "Labor (estimate vs actual)"
+         panel on the job page. 12 web tests.
+       • Actual side (wired, lights up on QB connect): `qb_pnl.py` isolates per-job labor
+         **cost** from QB expense lines posted to labor accounts (`LABOR_ACCOUNT_PATTERNS`),
+         writes `mhp.db.qb_job_costs` for trusted matches only; `sync_to_pg.mjs` carries it
+         to Postgres; the panel reads it. `test_labor_cost.py` proves classification + guard.
+     → Remaining for Phase 2 (both bucket 2, not solo build): the QB **Authorize click**, and
+       on first pull, **verify `LABOR_ACCOUNT_PATTERNS` against MHP's real chart of accounts**
+       (the one assumption — wrong accounts = fabricated number). After that, variance is live.
    - Phase 3 — field self-punch (mobile) + payroll export
-2. _(next thing lands here when Phase 2 fully closes — i.e. QB connected)_
+2. _(next thing lands here when Phase 2 fully closes — i.e. QB connected + accounts verified)_
 
 ## 👉 RIGHT NOW
 
-Phase 2's in-your-control half is shipped. The variance number itself is now gated on the
-**QuickBooks Authorize click** (TOMORROW.md, Part 1) — that's bucket 2, not your build.
-When QB is connected, wire `qb_refresh.sh` to write per-job labor cost into `qb_job_costs`
-and the panel completes itself.
+Phase 2 is built end-to-end — both the estimate and the QB-actual sides. What's left is
+**not your build**: (1) the QuickBooks **Authorize click** (TOMORROW.md, Part 1), and (2) a
+one-time check that the labor-account list (`LABOR_ACCOUNT_PATTERNS` in `qb_pnl.py`) matches
+MHP's real chart of accounts — the docstring there has the one-liner to dump the account
+names. Run `./qb_refresh.sh --full` after the connect and the variance panel fills itself in.
 
 ---
 

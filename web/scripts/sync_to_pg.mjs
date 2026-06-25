@@ -18,10 +18,21 @@ const DDL = {
   lump_costs: `CREATE TABLE lump_costs (item_no TEXT, canon_desc TEXT, division TEXT, description TEXT, n_jobs INTEGER, median_total DOUBLE PRECISION, p25 DOUBLE PRECISION, p75 DOUBLE PRECISION)`,
   subs: `CREATE TABLE subs (name TEXT, trade TEXT, phone TEXT, jobs INTEGER, projects TEXT, source TEXT)`,
   crew: `CREATE TABLE crew (name TEXT, role TEXT, rate TEXT, phone TEXT, email TEXT)`,
+  // Per-job actual cost from QuickBooks (qb_pnl.py). Only exists once the book has
+  // been pulled — the loop below skips it gracefully before the first QB connect.
+  qb_job_costs: `CREATE TABLE qb_job_costs (project_id TEXT PRIMARY KEY, qb_id TEXT, labor_cost DOUBLE PRECISION, total_cost DOUBLE PRECISION, labor_hours DOUBLE PRECISION, updated_at TEXT)`,
 };
 
 for (const [t, ddl] of Object.entries(DDL)) {
-  const r = await src.execute(`SELECT * FROM ${t}`);
+  let r;
+  try {
+    r = await src.execute(`SELECT * FROM ${t}`);
+  } catch {
+    // Source table not present yet (e.g. qb_job_costs before the first QB pull).
+    // Leave any existing Postgres copy untouched and move on.
+    console.log(`${t}: skipped (not in mhp.db yet)`);
+    continue;
+  }
   const cols = r.columns;
   await pool.query(`DROP TABLE IF EXISTS ${t} CASCADE`);
   await pool.query(ddl);
