@@ -21,6 +21,9 @@ const DDL = {
   // Per-job actual cost from QuickBooks (qb_pnl.py). Only exists once the book has
   // been pulled — the loop below skips it gracefully before the first QB connect.
   qb_job_costs: `CREATE TABLE qb_job_costs (project_id TEXT PRIMARY KEY, qb_id TEXT, labor_cost DOUBLE PRECISION, total_cost DOUBLE PRECISION, labor_hours DOUBLE PRECISION, updated_at TEXT)`,
+  // Realization factors from the actuals→catalog flywheel (flywheel.py). Recomputed from
+  // closed jobs each run; read by the estimator via web/lib/flywheel.ts.
+  realization_factors: `CREATE TABLE realization_factors (dimension TEXT, key TEXT, factor DOUBLE PRECISION, raw_factor DOUBLE PRECISION, n_jobs INTEGER, realization_mean DOUBLE PRECISION, realization_stdev DOUBLE PRECISION, updated_at TEXT, PRIMARY KEY (dimension, key))`,
 };
 
 for (const [t, ddl] of Object.entries(DDL)) {

@@ -24,10 +24,13 @@ echo "==> 2/4  Match transactions to jobs -> mhp.db"
 echo "==> 2.5  Labor-account check (reconcile LABOR_ACCOUNT_PATTERNS on first pull)"
 ./qb.sh qb_pnl.py --verify-accounts
 
-echo "==> 3/4  Compute per-job P&L"
+echo "==> 3/5  Compute per-job P&L"
 ./qb.sh qb_pnl.py
 
-echo "==> 4/4  Sync mhp.db -> web Postgres (the dashboards read this)"
+echo "==> 4/5  Recompute the actuals->catalog flywheel (realization factors)"
+python3 flywheel.py
+
+echo "==> 5/5  Sync mhp.db -> web Postgres (the dashboards read this)"
 ( cd web && node --env-file=.env.local scripts/sync_to_pg.mjs )
 
 echo "==> Done. Dashboards now reflect the latest QuickBooks pull."
