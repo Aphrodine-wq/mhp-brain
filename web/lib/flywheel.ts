@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { type RealizationFactor, type BidRealizationInsight, insightFrom } from "@/lib/flywheel-insight";
 
 // Read side of the actuals→catalog flywheel (flywheel.py). The pipeline learns a realization
 // factor per dimension (portfolio / job type / market) from closed jobs — actual vs bid,
@@ -6,27 +7,11 @@ import { db } from "@/lib/db";
 // an HONEST confidence gate: a factor learned from a handful of noisy closeouts must read as
 // "not enough history," never silently steer a real bid. It sharpens as QuickBooks + OCR feed
 // in more confirmed actuals; until then most reads return low/none confidence on purpose.
-
-export interface RealizationFactor {
-  dimension: string;
-  key: string;
-  factor: number;   // shrink-adjusted — the one to use for bidding
-  rawFactor: number;
-  nJobs: number;
-  mean: number;
-  stdev: number;
-}
-
-export type Confidence = "none" | "low" | "moderate" | "good";
-
-// Confidence from sample size AND spread — a wide band of realizations is untrustworthy even
-// with several jobs. Thresholds are deliberately conservative; loosen as the history grows.
-export function confidenceOf(f: RealizationFactor | null): Confidence {
-  if (!f || f.nJobs < 1) return "none";
-  if (f.nJobs < 3 || f.stdev > 0.25) return "low";
-  if (f.nJobs < 8 || f.stdev > 0.15) return "moderate";
-  return "good";
-}
+//
+// The pure compute helpers (confidenceOf / insightFrom / the types) live in flywheel-insight.ts
+// so client components can use them without the db import; re-exported here for server callers.
+export { confidenceOf, insightFrom } from "@/lib/flywheel-insight";
+export type { RealizationFactor, Confidence, BidRealizationInsight } from "@/lib/flywheel-insight";
 
 function rowToFactor(r: Record<string, unknown>): RealizationFactor {
   return {
@@ -66,43 +51,10 @@ export async function realizationForType(type: string | null | undefined): Promi
   return portfolioRealization();
 }
 
-export interface BidRealizationInsight {
-  factor: number;
-  expectedActual: number;   // bid * factor
-  deltaPct: number;         // (factor - 1) * 100 — positive = likely to run OVER the bid
-  confidence: Confidence;
-  nJobs: number;
-  basis: "type" | "portfolio";
-  note: string;
-}
-
 // For the estimator: how a bid of `bid` dollars for an optional job `type` is likely to land,
-// gated on confidence. Returns null when there's no history at all. When confidence is "low",
-// the note declines to adjust — we surface the signal but never steer a bid off thin data.
+// gated on confidence. Returns null when there's no history at all. The compute is pure
+// (insightFrom); this just supplies the factor from the DB (type bucket, else portfolio).
 export async function bidRealization(bid: number, type?: string | null): Promise<BidRealizationInsight | null> {
   if (!(bid > 0)) return null;
-  const f = await realizationForType(type);
-  if (!f) return null;
-
-  const confidence = confidenceOf(f);
-  const deltaPct = (f.factor - 1) * 100;
-  const basis: "type" | "portfolio" = f.dimension === "type" ? "type" : "portfolio";
-
-  let note: string;
-  if (confidence === "none" || confidence === "low") {
-    note = `Only ${f.nJobs} closed job${f.nJobs === 1 ? "" : "s"} with actuals${f.stdev > 0.25 ? " and a wide spread" : ""} — not enough history to adjust this bid yet.`;
-  } else {
-    const dir = deltaPct >= 0 ? "over" : "under";
-    note = `${basis === "type" ? "This job type" : "Jobs"} historically land ~${Math.abs(deltaPct).toFixed(0)}% ${dir} bid (${f.nJobs} closeouts).`;
-  }
-
-  return {
-    factor: f.factor,
-    expectedActual: bid * f.factor,
-    deltaPct,
-    confidence,
-    nJobs: f.nJobs,
-    basis,
-    note,
-  };
+  return insightFrom(await realizationForType(type), bid);
 }

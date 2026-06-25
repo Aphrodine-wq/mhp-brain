@@ -441,6 +441,8 @@ small.j{color:var(--muted);font-size:11px}
 .sheet-totals .grand{margin-top:6px;padding-top:10px;border-top:2px solid var(--navy)} /* same grand-total rule as the packet */
 .sheet-totals .grand span{font-size:11px;text-transform:uppercase;letter-spacing:.7px;font-weight:700}
 .sheet-totals .grand b{font-family:var(--disp);font-size:28px;font-weight:650;color:var(--navy);letter-spacing:-.5px}
+.sheet-totals .calib{align-items:flex-start;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:12px}
+.sheet-totals .calib small.j{font-weight:400;line-height:1.35}
 .sheet-scope{margin-top:34px;padding-top:18px;border-top:1px solid var(--line)}
 .sheet-scope .doc-sub{margin-top:0}
 .sheet-foot{margin-top:30px;padding-top:14px;border-top:1px solid var(--line-2);text-align:center;

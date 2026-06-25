@@ -8,6 +8,7 @@ import { ASSEMBLY_LIST, ASSEMBLY_CATEGORIES } from "@/lib/assemblies";
 import { detailFor, divisionDetailFor, ESTIMATE_SCOPE } from "@/lib/line-detail";
 import ClientPacket, { type ClientInfo } from "./ClientPacket";
 import CollapseSection from "../_components/CollapseSection";
+import { insightFrom, type RealizationFactor } from "@/lib/flywheel-insight";
 
 const PLACEHOLDER = "Describe the job — scope, size, finishes.";
 
@@ -45,10 +46,12 @@ export default function Estimator({
   catalog,
   initialDesc = "",
   initialClientName = "",
+  realization = null,
 }: {
   catalog: CatalogRow[];
   initialDesc?: string;
   initialClientName?: string;
+  realization?: RealizationFactor | null;
 }) {
   const [view, setView] = useState<"input" | "load" | "result" | "packet">("input");
   const [client, setClient] = useState<ClientInfo>({ project: "", clientName: initialClientName, address: "", date: "", preparedBy: "MHP Construction" });
@@ -251,6 +254,11 @@ export default function Estimator({
   const sub = lines.reduce((s, l) => s + lineTotal(l), 0);
   const cont = prefs.cont ? sub * (prefs.contPct / 100) : 0;
   const bid = sub * mk;
+
+  // Flywheel calibration — how bids of this kind have historically landed vs actuals
+  // (lib/flywheel.ts). Recomputes live with the bid. On thin/noisy history it reads
+  // "not enough history yet" rather than steering the number.
+  const calib = insightFrom(realization, bid);
 
   // Bid Guard (MARGIN_GUARD.md, Engine 2 — the slice the builder's data supports today):
   // p25 of MHP's own job history is the baseline; any line priced under it is flagged
@@ -574,6 +582,19 @@ export default function Estimator({
             <b>{money(bid - sub)}</b>
           </div>
           <div className="grand"><span>Bid</span><b>{money(bid)}</b></div>
+          {calib && (
+            <div className="calib" title="Learned from closed jobs' actual vs bid (the flywheel)">
+              <span>
+                Bid calibration
+                {calib.confidence === "good" || calib.confidence === "moderate" ? (
+                  <small className="j"> — expected actual {money(calib.expectedActual)} ({calib.deltaPct >= 0 ? "+" : ""}{calib.deltaPct.toFixed(0)}%)</small>
+                ) : (
+                  <small className="j"> — building history</small>
+                )}
+              </span>
+              <small className="j" style={{ textAlign: "right", maxWidth: 280 }}>{calib.note}</small>
+            </div>
+          )}
         </div>
 
         <div className="sheet-scope">
