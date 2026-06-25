@@ -26,15 +26,17 @@ function pyRound(x: number): number {
   return floor % 2 === 0 ? floor : floor + 1;
 }
 
-type Est = { sov: number | null; date: string };
+type Est = { sov: number | null; date: string; id: number };
 
 // app.py project_value: current bid = latest-dated estimate with non-zero total (not biggest revision).
+// est_date is filename-derived and can collide/misdate, so id breaks ties deterministically —
+// the same estimate always wins instead of depending on SQL row order.
 function projectValue(ests: Est[]): number {
-  const priced = ests.filter((e) => e.sov && e.sov > 0).map((e) => ({ sov: e.sov as number, d: e.date || "" }));
+  const priced = ests.filter((e) => e.sov && e.sov > 0).map((e) => ({ sov: e.sov as number, d: e.date || "", id: e.id }));
   if (priced.length === 0) return 0;
   const dated = priced.filter((x) => x.d);
   if (dated.length) {
-    return dated.reduce((a, b) => (b.d > a.d ? b : a)).sov;
+    return dated.reduce((a, b) => (b.d > a.d || (b.d === a.d && b.id > a.id) ? b : a)).sov;
   }
   return Math.max(...priced.map((p) => p.sov));
 }
@@ -58,14 +60,14 @@ export async function projectsList(): Promise<ProjectRow[]> {
     // Project value math: only CLEAN estimates count. FLAGGED (PHASE_ONLY / DUPLICATE_EXPORT)
     // would overstate or double-count a project's value. List/detail views below keep FLAGGED
     // visible with a confidence badge — this is the value rollup, not a list.
-    await db.execute("SELECT project_id,sum_sov_total,est_date FROM estimates WHERE parse_confidence='CLEAN'")
+    await db.execute("SELECT project_id,sum_sov_total,est_date,id FROM estimates WHERE parse_confidence='CLEAN'")
   ).rows;
 
   const estByProject = new Map<string, Est[]>();
   for (const e of erows) {
     const pid = String(e.project_id);
     if (!estByProject.has(pid)) estByProject.set(pid, []);
-    estByProject.get(pid)!.push({ sov: e.sum_sov_total as number | null, date: (e.est_date as string | null) ?? "" });
+    estByProject.get(pid)!.push({ sov: e.sum_sov_total as number | null, date: (e.est_date as string | null) ?? "", id: Number(e.id) });
   }
 
   const out: ProjectRow[] = prows.map((p) => {
@@ -683,7 +685,13 @@ export async function projectDetail(id: string): Promise<ProjectDetail | null> {
       status: o?.status ?? String(p.status),
       market: (o?.market ?? (p.market as string | null)) ?? "",
       last: (p.last_activity as string | null) ?? "",
-      value: pyRound(projectValue(erows.map((e) => ({ sov: e.sum_sov_total as number | null, date: ((e.est_date as string | null) ?? "") })))),
+      // Value rollup uses only CLEAN estimates (FLAGGED/SUPERSEDED would mis-pick the bid);
+      // the displayed `ests` list above keeps them visible with a confidence badge.
+      value: pyRound(projectValue(
+        erows
+          .filter((e) => e.parse_confidence === "CLEAN")
+          .map((e) => ({ sov: e.sum_sov_total as number | null, date: ((e.est_date as string | null) ?? ""), id: Number(e.id) })),
+      )),
       estimates: ests,
     };
   } catch {

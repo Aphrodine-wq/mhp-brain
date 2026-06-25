@@ -2,9 +2,12 @@
 Per-job Profit & Loss from downloaded QuickBooks data.
 
 Usage:
-  python qb_pnl.py                — compute P&L for all mapped jobs
-  python qb_pnl.py --losses       — show only jobs that lost money
-  python qb_pnl.py --job <name>   — detail for one job
+  python qb_pnl.py                  — compute P&L for all mapped jobs
+  python qb_pnl.py --losses         — show only jobs that lost money
+  python qb_pnl.py --job <name>     — detail for one job
+  python qb_pnl.py --verify-accounts — list QB expense accounts + which count as labor
+                                       (run once after the first pull; reconcile vs the
+                                       real chart of accounts before trusting labor numbers)
 
 Reads:
   qb_data/qb_job_map.json        (from qb_match.py)
@@ -54,36 +57,54 @@ def customer_ref_name(txn):
     return ""
 
 
+def _line_detail(line):
+    return (
+        line.get("AccountBasedExpenseLineDetail")
+        or line.get("ItemBasedExpenseLineDetail")
+        or line.get("SalesItemLineDetail")
+        or {}
+    )
+
+
+def _txn_has_line_tags(txn):
+    """True if any line carries its own CustomerRef — i.e. the txn is explicitly multi-job."""
+    return any(_line_detail(line).get("CustomerRef") for line in txn.get("Line", []))
+
+
 def line_amounts_by_customer(txn):
     """
-    Some QB transactions (Bills, Invoices) have multiple lines tagged to different jobs.
-    Return {customer_id: total_amount} across all line items.
+    Per-job dollar allocation for a multi-line QB txn (Bill / Invoice / VendorCredit).
+    Returns (amounts, unallocated):
+      amounts     {customer_id: dollars} from line-level CustomerRef tags
+      unallocated dollars that can't be safely attributed to a specific job
+
+    The safe rule: a line with its own CustomerRef goes to that job. Untagged lines are
+    folded into the header customer ONLY when NO line on the txn is tagged — a genuine
+    single-job txn. If SOME lines are tagged and some aren't, the untagged dollars are
+    AMBIGUOUS (which of the several jobs?) and must NOT be dumped on the header job — that
+    silently overstated the header and understated the rest. Those go to `unallocated` for
+    review instead of fabricating a per-job number.
     """
-    amounts = defaultdict(float)
+    tagged = defaultdict(float)
+    untagged_total = 0.0
     for line in txn.get("Line", []):
-        detail = (
-            line.get("AccountBasedExpenseLineDetail")
-            or line.get("ItemBasedExpenseLineDetail")
-            or line.get("SalesItemLineDetail")
-            or {}
-        )
-        cust_ref = detail.get("CustomerRef")
-        if cust_ref:
-            cid = str(cust_ref.get("value", ""))
-            amounts[cid] += float(line.get("Amount", 0))
+        cust_ref = _line_detail(line).get("CustomerRef")
+        if cust_ref and str(cust_ref.get("value", "")):
+            tagged[str(cust_ref.get("value", ""))] += float(line.get("Amount", 0))
         else:
-            # Untagged line — assign to the header-level customer if present
-            header_cid = customer_ref_id(txn)
-            if header_cid:
-                amounts[header_cid] += float(line.get("Amount", 0))
+            untagged_total += float(line.get("Amount", 0))
 
-    # If no line-level tagging, fall back to header
-    if not amounts:
-        cid = customer_ref_id(txn)
-        if cid:
-            amounts[cid] = float(txn.get("TotalAmt", 0))
+    if tagged:
+        # Explicit line-level tagging present → untagged dollars are ambiguous, never header.
+        return dict(tagged), untagged_total
 
-    return dict(amounts)
+    # No line-level tags → single-customer txn; header fallback is safe.
+    header_cid = customer_ref_id(txn)
+    total = untagged_total or float(txn.get("TotalAmt", 0))
+    if header_cid:
+        return {header_cid: total}, 0.0
+    # No tags and no header — nothing to attribute.
+    return {}, total
 
 
 # Expense accounts that represent LABOR cost (vs material/other). Matched case-
@@ -104,41 +125,71 @@ def _is_labor_account(name):
 
 def labor_cost_by_customer(txn):
     """
-    {customer_id: labor_dollars} — the subset of an expense txn's lines posted to
-    a labor account (LABOR_ACCOUNT_PATTERNS). Dollars-to-dollars, no rate assumed.
-    Only AccountBasedExpenseLineDetail lines carry an AccountRef; item-based lines
-    are skipped (they're material/assemblies, not booked labor).
+    (amounts, unallocated) for the subset of an expense txn's lines posted to a labor
+    account (LABOR_ACCOUNT_PATTERNS). Dollars-to-dollars, no rate assumed. Only
+    AccountBasedExpenseLineDetail lines carry an AccountRef; item-based lines are skipped
+    (they're material/assemblies, not booked labor).
+
+    Same allocation rule as line_amounts_by_customer: a labor line keeps its own
+    CustomerRef; an untagged labor line falls back to the header ONLY on a single-job txn.
+    On a multi-job txn (some lines tagged) an untagged labor line is ambiguous → unallocated,
+    never dumped on the header. Understating labor here fails safe (reads as "awaiting"),
+    where misattributing it would fabricate a per-job labor number.
     """
+    has_line_tags = _txn_has_line_tags(txn)
     amounts = defaultdict(float)
+    unallocated = 0.0
     for line in txn.get("Line", []):
         detail = line.get("AccountBasedExpenseLineDetail")
         if not detail:
             continue
         if not _is_labor_account(detail.get("AccountRef", {}).get("name", "")):
             continue
-        cid = str((detail.get("CustomerRef") or {}).get("value", "")) or customer_ref_id(txn)
+        amt = float(line.get("Amount", 0))
+        cid = str((detail.get("CustomerRef") or {}).get("value", ""))
         if cid:
-            amounts[cid] += float(line.get("Amount", 0))
-    return dict(amounts)
+            amounts[cid] += amt
+        elif not has_line_tags:
+            header_cid = customer_ref_id(txn)
+            if header_cid:
+                amounts[header_cid] += amt
+            else:
+                unallocated += amt
+        else:
+            unallocated += amt
+    return dict(amounts), unallocated
 
 
 def load_bid_data():
-    """Load bid totals per project from mhp.db (the brain's estimate data)."""
+    """Load per project from mhp.db: the bid (SOV total) AND the estimate's OWN pre-markup
+    cost (sum_item_total). Returns {project_id: {"bid": sov, "est_cost": item}}.
+
+    est_cost is the honest baseline for a cost variance — the cost the bid itself implies —
+    so we never divide the SOV by a guessed portfolio-wide markup. Bid and est_cost come
+    from the SAME estimate row, so they stay internally consistent.
+    """
     bids = {}
     if not DB_PATH.exists():
         return bids
     conn = sqlite3.connect(DB_PATH)
     # Only CLEAN estimates are trustworthy bids — FLAGGED (PHASE_ONLY, DUPLICATE_EXPORT)
-    # or FAILED estimates would over/double-count a project's bid.
+    # or FAILED estimates would over/double-count a project's bid. Pick the largest CLEAN
+    # estimate per project and carry its pre-markup cost from the same row.
     rows = conn.execute("""
-        SELECT project_id, MAX(sum_sov_total) AS bid
-        FROM estimates
-        WHERE sum_sov_total > 0 AND parse_confidence = 'CLEAN'
-        GROUP BY project_id
+        SELECT e.project_id, e.sum_sov_total AS bid, e.sum_item_total AS est_cost
+        FROM estimates e
+        JOIN (
+            SELECT project_id, MAX(sum_sov_total) AS mx
+            FROM estimates
+            WHERE sum_sov_total > 0 AND parse_confidence = 'CLEAN'
+            GROUP BY project_id
+        ) m ON m.project_id = e.project_id AND m.mx = e.sum_sov_total
+        WHERE e.parse_confidence = 'CLEAN'
+        GROUP BY e.project_id
     """).fetchall()
     conn.close()
     for r in rows:
-        bids[r[0]] = r[1]
+        bids[r[0]] = {"bid": r[1], "est_cost": r[2]}
     return bids
 
 
@@ -175,33 +226,33 @@ def compute_pnl():
     job_rev_txns = defaultdict(int)
     job_has_labor = defaultdict(bool)
 
-    untagged_cost = 0
+    untagged_cost = 0   # overhead, mis-tagged, OR ambiguous untagged lines on a multi-job txn
     untagged_rev = 0
+    untagged_labor = 0  # labor lines we couldn't safely attribute (multi-job, untagged)
 
     # Process bills (cost side)
     for bill in bills:
-        amounts = line_amounts_by_customer(bill)
-        if not amounts:
-            untagged_cost += float(bill.get("TotalAmt", 0))
-            continue
+        amounts, unalloc = line_amounts_by_customer(bill)
+        untagged_cost += unalloc
         for cid, amt in amounts.items():
             job_costs[cid] += amt
             job_cost_txns[cid] += 1
-        for cid, amt in labor_cost_by_customer(bill).items():
+        labor, labor_unalloc = labor_cost_by_customer(bill)
+        untagged_labor += labor_unalloc
+        for cid, amt in labor.items():
             job_labor_cost[cid] += amt
 
-    # Process vendor credits (reduce cost)
+    # Process vendor credits (reduce cost). Ambiguous untagged credit lines are dropped
+    # rather than guessed at a job — a credit applied to the wrong job would understate it.
     for vc in vendor_credits:
-        amounts = line_amounts_by_customer(vc)
+        amounts, _unalloc = line_amounts_by_customer(vc)
         for cid, amt in amounts.items():
             job_credits[cid] += amt
 
     # Process invoices (revenue side)
     for inv in invoices:
-        amounts = line_amounts_by_customer(inv)
-        if not amounts:
-            untagged_rev += float(inv.get("TotalAmt", 0))
-            continue
+        amounts, unalloc = line_amounts_by_customer(inv)
+        untagged_rev += unalloc
         for cid, amt in amounts.items():
             job_revenue[cid] += amt
             job_rev_txns[cid] += 1
@@ -243,15 +294,22 @@ def compute_pnl():
         # Bid comparison (only on a TRUSTED match — a low/medium-confidence QB↔brain
         # match would attach the wrong project's bid and fabricate a cost variance).
         trusted_match = confidence in ("exact", "high")
-        bid = bids.get(project_id) if (project_id and trusted_match) else None
+        bidrow = bids.get(project_id) if (project_id and trusted_match) else None
+        bid = bidrow["bid"] if bidrow else None
+        est_cost = bidrow.get("est_cost") if bidrow else None
         bid_vs_actual = None
         if bid and bid > 0:
+            # Variance vs the estimate's OWN pre-markup cost (per-job, honest). When the
+            # estimate didn't record a pre-markup cost, leave it None rather than guess a
+            # markup — a fabricated variance is worse than none.
+            bid_margin = ((bid - est_cost) / bid * 100) if (est_cost and est_cost > 0) else None
             bid_vs_actual = {
                 "bid": bid,
                 "actual_cost": cost,
                 "actual_revenue": revenue,
-                "cost_variance": cost - (bid * 0.862),  # rough: bid is SOV, cost ≈ bid / (1 + markup)
-                "margin_bid": 13.7,  # the system-wide average from ANALYSIS.md
+                "expected_cost": est_cost,                       # the estimate's own pre-markup cost
+                "cost_variance": (cost - est_cost) if est_cost else None,
+                "margin_bid": bid_margin,                        # from this estimate, not a portfolio guess
                 "margin_actual": gross_pct,
             }
 
@@ -299,7 +357,7 @@ def compute_pnl():
     # Sort by gross margin (losses first)
     results.sort(key=lambda r: r["gross_margin"])
 
-    return results, untagged_cost, untagged_rev
+    return results, untagged_cost, untagged_rev, untagged_labor
 
 
 def write_job_costs(results):
@@ -350,7 +408,35 @@ def write_job_costs(results):
     return written
 
 
+def dump_accounts():
+    """Print the distinct expense-account names QB posts to, flagging which ones currently
+    match LABOR_ACCOUNT_PATTERNS. Run once after the first QB pull so a human can reconcile
+    the labor-account list against MHP's real chart of accounts — wrong accounts would
+    fabricate a per-job labor number, which is worse than none (the one assumption in the
+    labor-variance path). Usage: python qb_pnl.py --verify-accounts
+    """
+    bills = load_json("qb_bills.json")
+    names = sorted({
+        ((line.get("AccountBasedExpenseLineDetail") or {}).get("AccountRef") or {}).get("name", "")
+        for b in bills for line in b.get("Line", [])
+    } - {""})
+    if not names:
+        print("  No expense accounts found — run the QB pull first (./qb_refresh.sh --full).")
+        return
+    print(f"\n  Expense accounts on {len(bills)} bills ({len(names)} distinct).")
+    print(f"  [LABOR] = currently counted as labor (name contains one of {LABOR_ACCOUNT_PATTERNS}):\n")
+    for n in names:
+        print(f"    [{'LABOR' if _is_labor_account(n) else '     '}]  {n}")
+    print("\n  Reconcile: every real labor/payroll account must read [LABOR]. If one doesn't,")
+    print("  add a pattern to LABOR_ACCOUNT_PATTERNS in qb_pnl.py and re-run --verify-accounts.")
+    print("  Until this is signed off, treat the labor-variance numbers as provisional.\n")
+
+
 def main():
+    if "--verify-accounts" in sys.argv:
+        dump_accounts()
+        return
+
     losses_only = "--losses" in sys.argv
     single_job = None
     if "--job" in sys.argv:
@@ -358,7 +444,7 @@ def main():
         if idx + 1 < len(sys.argv):
             single_job = sys.argv[idx + 1].lower()
 
-    results, untagged_cost, untagged_rev = compute_pnl()
+    results, untagged_cost, untagged_rev, untagged_labor = compute_pnl()
 
     # Save full results
     out = DATA_DIR / "qb_pnl.json"
@@ -382,8 +468,10 @@ def main():
     print(f"  Total revenue:    ${total_rev:>12,.0f}")
     print(f"  Total cost:       ${total_cost:>12,.0f}")
     print(f"  Gross margin:     ${total_margin:>12,.0f}  ({total_margin/total_rev*100:.1f}%)" if total_rev else "")
-    print(f"  Untagged cost:    ${untagged_cost:>12,.0f}  (overhead or mis-tagged)")
+    print(f"  Untagged cost:    ${untagged_cost:>12,.0f}  (overhead, mis-tagged, or ambiguous multi-job lines)")
     print(f"  Untagged revenue: ${untagged_rev:>12,.0f}")
+    if untagged_labor:
+        print(f"  Unalloc. labor:   ${untagged_labor:>12,.0f}  (labor lines on multi-job bills, untagged — review)")
     print()
     print(f"  Profitable jobs:  {len(profitable)}")
     print(f"  Loss jobs:        {len(losses)}")
@@ -416,8 +504,9 @@ def main():
 
         if r.get("bid_comparison") and (single_job or losses_only):
             bc = r["bid_comparison"]
+            bid_margin = f"{bc['margin_bid']:.1f}%" if bc.get("margin_bid") is not None else "n/a"
             print(f"    Bid: ${bc['bid']:,.0f} | Actual cost: ${bc['actual_cost']:,.0f} | "
-                  f"Bid margin: {bc['margin_bid']:.1f}% | Actual margin: {bc['margin_actual']:.1f}%")
+                  f"Bid margin: {bid_margin} | Actual margin: {bc['margin_actual']:.1f}%")
 
         if single_job:
             print(f"    Labor hours: {r['labor_hours']}")

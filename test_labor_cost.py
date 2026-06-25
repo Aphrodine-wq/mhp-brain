@@ -28,21 +28,42 @@ def test_labor_classification():
         {"Amount": 1500, "AccountBasedExpenseLineDetail": {"AccountRef": {"name": "Materials & Supplies"}, "CustomerRef": {"value": "55"}}},
         {"Amount": 300,  "AccountBasedExpenseLineDetail": {"AccountRef": {"name": "Payroll Expense"}, "CustomerRef": {"value": "55"}}},
     ]}
-    labor = q.labor_cost_by_customer(bill)
+    labor, unalloc = q.labor_cost_by_customer(bill)
     assert abs(labor["55"] - 1500) < 1e-9, f"labor should be 1200+300, got {labor}"
+    assert unalloc == 0, f"all lines tagged → nothing unallocated, got {unalloc}"
     print("  [ok] labor accounts summed (1200 labor + 300 payroll), material excluded")
 
     # Item-based lines (material/assemblies) carry no AccountRef -> never labor.
     item = {"Line": [{"Amount": 999, "ItemBasedExpenseLineDetail": {"CustomerRef": {"value": "9"}}}]}
-    assert q.labor_cost_by_customer(item) == {}, "item-based line must not count as labor"
+    assert q.labor_cost_by_customer(item) == ({}, 0.0), "item-based line must not count as labor"
     print("  [ok] item-based (material) line excluded from labor")
 
-    # Line tagged to no customer falls back to the header customer.
+    # Single-job bill (no line carries its own CustomerRef): the untagged labor line falls
+    # back to the header customer — safe, because there's only one job on the bill.
     hdr = {"CustomerRef": {"value": "70"}, "Line": [
         {"Amount": 500, "AccountBasedExpenseLineDetail": {"AccountRef": {"name": "Crew Wages"}}},
     ]}
-    assert q.labor_cost_by_customer(hdr) == {"70": 500.0}, "header-customer fallback failed"
-    print("  [ok] untagged labor line falls back to header customer")
+    labor, unalloc = q.labor_cost_by_customer(hdr)
+    assert labor == {"70": 500.0} and unalloc == 0.0, "single-job header fallback failed"
+    print("  [ok] untagged labor on a single-job bill falls back to header customer")
+
+
+def test_multi_job_untagged_not_header():
+    # The fix for the silent-misallocation bug. A bill with one line tagged to job 55 and an
+    # UNTAGGED labor line, header customer 70. The untagged dollars are ambiguous on a
+    # multi-job bill and must NOT be dumped on the header — they go to `unallocated`.
+    bill = {"CustomerRef": {"value": "70"}, "TotalAmt": 1700, "Line": [
+        {"Amount": 1200, "AccountBasedExpenseLineDetail": {"AccountRef": {"name": "Materials"}, "CustomerRef": {"value": "55"}}},
+        {"Amount": 500,  "AccountBasedExpenseLineDetail": {"AccountRef": {"name": "Job Labor"}}},  # untagged labor
+    ]}
+    labor, labor_unalloc = q.labor_cost_by_customer(bill)
+    assert labor == {}, f"untagged labor on a multi-job bill must not attach to a job, got {labor}"
+    assert abs(labor_unalloc - 500) < 1e-9, f"untagged labor should be unallocated, got {labor_unalloc}"
+
+    amounts, cost_unalloc = q.line_amounts_by_customer(bill)
+    assert amounts == {"55": 1200.0}, f"only the tagged line should attach to its job, got {amounts}"
+    assert abs(cost_unalloc - 500) < 1e-9, f"the untagged $500 must be unallocated, not on header 70, got {cost_unalloc}"
+    print("  [ok] untagged lines on a multi-job bill go to unallocated, never the header job")
 
 
 def test_write_guard():
@@ -64,6 +85,7 @@ if __name__ == "__main__":
     print("\nLabor-cost extraction proof")
     print("=" * 70)
     test_labor_classification()
+    test_multi_job_untagged_not_header()
     test_write_guard()
     print("=" * 70)
     print("PASS — labor isolated to labor accounts, write guarded to trusted matches.")

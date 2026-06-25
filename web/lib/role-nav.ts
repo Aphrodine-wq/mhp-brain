@@ -42,6 +42,7 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
     { href: "/projects", label: "Projects" },
     { href: "/subs", label: "Subs" },
     { href: "/crew", label: "Crew" },
+    { href: "/admin/users", label: "Users" },
   ],
   editor: [
     { href: "/", label: "Home" },

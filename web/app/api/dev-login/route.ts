@@ -3,14 +3,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { SESSION_COOKIE, createSession } from "@/lib/auth";
 
-// One-click admin bypass behind the "Skip login" button on /login.
-//   - local dev: always on.
-//   - production: on only when ALLOW_DEV_BUTTON=1 is set in the env (James flips it on for UI/UX
-//     work; delete the env var + redeploy to remove the button). When off it 404s.
-// HEADS UP: while it's on, anyone who reaches /login and clicks the button is admin. Fine pre-launch
-// on an obscure URL / behind Vercel Deployment Protection — turn it off before real users.
+// One-click admin bypass behind the "Skip login" button on /login. DEV ONLY — there is no
+// production escape hatch. The button never renders and this route 404s when NODE_ENV is
+// "production", so a real user can never bypass login regardless of any env flag. (The old
+// ALLOW_DEV_BUTTON prod-bypass was removed before launch: an env toggle is too easy to leave
+// on, and an enabled bypass defeats login entirely — see web/AGENTS.md auth posture.)
 function enabled(): boolean {
-  return process.env.NODE_ENV !== "production" || process.env.ALLOW_DEV_BUTTON === "1";
+  return process.env.NODE_ENV !== "production";
 }
 
 async function grantAdmin(): Promise<void> {

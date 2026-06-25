@@ -21,10 +21,14 @@ export async function projectMargin(projectId: string): Promise<ProjectMargin> {
   let bid: number | null = null;
   let estimatedCost: number | null = null;
   try {
+    // Only CLEAN estimates are trustworthy bids — FLAGGED (PHASE_ONLY/DUPLICATE_EXPORT) or
+    // SUPERSEDED revisions would pick the wrong bid (matches qb_pnl.load_bid_data). est_date
+    // is filename-derived and can be misdated, so id is the deterministic tiebreak — the same
+    // estimate always wins instead of an arbitrary LIMIT 1.
     const r = (await db.execute({
       sql: `SELECT sum_sov_total, sum_item_total FROM estimates
-            WHERE project_id = ? AND parse_confidence != 'FAILED' AND sum_sov_total > 0
-            ORDER BY est_date DESC LIMIT 1`,
+            WHERE project_id = ? AND parse_confidence = 'CLEAN' AND sum_sov_total > 0
+            ORDER BY est_date DESC NULLS LAST, id DESC LIMIT 1`,
       args: [projectId],
     })).rows[0];
     if (r) {
@@ -72,24 +76,25 @@ export interface MarginRollup {
 
 // Portfolio roll-up: latest estimate per project, grouped by job type and by market.
 export async function marginBySegment(): Promise<MarginRollup> {
-  let rows: { project_id: string; sov: number; item: number; date: string; type: string; market: string }[] = [];
+  let rows: { project_id: string; sov: number; item: number; date: string; id: number; type: string; market: string }[] = [];
   try {
     rows = (await db.execute(`
-      SELECT e.project_id, e.sum_sov_total AS sov, e.sum_item_total AS item, e.est_date AS date,
+      SELECT e.project_id, e.sum_sov_total AS sov, e.sum_item_total AS item, e.est_date AS date, e.id AS id,
              COALESCE(p.type,'—') AS type, COALESCE(p.market,'—') AS market
       FROM estimates e JOIN projects p ON p.id = e.project_id
-      WHERE e.parse_confidence != 'FAILED' AND e.sum_sov_total > 0 AND e.sum_item_total > 0
+      WHERE e.parse_confidence = 'CLEAN' AND e.sum_sov_total > 0 AND e.sum_item_total > 0
     `)).rows.map((r) => ({
       project_id: String(r.project_id), sov: Number(r.sov), item: Number(r.item),
-      date: String(r.date ?? ""), type: String(r.type), market: String(r.market),
+      date: String(r.date ?? ""), id: Number(r.id), type: String(r.type), market: String(r.market),
     }));
   } catch { /* estimates absent */ }
 
-  // collapse to the latest estimate per project
+  // collapse to the latest estimate per project — latest est_date wins, id breaks ties
+  // deterministically (est_date is filename-derived and can collide/misdate).
   const latest = new Map<string, typeof rows[number]>();
   for (const r of rows) {
     const prev = latest.get(r.project_id);
-    if (!prev || r.date > prev.date) latest.set(r.project_id, r);
+    if (!prev || r.date > prev.date || (r.date === prev.date && r.id > prev.id)) latest.set(r.project_id, r);
   }
   const jobs = [...latest.values()];
 

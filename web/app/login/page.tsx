@@ -12,7 +12,8 @@ export default async function LoginPage({
   const { next, error } = await searchParams;
   const dest = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
   if (await currentUser()) redirect(dest);
-  const showBypass = process.env.NODE_ENV !== "production" || process.env.ALLOW_DEV_BUTTON === "1";
+  // Dev-only bypass — never renders in production (mirrors /api/dev-login's own gate).
+  const showBypass = process.env.NODE_ENV !== "production";
   return (
     <LoginForm
       next={dest}

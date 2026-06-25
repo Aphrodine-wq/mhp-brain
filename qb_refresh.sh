@@ -18,6 +18,12 @@ echo "==> 1/4  Pull QuickBooks data (live book, via the static-IP proxy)"
 echo "==> 2/4  Match transactions to jobs -> mhp.db"
 ./qb.sh qb_match.py
 
+# One-time gate: on the FIRST pull, reconcile the labor-account list against MHP's real
+# chart of accounts before any labor number is trusted. Prints the accounts + which count
+# as labor; harmless to run every time. See qb_pnl.dump_accounts / LABOR_ACCOUNT_PATTERNS.
+echo "==> 2.5  Labor-account check (reconcile LABOR_ACCOUNT_PATTERNS on first pull)"
+./qb.sh qb_pnl.py --verify-accounts
+
 echo "==> 3/4  Compute per-job P&L"
 ./qb.sh qb_pnl.py
 

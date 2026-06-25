@@ -516,6 +516,60 @@ export async function getCashFlow(startDate: string, endDate: string) {
 // Dashboard aggregates
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// User administration (admin-only — activate pending sign-ups, assign roles)
+// ---------------------------------------------------------------------------
+
+// The live role set (matches the users_role_check constraint, migration 007).
+export const USER_ROLES = [
+  "admin", "ceo", "estimator", "sales", "materials", "editor", "viewer", "crew",
+] as const;
+export type UserRole = (typeof USER_ROLES)[number];
+
+const USER_ADMIN_FIELDS: ReadonlySet<string> = new Set(["role", "active"]);
+
+export interface AdminUserRow {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  active: number;
+  created_at: string | null;
+}
+
+export async function listUsers(): Promise<AdminUserRow[]> {
+  const rows = (await db.execute(
+    `SELECT id, name, email, role, active, created_at FROM users ORDER BY active ASC, name`,
+  )).rows;
+  return rows.map((r) => ({
+    id: Number(r.id),
+    name: String(r.name),
+    email: String(r.email),
+    role: String(r.role),
+    active: Number(r.active),
+    created_at: r.created_at == null ? null : String(r.created_at),
+  }));
+}
+
+// Activate/deactivate or re-role a user. Goes through the same auditedUpdate contract
+// as every other mutation, so each change appends an audit_log row. Field names come
+// only from USER_ADMIN_FIELDS; the route validates the *values* (role ∈ USER_ROLES,
+// active ∈ {0,1}) and blocks admin self-lockout before calling here. The audit label
+// is the user's email, looked up server-side so it's authoritative, not client-supplied.
+export async function updateUserAdmin(
+  id: number,
+  updates: { role?: UserRole; active?: 0 | 1 },
+  actor: string,
+): Promise<void> {
+  const row = (await db.execute({ sql: `SELECT email FROM users WHERE id = ?`, args: [id] })).rows[0];
+  if (!row) throw new OpsError(`user ${id} not found`);
+  await auditedUpdate({
+    table: "users", entityType: "user", id,
+    updates: updates as Record<string, unknown>,
+    allowed: USER_ADMIN_FIELDS, actor, label: String(row.email), action: "user_admin",
+  });
+}
+
 // Jobs missing operational data — surfaces on the CEO cockpit.
 export async function getOperationalGaps() {
   return (await db.execute(`
