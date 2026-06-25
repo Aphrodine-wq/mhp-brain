@@ -105,13 +105,21 @@ export async function laborVariance(projectId: string): Promise<LaborVariance> {
   // Actual labor cost, dollars-to-dollars from QB. The QB→web cost pipe isn't
   // wired yet, so this stays null and the panel reads "awaiting QuickBooks".
   // When the pipe lands, populate actual here (same try/catch shape as payments).
+  //
+  // A non-positive labor_cost is treated as UNKNOWN, not as a real $0: until
+  // LABOR_ACCOUNT_PATTERNS is reconciled against MHP's actual chart of accounts
+  // (see qb_pnl.py), a $0 means "no labor account matched" far more often than
+  // "the crew truly cost nothing." Showing actual=$0 would print a −100% variance
+  // and steer the next bid off a fabricated number — exactly what Phase 2 forbids.
+  // qb_pnl.write_job_costs also writes NULL (not 0) in this case; this is the
+  // belt-and-suspenders read-side guard for rows already synced before that fix.
   let actual: number | null = null;
   try {
     const r = (await db.execute({
       sql: `SELECT labor_cost FROM qb_job_costs WHERE project_id = ? LIMIT 1`,
       args: [projectId],
     })).rows[0];
-    if (r && r.labor_cost != null) actual = Number(r.labor_cost);
+    if (r && r.labor_cost != null && Number(r.labor_cost) > 0) actual = Number(r.labor_cost);
   } catch {
     /* qb_job_costs arrives with the QB pipe — until then, actual is unknown */
   }

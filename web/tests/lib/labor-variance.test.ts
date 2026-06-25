@@ -105,4 +105,22 @@ describe("laborVariance — estimate live, actual awaits QuickBooks", () => {
     expect(v.estimatedLabor).toBeNull();
     expect(v.status).toBe("no_estimate");
   });
+
+  it("treats a $0 actual labor cost as UNKNOWN, not a real zero (no fabricated −100%)", async () => {
+    // A trusted-match job whose QB book has no bills posted to a labor account
+    // lands here as labor_cost 0. That means "account not matched," not "free
+    // crew" — it must NOT compute a −100% variance off the estimate.
+    exec.mockImplementation((q: string | { sql: string }) => {
+      const sql = typeof q === "string" ? q : q.sql;
+      if (/FROM saved_estimates/i.test(sql)) return Promise.resolve({ rows: [{ lines: JSON.stringify([{ description: "Framing Labor", qty: 10, rate: 50 }]) }] });
+      if (/FROM qb_job_costs/i.test(sql)) return Promise.resolve({ rows: [{ labor_cost: 0 }] });
+      return Promise.resolve({ rows: [] });
+    });
+    const v = await laborVariance("p1");
+    expect(v.estimatedLabor).toBe(500);
+    expect(v.actualLabor).toBeNull();
+    expect(v.varianceDollars).toBeNull();
+    expect(v.variancePct).toBeNull();
+    expect(v.status).toBe("awaiting_quickbooks");
+  });
 });

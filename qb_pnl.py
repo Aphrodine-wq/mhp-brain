@@ -333,9 +333,16 @@ def write_job_costs(results):
         pid = r.get("project_id")
         if not pid:
             continue
+        # Write labor_cost as NULL (not 0) when nothing posted to a labor account.
+        # LABOR_ACCOUNT_PATTERNS is unverified against MHP's real chart of accounts,
+        # so a $0 almost always means "account not matched," not "zero labor." A real
+        # 0 would make the job page show actual=$0 / −100% variance and steer the next
+        # bid off a fabricated number. NULL → the panel honestly reads "awaiting QB."
+        labor_cost = r.get("labor_cost", 0)
+        labor_cost_db = labor_cost if labor_cost and labor_cost > 0 else None
         conn.execute(
             "INSERT OR REPLACE INTO qb_job_costs (project_id, qb_id, labor_cost, total_cost, labor_hours, updated_at) VALUES (?,?,?,?,?,?)",
-            (pid, r.get("qb_id"), r.get("labor_cost", 0), r.get("cost", 0), r.get("labor_hours", 0), now),
+            (pid, r.get("qb_id"), labor_cost_db, r.get("cost", 0), r.get("labor_hours", 0), now),
         )
         written += 1
     conn.commit()
