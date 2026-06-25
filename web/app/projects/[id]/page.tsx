@@ -12,6 +12,7 @@ import { requireRole } from "@/lib/auth";
 import { trelloCardsForProject } from "@/lib/trello";
 import { eventsForProject } from "@/lib/calendar";
 import { projectMargin } from "@/lib/margin";
+import { laborVariance } from "@/lib/labor-variance";
 import { hasActiveShareLink } from "@/lib/share";
 import { money, BADGE } from "@/lib/format";
 import HeaderEdit, { type ProjectOps } from "./HeaderEdit";
@@ -39,13 +40,14 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
   // operational layer: app-owned tables written through lib/operations (audited)
   const canWrite = !!(await requireRole("editor"));
-  const [ops, changeOrders, jobEvents, permits, payments, margin, shareActive] = await Promise.all([
+  const [ops, changeOrders, jobEvents, permits, payments, margin, labor, shareActive] = await Promise.all([
     getProjectOps(id).catch(() => null) as Promise<ProjectOps | null>,
     getChangeOrders(id).catch(() => []) as Promise<unknown> as Promise<ChangeOrder[]>,
     getJobEvents(id).catch(() => []) as Promise<unknown> as Promise<JobEvent[]>,
     getPermits(id).catch(() => []) as Promise<unknown> as Promise<Permit[]>,
     getPayments(id).catch(() => []) as Promise<unknown> as Promise<Payment[]>,
     projectMargin(id).catch(() => null),
+    laborVariance(id).catch(() => null),
     canWrite ? hasActiveShareLink(id).catch(() => false) : Promise.resolve(false),
   ]);
   const pct = (n: number | null) => (n == null ? "—" : `${Math.round(n * 100)}%`);
@@ -85,6 +87,22 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <div><div className="sv">{money(margin.collected)}</div><div className="sk">Collected · {pct(margin.collectedPct)}</div></div>
           </div>
           <div className="setrow"><div className="sd">Estimated from the bid — actual cost lands when QuickBooks is connected.</div></div>
+        </div>
+      )}
+
+      {labor && labor.estimatedLabor != null && (
+        <div className="panel" style={{ marginTop: 18 }}>
+          <h3>Labor (estimate vs actual)</h3>
+          <div className="stat-strip" style={{ margin: 0, border: 0, padding: "8px 2px" }}>
+            <div><div className="sv">{money(labor.estimatedLabor)}</div><div className="sk">Est. labor</div></div>
+            <div><div className="sv">{labor.actualLabor != null ? money(labor.actualLabor) : "—"}</div><div className="sk">Actual labor</div></div>
+            <div><div className="sv">{labor.varianceDollars != null ? money(labor.varianceDollars) : "—"}</div><div className="sk">Variance{labor.variancePct != null ? ` · ${pct(labor.variancePct)}` : ""}</div></div>
+          </div>
+          <div className="setrow"><div className="sd">
+            {labor.status === "awaiting_quickbooks"
+              ? `Estimated labor from ${labor.cleanLines} labor line${labor.cleanLines === 1 ? "" : "s"}${labor.combinedLines ? ` + ${labor.combinedLines} combined (labor portion)` : ""} — actual lands when QuickBooks is connected.`
+              : "Actual labor cost from QuickBooks. Positive variance = over the bid."}
+          </div></div>
         </div>
       )}
 
