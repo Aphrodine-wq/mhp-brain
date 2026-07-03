@@ -102,8 +102,21 @@ function list() {
 async function main() {
   if (process.argv.includes("--list")) { list(); return; }
 
+  // Never hang launchd: pg's default connect timeout is infinite, and a dead
+  // TCP path to Neon wedged this script for 7h on 2026-07-02 (no Neon backup
+  // landed Jul 1-2). Bounded connects + a hard watchdog; unref so the timer
+  // itself never keeps the process alive.
+  process.env.PGCONNECT_TIMEOUT ||= "30"; // libpq: also covers the pg_dump child
+  setTimeout(() => {
+    console.error("backup watchdog: 20min exceeded — aborting so tomorrow's run isn't blocked");
+    process.exit(1);
+  }, 20 * 60 * 1000).unref();
+
   // Only dump tables that actually exist — migrations land incrementally.
-  const pool = new pg.Pool({ connectionString: url, max: 1 });
+  const pool = new pg.Pool({
+    connectionString: url, max: 1,
+    connectionTimeoutMillis: 30000, statement_timeout: 120000, query_timeout: 120000,
+  });
   const res = await pool.query(
     `SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename = ANY($1)`,
     [APP_TABLES]
