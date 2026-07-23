@@ -10,10 +10,12 @@ import {
 } from "@/lib/operations";
 import { requireRole } from "@/lib/auth";
 import { eventsForProject } from "@/lib/calendar";
+import { listDocuments } from "@/lib/documents-store";
 import { projectMargin } from "@/lib/margin";
 import { laborVariance } from "@/lib/labor-variance";
 import { hasActiveShareLink } from "@/lib/share";
 import { money, BADGE } from "@/lib/format";
+import EntityDocs from "../../_components/EntityDocs";
 import HeaderEdit, { type ProjectOps } from "./HeaderEdit";
 import ChangeOrderPanel, { type ChangeOrder } from "./ChangeOrderPanel";
 import EventLogForm, { type JobEvent } from "./EventLogForm";
@@ -38,7 +40,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
   // operational layer: app-owned tables written through lib/operations (audited)
   const canWrite = !!(await requireRole("editor"));
-  const [ops, changeOrders, jobEvents, permits, payments, margin, labor, shareActive] = await Promise.all([
+  const [ops, changeOrders, jobEvents, permits, payments, margin, labor, shareActive, docs] = await Promise.all([
     getProjectOps(id).catch(() => null) as Promise<ProjectOps | null>,
     getChangeOrders(id).catch(() => []) as Promise<unknown> as Promise<ChangeOrder[]>,
     getJobEvents(id).catch(() => []) as Promise<unknown> as Promise<JobEvent[]>,
@@ -47,6 +49,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     projectMargin(id).catch(() => null),
     laborVariance(id).catch(() => null),
     canWrite ? hasActiveShareLink(id).catch(() => false) : Promise.resolve(false),
+    listDocuments({ entityType: "project", entityId: id }).catch(() => []),
   ]);
   const pct = (n: number | null) => (n == null ? "—" : `${Math.round(n * 100)}%`);
 
@@ -71,7 +74,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
       <div className="stat-strip">
         <div><div className="sv">{proj.value ? money(proj.value) : "—"}</div><div className="sk">Current bid value</div></div>
-        <div><div className="sv">{proj.estimates.length}</div><div className="sk">Documents on file</div></div>
+        <div><div className="sv">{proj.estimates.length}</div><div className="sk">Estimates on file</div></div>
         <div><div className="sv">{proj.last || "—"}</div><div className="sk">Last activity</div></div>
       </div>
 
@@ -143,7 +146,21 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         </div>
       )}
 
-      <div className="sec-h">Documents</div>
+      <EntityDocs
+        entityType="project"
+        entityId={id}
+        entityLabel={proj.name}
+        docs={docs}
+        slots={[
+          { category: "Contract", required: true },
+          { category: "Permit", required: false },
+          { category: "Plan", required: false },
+          { category: "Insurance (COI)", required: false },
+          { category: "Other", required: false, hint: "Anything else worth keeping on this job." },
+        ]}
+      />
+
+      <div className="sec-h">Estimate originals</div>
       <div className="card" style={{ marginTop: 16 }}>
         <table className="dtable">
           <thead>
@@ -157,7 +174,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               <tr>
                 <td colSpan={5}>
                   <div className="empty">
-                    <div className="big">No documents on file</div>
+                    <div className="big">No estimates on file</div>
                     Nothing parsed for this job yet.
                   </div>
                 </td>
