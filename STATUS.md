@@ -5,15 +5,16 @@ buckets. Most of what feels "undone" is already in the first one._
 
 ## ✅ DONE — needs nothing (stop re-checking these)
 
-- **All 7 integrations are code-complete**: QuickBooks, Gmail, Microsoft Teams,
-  DocuSign, Google Business Profile, CompanyCam, Trello. The code is written.
-- **Trello board-scoping** (pull the right board, not all boards) — committed.
+- **All 6 integrations are code-complete**: QuickBooks, Gmail, Microsoft Teams,
+  DocuSign, Google Business Profile, CompanyCam. The code is written.
+  (Trello was removed from the app — UI, API routes, lib, OAuth provider entry.)
 - **GBP reviews display** (`ReviewsPanel`) — built; lights up automatically on first sync.
 - **Per-job P&L pipeline, daily logs, change orders, estimates, catalog** — built.
-- **Time tracking Phase 1 — the spine + foreman hour entry** — DONE & GREEN (2026-06-23).
-  `lib/time.ts` spine, `/time` form, `/api/time` route (editor+, server-side actor),
-  migration `008_time_tracking.sql`, 12 passing tests. The `actualLaborHours()` Phase 2
-  hook is already in place. Stop carrying this as a todo.
+- **Time tracking Phase 1 — the spine** — DONE (2026-06-23); **foreman hour-entry
+  UI since removed** (the `/time` form, `/api/time` route, and `lib/time.ts` were
+  deleted — hours now come in via the BusyBusy import script, not manual entry).
+  Migration `008_time_tracking.sql` and the `time_entries` table remain. Stop
+  carrying this as a todo.
 
 ## ⏳ WAITING ON OTHER PEOPLE — you can only START these, never finish them alone
 
@@ -31,7 +32,7 @@ they're not your work anymore once you've kicked them off.
 ## 🔨 YOUR BUILD QUEUE — actually undone, 100% in your control, in order
 
 1. **Time tracking (replace BusyBusy)** ← the real project
-   - ✅ Phase 1 — the spine + foreman hour entry — DONE (see bucket 1)
+   - ✅ Phase 1 — the spine — DONE; foreman hour-entry UI later removed (see bucket 1)
    - ⏳ **Phase 2 — estimate vs actual labor per job** — FULLY BUILT, gated on QB (2026-06-25).
      Two decisions: variance is **dollars-to-dollars from QuickBooks** (book-accurate, no
      rate assumption), and combined "Material & Labor" estimate lines count their labor

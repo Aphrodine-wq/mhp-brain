@@ -3,11 +3,10 @@
 import { useEffect, useState } from "react";
 
 export type ProviderState = {
-  id: "quickbooks" | "gmail" | "microsoft" | "trello" | "gbp";
+  id: "quickbooks" | "gmail" | "microsoft" | "gbp";
   label: string;
   configured: boolean;
   connection: { account: string; expiresAt: string } | null;
-  connectUrl?: string | null; // trello: server-built authorize URL (fragment token flow)
 };
 
 // official brand marks, inlined so they render with zero external requests
@@ -35,13 +34,6 @@ const ICONS: Record<ProviderState["id"], React.ReactNode> = {
       <rect x="12" y="12" width="10" height="10" fill="#FFB900" />
     </svg>
   ),
-  trello: (
-    <svg viewBox="0 0 24 24" aria-hidden>
-      <rect x="0" y="0" width="24" height="24" rx="4" fill="#0079BF" />
-      <rect x="3.5" y="3.5" width="7" height="14" rx="1.5" fill="#fff" />
-      <rect x="13.5" y="3.5" width="7" height="9" rx="1.5" fill="#fff" />
-    </svg>
-  ),
   gbp: (
     <svg viewBox="0 0 24 24" aria-hidden>
       <path fill="#4285F4" d="M21.6 12.2c0-.7-.06-1.4-.18-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.4z" />
@@ -65,7 +57,7 @@ export default function Connections({
   const [syncing, setSyncing] = useState<string | null>(null); // which sync is running
   const [syncResult, setSyncResult] = useState<Record<string, string>>({});
 
-  // shared runner for the one-click sync buttons (Teams pull, OneDrive crawl, Trello boards)
+  // shared runner for the one-click sync buttons (Teams pull, OneDrive crawl)
   async function runSync(key: string, fn: () => Promise<string>) {
     setSyncing(key);
     setSyncResult((r) => ({ ...r, [key]: "" }));
@@ -94,7 +86,6 @@ export default function Connections({
     quickbooks: "Connect your QuickBooks to see real job costs, payments, and margins.",
     gmail: "Connect a dedicated email to automatically capture invoices.",
     microsoft: "Connect Microsoft to pull in Teams conversations, OneDrive paperwork, and the calendar.",
-    trello: "Connect Trello to see where every job sits on the board, right on its project page.",
     gbp: "Connect the Google Business Profile to pull reviews into the brain.",
   };
 
@@ -102,7 +93,6 @@ export default function Connections({
     quickbooks: "QuickBooks connection needs to be set up by your admin.",
     gmail: "Gmail connection needs to be set up by your admin.",
     microsoft: "Microsoft connection needs to be set up by your admin.",
-    trello: "Trello needs a TRELLO_API_KEY — grab one at trello.com/power-ups/admin.",
     gbp: "GBP needs GBP_CLIENT_ID / GBP_CLIENT_SECRET / GBP_REDIRECT_URI (Google also gates the API behind an access request).",
   };
 
@@ -241,31 +231,6 @@ export default function Connections({
                     }
                   >
                     {syncing === p.id ? "Syncing…" : "Sync reviews"}
-                  </button>
-                )}
-              </>
-            )}
-
-            {p.configured && p.id === "trello" && (
-              <>
-                {p.connectUrl && (
-                  <a className="btn ghost sm" href={p.connectUrl}>
-                    {p.connection ? "Reconnect" : "Connect"}
-                  </a>
-                )}
-                {p.connection && (
-                  <button
-                    className="btn ghost sm"
-                    disabled={syncing !== null}
-                    onClick={() =>
-                      runSync("trello", async () => {
-                        const data = await (await fetch("/api/trello/sync", { method: "POST" })).json();
-                        if (!data.ok) return data.error ?? "Sync had a problem. Try again.";
-                        return `${data.boards} board${data.boards !== 1 ? "s" : ""}, ${data.cards} cards — ${data.matched} matched to jobs.`;
-                      })
-                    }
-                  >
-                    {syncing === "trello" ? "Syncing…" : "Sync boards"}
                   </button>
                 )}
               </>

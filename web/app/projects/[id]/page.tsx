@@ -9,7 +9,6 @@ import {
   getPayments,
 } from "@/lib/operations";
 import { requireRole } from "@/lib/auth";
-import { trelloCardsForProject } from "@/lib/trello";
 import { eventsForProject } from "@/lib/calendar";
 import { projectMargin } from "@/lib/margin";
 import { laborVariance } from "@/lib/labor-variance";
@@ -35,7 +34,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const { id } = await params;
   const proj = await projectDetail(id);
   if (!proj) notFound();
-  const trelloCards = await trelloCardsForProject(id).catch(() => []);
   const events = await eventsForProject(id).catch(() => []);
 
   // operational layer: app-owned tables written through lib/operations (audited)
@@ -140,21 +138,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               <span className="sd" style={{ whiteSpace: "nowrap" }}>
                 {ev.startAt.slice(0, 10)}{ev.isAllDay ? "" : ` · ${ev.startAt.slice(11, 16)}`}
               </span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {trelloCards.length > 0 && (
-        <div className="panel" style={{ marginTop: 18 }}>
-          <h3>On the board</h3>
-          {trelloCards.map((c, i) => (
-            <div className="setrow" key={i}>
-              <div>
-                <div className="sl"><a href={c.url} target="_blank" rel="noreferrer" className="cell-link">{c.name}</a></div>
-                <div className="sd">{c.board}{c.due ? ` · due ${c.due}` : ""} · last activity {c.lastActivity}</div>
-              </div>
-              <span className="badge bid">{c.list || "—"}</span>
             </div>
           ))}
         </div>
