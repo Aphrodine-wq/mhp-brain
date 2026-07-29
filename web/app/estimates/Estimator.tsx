@@ -308,7 +308,7 @@ export default function Estimator({
           <div>
             {onBack && (
               <button className="btn ghost sm" onClick={onBack} style={{ marginBottom: 8 }}>
-                ← All estimates
+                ← All projects
               </button>
             )}
             <h2 style={{ margin: 0 }}>Estimate Builder</h2>

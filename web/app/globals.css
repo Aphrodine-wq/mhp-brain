@@ -7,11 +7,13 @@
   --shadow:0 1px 3px rgba(17,20,24,.06),0 1px 2px rgba(17,20,24,.04);
   --shadow-lg:0 14px 36px -10px rgba(17,20,24,.18);
   --ring:0 0 0 3px rgba(11,61,145,.14);                 /* the one focus ring, used everywhere */
-  --r-sm:8px;--r:10px;--r-lg:13px;--r-pill:20px;
+  --r-sm:5px;--r:6px;--r-lg:8px;--r-pill:20px;
   --t:.15s ease;
   --sans:var(--font-inter),-apple-system,"Segoe UI",Roboto,sans-serif;
   --disp:var(--font-inter),-apple-system,sans-serif}
 *{box-sizing:border-box}
+/* view transitions — panels rise 8px and fade in instead of snapping in/out */
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;
   font-size:15px;line-height:1.5}
@@ -482,13 +484,12 @@ small.j{color:var(--muted);font-size:11px}
 main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .view-inner{max-width:1160px;margin:0 auto}
 /* builder template picker — cards grouped under category headers */
-/* builder wizard — one question page at a time after a template is picked */
-.wiz{max-width:520px;margin:32px auto 0;background:var(--card);border:1px solid var(--line);
-  border-radius:16px;padding:36px 40px;box-shadow:0 12px 40px rgba(11,24,43,.08)}
+/* builder wizard — borderless question page, room to breathe */
+.wiz{max-width:620px;margin:44px auto 0;padding:8px 0;animation:rise .22s ease both}
 .wiz-step{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--navy);margin-bottom:10px}
-.wiz h3{margin:0 0 24px;font-family:var(--disp);font-size:26px;letter-spacing:-.4px}
-.wiz label{display:flex;flex-direction:column;gap:7px;font-size:12px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.5px;color:var(--muted);margin-bottom:18px}
+.wiz h3{margin:0 0 28px;font-family:var(--disp);font-size:32px;letter-spacing:-.5px}
+.wiz label{display:flex;flex-direction:column;gap:8px;font-size:12px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--muted);margin-bottom:22px}
 .wiz input{padding:13px 15px;border:1px solid var(--line);border-radius:10px;font-family:var(--sans);
   font-size:16px;background:var(--paper);color:var(--ink);text-transform:none;letter-spacing:0;
   transition:border-color var(--t),box-shadow var(--t),background var(--t)}
@@ -500,7 +501,7 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .wiz-actions .btn:not(.ghost){flex:1;padding:13px}
 .type-cat-group{margin-top:22px}
 .type-cat{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
-.type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0 16px}
+.type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0 16px;animation:rise .22s ease both}
 .type-card{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:16px;
   background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);cursor:pointer;
   font-family:var(--sans);font-size:13px;font-weight:600;color:var(--ink);box-shadow:var(--shadow-sm);
@@ -589,7 +590,7 @@ body.compact .prow{padding:9px 16px}
 .login-pitch-logo{height:104px;width:auto;margin:0 auto 22px;display:block}
 .login-pitch-title{font-family:var(--disp);font-weight:700;font-size:38px;line-height:1.2;
   letter-spacing:-.6px;margin:0 auto;max-width:460px}
-.login-box{width:100%;max-width:340px;background:#fff;border-radius:16px;padding:28px 24px;
+.login-box{width:100%;max-width:340px;background:#fff;border-radius:10px;padding:28px 24px;
   box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center}
 .login-logo{height:72px;width:auto;margin:0 auto 16px;display:block}
 .login-title{font-family:var(--disp);font-weight:700;font-size:24px;color:var(--ink);margin:0 0 4px;letter-spacing:-.4px}

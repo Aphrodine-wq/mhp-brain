@@ -28,8 +28,8 @@ export default async function SettingsPage() {
 
       {canManageAlerts && <NotificationPrefs initial={alertSettings} configured={alertsConfigured()} />}
 
-      <div className="panel" style={{ marginTop: 18 }}>
-        <h3>Company</h3>
+      <details className="panel settings-fold" style={{ marginTop: 18 }}>
+        <summary>Company & account</summary>
         <div className="setrow">
           <div>
             <div className="sl">North Mississippi Home Professionals, LLC</div>
@@ -47,7 +47,7 @@ export default async function SettingsPage() {
             {s.projects} jobs · {s.line_items.toLocaleString("en-US")} line items · {s.subs} subs · {s.crew} crew
           </div>
         </div>
-      </div>
+      </details>
     </section>
   );
 }

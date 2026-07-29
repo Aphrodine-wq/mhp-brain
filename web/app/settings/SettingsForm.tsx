@@ -49,8 +49,8 @@ export default function SettingsForm() {
 
   return (
     <>
-      <div className="panel" style={{ marginTop: 18 }}>
-        <h3>Estimating defaults</h3>
+      <details className="panel settings-fold" style={{ marginTop: 18 }}>
+        <summary>Estimating defaults</summary>
         <div className="setrow">
           <div>
             <div className="sl">Default markup</div>
@@ -97,10 +97,10 @@ export default function SettingsForm() {
           </div>
           <input value={preparedBy} style={{ width: 220 }} onChange={(e) => setPreparedBy(e.target.value)} />
         </div>
-      </div>
+      </details>
 
-      <div className="panel" style={{ marginTop: 18 }}>
-        <h3>Estimator display</h3>
+      <details className="panel settings-fold" style={{ marginTop: 18 }}>
+        <summary>Estimator display</summary>
         <div className="setrow">
           <div>
             <div className="sl">Show price history</div>
@@ -122,10 +122,10 @@ export default function SettingsForm() {
           </div>
           <div className={`toggle${packetDetail ? " on" : ""}`} onClick={() => setPacketDetail((v) => !v)} />
         </div>
-      </div>
+      </details>
 
-      <div className="panel" style={{ marginTop: 18 }}>
-        <h3>Appearance</h3>
+      <details className="panel settings-fold" style={{ marginTop: 18 }}>
+        <summary>Appearance</summary>
         <div className="setrow">
           <div>
             <div className="sl">Compact tables</div>
@@ -133,7 +133,7 @@ export default function SettingsForm() {
           </div>
           <div className={`toggle${compact ? " on" : ""}`} onClick={() => setCompact((v) => !v)} />
         </div>
-      </div>
+      </details>
     </>
   );
 }

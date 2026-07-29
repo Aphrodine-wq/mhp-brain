@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { CatalogRow, EstimateRow } from "@/lib/queries";
 import type { RealizationFactor } from "@/lib/flywheel-insight";
 import EstimatesTable from "./EstimatesTable";
 import Estimator from "./Estimator";
 
-// /estimates is both surfaces in one: the saved-estimates list by default, the
-// Estimate Builder behind "New Estimate" (or ?new=1 for handoff deep-links).
+// /estimates?new=1 is the builder. The old list mode is tucked into Projects (each job's
+// Estimates tile); "back" out of the builder lands there too.
 export default function EstimatesHome({
   estimates,
   catalog,
@@ -23,6 +24,7 @@ export default function EstimatesHome({
   initialClientName: string;
   startNew: boolean;
 }) {
+  const router = useRouter();
   const [mode, setMode] = useState<"list" | "new">(startNew ? "new" : "list");
 
   if (mode === "new") {
@@ -32,7 +34,7 @@ export default function EstimatesHome({
         initialDesc={initialDesc}
         initialClientName={initialClientName}
         realization={realization}
-        onBack={() => setMode("list")}
+        onBack={() => router.push("/projects")}
       />
     );
   }

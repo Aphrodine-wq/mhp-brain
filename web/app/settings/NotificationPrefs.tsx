@@ -56,8 +56,8 @@ export default function NotificationPrefs({
   }
 
   return (
-    <div className="panel" style={{ marginTop: 18 }}>
-      <h3>Notifications</h3>
+    <details className="panel settings-fold" style={{ marginTop: 18 }}>
+      <summary>Notifications</summary>
 
       {/* Teams webhook connection status + one-click test */}
       <div className="setrow">
@@ -107,6 +107,6 @@ export default function NotificationPrefs({
           </div>
         );
       })}
-    </div>
+    </details>
   );
 }

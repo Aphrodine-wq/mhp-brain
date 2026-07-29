@@ -33,31 +33,26 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
   // CEO sees the full admin surface; only the landing differs (Cockpit, not Home).
   ceo: [
     { href: "/", label: "Cockpit", icon: i("home") },
-    { href: "/estimates", label: "Estimates", icon: i("estimates") },
     { href: "/projects", label: "Projects", icon: i("projects") },
     { href: "/subs", label: "Subs", icon: i("subs") },
     { href: "/crew", label: "Crew", icon: i("crew") },
     { href: "/pricing", label: "Pricing", icon: i("pricing") },
   ],
   estimator: [
-    { href: "/estimates", label: "Estimates", icon: i("estimates") },
     { href: "/projects", label: "Projects", icon: i("projects") },
     { href: "/subs", label: "Subs", icon: i("subs") },
   ],
   sales: [
     { href: "/", label: "Pipeline", icon: i("pipeline") },
     { href: "/projects", label: "Projects", icon: i("projects") },
-    { href: "/estimates", label: "Estimates", icon: i("estimates") },
   ],
   materials: [
     { href: "/", label: "Pricing", icon: i("pricing") },
     { href: "/subs", label: "Vendors & Subs", icon: i("subs") },
-    { href: "/estimates", label: "Estimates", icon: i("estimates") },
     { href: "/projects", label: "Projects", icon: i("projects") },
   ],
   admin: [
     { href: "/", label: "Home", icon: i("home") },
-    { href: "/estimates", label: "Estimates", icon: i("estimates") },
     { href: "/projects", label: "Projects", icon: i("projects") },
     { href: "/subs", label: "Subs", icon: i("subs") },
     { href: "/crew", label: "Crew", icon: i("crew") },
@@ -66,12 +61,10 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
   editor: [
     { href: "/", label: "Home", icon: i("home") },
     { href: "/projects", label: "Projects", icon: i("projects") },
-    { href: "/estimates", label: "Estimates", icon: i("estimates") },
   ],
   viewer: [
     { href: "/", label: "Home", icon: i("home") },
     { href: "/projects", label: "Projects", icon: i("projects") },
-    { href: "/estimates", label: "Estimates", icon: i("estimates") },
   ],
   crew: [
     { href: "/", label: "Home", icon: i("home") },
