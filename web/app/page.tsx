@@ -8,7 +8,6 @@ import CeoDashboard from "./_dashboards/CeoDashboard";
 import SalesDashboard from "./_dashboards/SalesDashboard";
 import WeatherBanner from "./_dashboards/WeatherBanner";
 import GbpReviews from "./_dashboards/GbpReviews";
-import GmbMap from "./_dashboards/GmbMap";
 
 export const dynamic = "force-dynamic";
 
@@ -59,8 +58,6 @@ export default async function Home() {
           New Estimate
         </Link>
       </div>
-
-      <GmbMap />
 
       <GbpReviews />
 
