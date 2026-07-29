@@ -574,7 +574,8 @@ body.compact .prow{padding:9px 16px}
 .empty .big{font-family:var(--disp);font-size:22px;color:var(--ink);margin-bottom:8px;letter-spacing:-.3px}
 /* login: centered, clean, mobile-first */
 .login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(160deg, var(--ink-navy) 0%, #0d2d5e 50%, #0b3d91 100%);
+  background:linear-gradient(160deg, rgba(11,24,43,.68) 0%, rgba(13,45,94,.55) 50%, rgba(11,61,145,.5) 100%),
+    url('/login-bg.jpg') center/cover no-repeat;
   padding:24px}
 .login-shell{display:flex;align-items:center;gap:56px;width:100%;max-width:960px}
 .login-pitch{flex:1.2;color:#fff;min-width:0}
