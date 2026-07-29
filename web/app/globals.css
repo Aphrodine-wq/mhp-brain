@@ -249,9 +249,9 @@ small.j{color:var(--muted);font-size:11px}
 .conn-icon svg{width:22px;height:22px;display:block}
 .conn-left{display:flex;align-items:center;gap:14px;min-width:0}
 /* integration cards — 2-col grid inside the Connected services panel */
-.conn-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 20px 20px}
+.conn-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 18px 18px}
 .conn-card{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:10px;
-  padding:16px;background:#fff;box-shadow:var(--shadow-sm)}
+  padding:12px 14px;background:#fff;box-shadow:var(--shadow-sm)}
 .conn-card-head{display:flex;align-items:center;gap:12px}
 .conn-title{display:flex;flex-direction:column;gap:5px;align-items:flex-start;min-width:0}
 .conn-desc{flex:1}
@@ -259,9 +259,9 @@ small.j{color:var(--muted);font-size:11px}
 @media(max-width:760px){.conn-grid{grid-template-columns:1fr}}
 /* dashboard */
 .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin:22px 0}
-.metric{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px;
+.metric{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:11px 14px;
   box-shadow:var(--shadow-sm)}
-.metric .v{font-family:var(--disp);font-size:26px;font-weight:650;line-height:1.1;letter-spacing:-.5px}
+.metric .v{font-family:var(--disp);font-size:24px;font-weight:650;line-height:1.1;letter-spacing:-.5px}
 .metric .k{color:var(--muted);font-size:12px;margin-top:5px;text-transform:uppercase;letter-spacing:.5px}
 .metric.accent{background:var(--navy);border-color:var(--navy)}
 .metric.accent .v{color:#fff}.metric.accent .k{color:rgba(255,255,255,.7)}
@@ -269,7 +269,7 @@ small.j{color:var(--muted);font-size:11px}
 @media(max-width:900px){.cols{grid-template-columns:1fr}}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;
   box-shadow:var(--shadow-sm)}
-.panel h3{font-family:var(--disp);font-size:16px;font-weight:600;margin:0;padding:15px 20px;
+.panel h3{font-family:var(--disp);font-size:15px;font-weight:600;margin:0;padding:12px 18px;
   border-bottom:1px solid var(--line-2);letter-spacing:-.2px}
 /* collapsible settings fold — summary impersonates the panel h3, collapsed by default */
 .settings-fold>summary{font-family:var(--disp);font-size:16px;font-weight:600;padding:15px 20px;
@@ -290,7 +290,7 @@ small.j{color:var(--muted);font-size:11px}
 .stat-strip .sk{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px;margin-top:7px}
 .sec-h{font-family:var(--disp);font-size:18px;font-weight:600;margin:30px 0 0;letter-spacing:-.2px}
 .proj-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(288px,100%),1fr));gap:16px;margin-top:16px}
-.pcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px;cursor:pointer;
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:13px;cursor:pointer;
   box-shadow:var(--shadow-sm);transition:border-color var(--t),box-shadow var(--t),transform var(--t)}
 .pcard:hover{border-color:#c2cede;box-shadow:var(--shadow-lg);transform:translateY(-2px)}
 .pcard .pc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:16px}
@@ -374,7 +374,7 @@ small.j{color:var(--muted);font-size:11px}
 .forecast b{color:var(--ink)}
 /* crew cards */
 .crew-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:16px;margin-top:22px}
-.crew-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px;
+.crew-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px;
   box-shadow:var(--shadow-sm);transition:border-color var(--t),box-shadow var(--t),transform var(--t)}
 .crew-card:hover{border-color:#c2cede;box-shadow:var(--shadow);transform:translateY(-1px)}
 .crew-top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
@@ -486,7 +486,7 @@ small.j{color:var(--muted);font-size:11px}
 .pay-row b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600}
 .pay-row b.wx-wet{color:#b45309}
 /* settings */
-.setrow{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:16px 20px;border-bottom:1px solid var(--line-2)}
+.setrow{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 18px;border-bottom:1px solid var(--line-2)}
 .setrow:last-child{border-bottom:0}
 .setrow .sl{font-weight:600}.setrow .sd{color:var(--muted);font-size:13px;margin-top:2px}
 .setrow input,.setrow select{padding:8px 12px;border:1px solid var(--line);border-radius:var(--r-sm);font-family:var(--sans);
@@ -555,17 +555,18 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .mstone-label{font-size:11px;font-weight:600;color:var(--muted);margin-top:9px;text-transform:capitalize;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mstone.now .mstone-label{color:var(--navy)}
-/* section tiles — the menu into each tucked-away project section */
-.tile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:24px}
-.tile{display:flex;flex-direction:column;gap:4px;background:var(--card);border:1px solid var(--line);
-  border-radius:var(--r);padding:12px 14px;text-decoration:none;color:var(--ink);
+/* section tiles — one row, scrolls sideways on narrow screens */
+.tile-grid{display:flex;gap:10px;margin-top:24px}
+.tile{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;background:var(--card);border:1px solid var(--line);
+  border-radius:var(--r);padding:10px 11px;text-decoration:none;color:var(--ink);
   box-shadow:var(--shadow-sm);transition:border-color var(--t),box-shadow var(--t),transform var(--t)}
 .tile:hover{border-color:var(--navy);box-shadow:var(--shadow);transform:translateY(-1px)}
 .tile-icon{color:var(--navy);display:flex}
-.tile-icon svg{fill:currentColor;width:18px;height:18px}
-.tile-name{font-weight:600;font-size:13px;margin-top:2px}
+.tile-icon svg{fill:currentColor;width:16px;height:16px}
+.tile-name{font-weight:600;font-size:12px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:720px){.tile-grid{overflow-x:auto}.tile{min-width:96px}}
 /* compact metric value for money-length numbers; flat = no card chrome inside a panel */
-.metric .v.sm{font-size:22px}
+.metric .v.sm{font-size:19px}
 .metric.flat{background:transparent;border:0;box-shadow:none;padding:8px 0;border-radius:0}
 @media(max-width:720px){main.wrap{padding:28px 22px}}
 /* home stats */
@@ -787,9 +788,8 @@ body.compact .prow{padding:9px 16px}
   /* stat grids can go 2-up on a phone instead of collapsing to one column */
   .stat-grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
 
-  /* milestone labels + tiles tighten for narrow screens */
+  /* milestone labels tighten for narrow screens */
   .mstone-label{font-size:10px}
-  .tile-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
 
   /* file picker never overflows its card */
   .upload input[type=file]{max-width:100%}
