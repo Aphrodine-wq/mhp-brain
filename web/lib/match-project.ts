@@ -1,4 +1,4 @@
-// Shared project-name matcher — links external things (OneDrive files, Trello cards,
+// Shared project-name matcher — links external things (OneDrive files,
 // calendar events) to brain projects by distinctive whole-word name tokens. Generic
 // construction words are stopped so "Kingery" beats "renovation".
 

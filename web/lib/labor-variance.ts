@@ -16,8 +16,8 @@ import { db } from "@/lib/db";
 //     The QB pipe isn't authorized yet, so actual is null and the readout shows
 //     "awaiting QuickBooks" — it lights up on first sync, same as Margin/Collected.
 //
-// Pure reads, no mutation — mirrors lib/margin.ts. Hours (lib/time.ts
-// actualLaborHours) are NOT converted to dollars here on purpose: a fabricated
+// Pure reads, no mutation — mirrors lib/margin.ts. Logged crew hours are NOT
+// converted to dollars here on purpose: a fabricated
 // rate would steer real bids, and James chose the book-accurate path.
 
 // Fraction of a combined "Material & Labor" line that counts as labor.

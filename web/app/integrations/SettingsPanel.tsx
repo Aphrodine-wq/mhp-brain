@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 
 // Per-integration knobs — each value is read by its sync at run time.
 const FIELDS: { provider: string; key: string; label: string; hint: string; kind: "number" | "toggle" | "text" }[] = [
-  { provider: "trello", key: "board_id", label: "Trello board", hint: "Which board to pull. Paste the ID from its URL: trello.com/b/THIS-part. Blank = all boards.", kind: "text" },
   { provider: "microsoft", key: "calendar_days", label: "Calendar window (days)", hint: "How far ahead the calendar sync looks. Default 30.", kind: "number" },
   { provider: "weather", key: "lat", label: "Job market latitude", hint: "Forecast location. Default Oxford, MS.", kind: "text" },
   { provider: "weather", key: "lon", label: "Job market longitude", hint: "Default -89.5192.", kind: "text" },

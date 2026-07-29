@@ -13,7 +13,7 @@ function slug(s: string): string {
 }
 
 // self-heal the link column if migration 010 hasn't been applied — idempotent, matches the
-// runtime-ensure pattern the integrations use (e.g. trello.ensureCards).
+// runtime-ensure pattern used elsewhere in the app.
 async function ensureLinkColumn() {
   try {
     await db.execute("ALTER TABLE saved_estimates ADD COLUMN IF NOT EXISTS project_id TEXT");

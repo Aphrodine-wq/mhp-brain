@@ -47,11 +47,14 @@ export default function Estimator({
   initialDesc = "",
   initialClientName = "",
   realization = null,
+  onBack,
 }: {
   catalog: CatalogRow[];
   initialDesc?: string;
   initialClientName?: string;
   realization?: RealizationFactor | null;
+  // back to the estimates list — the builder shares /estimates with it now
+  onBack?: () => void;
 }) {
   const [view, setView] = useState<"input" | "load" | "result" | "packet">("input");
   const [client, setClient] = useState<ClientInfo>({ project: "", clientName: initialClientName, address: "", date: "", preparedBy: "MHP Construction" });
@@ -310,6 +313,11 @@ export default function Estimator({
       <section className="view">
         <div className="row" style={{ justifyContent: "space-between", marginTop: 0, alignItems: "flex-start" }}>
           <div>
+            {onBack && (
+              <button className="btn ghost sm" onClick={onBack} style={{ marginBottom: 8 }}>
+                ← All estimates
+              </button>
+            )}
             <h2 style={{ margin: 0 }}>Estimate Builder</h2>
           </div>
           <button className="btn ghost" aria-expanded={showTemplates} onClick={() => setShowTemplates((v) => !v)}>

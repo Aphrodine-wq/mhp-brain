@@ -26,14 +26,9 @@ export default async function Home() {
   const [s, projects] = await Promise.all([stats(), projectsList()]);
   const active = projects.filter((p) => p.status === "Active");
 
-  // live context per card when the integrations have synced — Trello stage + next event.
-  // Both reads tolerate the tables not existing yet (no syncs run).
-  const stageById = new Map<string, string>();
+  // live context per card when the integrations have synced — next calendar event.
+  // The read tolerates the table not existing yet (no syncs run).
   const nextEventById = new Map<string, string>();
-  try {
-    const cards = (await db.execute("SELECT project_id, list FROM trello_cards WHERE closed = FALSE AND project_id IS NOT NULL")).rows;
-    for (const c of cards) if (!stageById.has(String(c.project_id))) stageById.set(String(c.project_id), String(c.list ?? ""));
-  } catch { /* table appears after the first Trello sync */ }
   try {
     const evs = (await db.execute("SELECT project_id, subject, start_at FROM calendar_events WHERE project_id IS NOT NULL ORDER BY start_at")).rows;
     for (const e of evs) {
@@ -55,7 +50,7 @@ export default async function Home() {
   return (
     <section className="view">
       <div className="row" style={{ justifyContent: "flex-end", marginTop: 0, alignItems: "flex-start" }}>
-        <Link className="btn" href="/estimate-builder">+ New Estimate</Link>
+        <Link className="btn" href="/estimates?new=1">+ New Estimate</Link>
       </div>
 
       <WeatherBanner />
@@ -86,7 +81,6 @@ export default async function Home() {
             <Link key={x.id} href={`/projects/${x.id}`} className="pcard">
               <div className="pc-top">
                 <div className="pc-name">{x.name}</div>
-                {stageById.get(x.id) && <span className="badge bid">{stageById.get(x.id)}</span>}
               </div>
               <div className="pc-val">{x.value ? money(x.value) : "—"}</div>
               <div className="pc-meta">

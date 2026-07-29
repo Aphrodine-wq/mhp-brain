@@ -26,19 +26,10 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
   }
 
   const conn = (id: ProviderState["id"]) => conns.find((c) => c.provider === id) ?? null;
-  // Trello's connect URL is built server-side (it carries the API key); the token comes
-  // back in a fragment that /integrations/trello catches.
-  const trelloConfigured = isConfigured("trello");
-  let trelloConnectUrl: string | null = null;
-  if (trelloConfigured) {
-    const { trelloAuthorizeUrl, appBaseUrl } = await import("@/lib/trello");
-    trelloConnectUrl = trelloAuthorizeUrl(`${await appBaseUrl()}/integrations/trello`);
-  }
   const providers: ProviderState[] = [
     { id: "quickbooks", label: "QuickBooks", configured: isConfigured("quickbooks"), connection: conn("quickbooks") },
     { id: "gmail", label: "Gmail (Invoice Capture)", configured: isConfigured("gmail"), connection: conn("gmail") },
     { id: "microsoft", label: "Microsoft Teams + OneDrive", configured: isConfigured("microsoft"), connection: conn("microsoft") },
-    { id: "trello", label: "Trello (Project Boards)", configured: trelloConfigured, connection: conn("trello"), connectUrl: trelloConnectUrl },
     { id: "gbp", label: "Google Business Profile", configured: isConfigured("gbp"), connection: conn("gbp") },
   ];
   const reviews = await recentReviews(8).catch(() => []);

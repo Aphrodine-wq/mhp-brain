@@ -10,8 +10,8 @@ export interface DocSlot {
   hint?: string;
 }
 
-// Per-entity document panel (subs, crew). Required slots show on-file / missing badges;
-// uploads link the file to the entity so it also appears on /documents under its category.
+// Per-entity document panel (projects, subs, crew). Required slots show on-file / missing
+// badges; uploads link the file to the entity so it appears here on the entity's page.
 export default function EntityDocs({
   entityType,
   entityId,

@@ -36,8 +36,6 @@ const PUBLIC = new Set([
   // Price-scraper ingest — machine caller, no session. The handler enforces its own
   // HMAC signature (PRICING_INGEST_SECRET) and rejects everything unsigned.
   "/api/pricing/ingest",
-  // TEMPORARY: read-only Trello API-key validity probe (no secrets returned). Remove after debug.
-  "/api/trello/diag",
 ]);
 
 export function proxy(request: NextRequest) {

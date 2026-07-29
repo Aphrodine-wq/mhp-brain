@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     // Lax (not Strict) so the session survives top-level cross-site redirects back into the
-    // app — e.g. returning from Trello's authorize screen. Strict made proxy.ts see "no
+    // app — e.g. returning from a provider's OAuth consent screen. Strict made proxy.ts see "no
     // session" on that hop and bounce to /login, killing the OAuth grant. Matches every other
     // login path (Google/Microsoft/QuickBooks/dev-login all use Lax).
     sameSite: "lax",

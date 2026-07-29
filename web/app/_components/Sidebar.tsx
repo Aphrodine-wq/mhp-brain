@@ -15,14 +15,11 @@ const ICONS: Record<string, React.ReactNode> = {
   projects: (<path d="M3 7h6l2 2h10v11H3z" />),
   subs: (<><circle cx="9" cy="8" r="3" /><path d="M3 20c0-3 3-5 6-5s6 2 6 5" /><path d="M16 6a3 3 0 010 6M21 20c0-2.5-2-4-4-4.5" /></>),
   crew: (<><path d="M4 20a8 8 0 0116 0" /><circle cx="12" cy="7" r="4" /></>),
-  documents: (<><path d="M8 3h8l4 4v14H8z" /><path d="M16 3v4h4" /><path d="M4 7v14h11" /></>),
   integrations: (<><path d="M9 17H7A5 5 0 017 7h2" /><path d="M15 7h2a5 5 0 010 10h-2" /><path d="M8 12h8" /></>),
   settings: (<><circle cx="12" cy="12" r="3" /><path d="M19 12a7 7 0 00-.1-1l2-1.6-2-3.4-2.4 1a7 7 0 00-1.7-1l-.4-2.5h-4l-.4 2.5a7 7 0 00-1.7 1l-2.4-1-2 3.4 2 1.6a7 7 0 000 2l-2 1.6 2 3.4 2.4-1a7 7 0 001.7 1l.4 2.5h4l.4-2.5a7 7 0 001.7-1l2.4 1 2-3.4-2-1.6a7 7 0 00.1-1z" /></>),
   pipeline: (<><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></>),
   pricing: (<><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" /></>),
-  time: (<><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>),
   radar: (<><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" /><path d="M12 12l6-4" /></>),
-  trello: (<><rect x="3" y="3" width="18" height="18" rx="2" /><rect x="7" y="7" width="3.5" height="10" rx="1" /><rect x="13.5" y="7" width="3.5" height="6" rx="1" /></>),
 };
 
 function i(name: string): React.ReactNode { return ICONS[name] ?? ICONS.home; }
@@ -32,18 +29,13 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
   // CEO sees the full admin surface; only the landing differs (Cockpit, not Home).
   ceo: [
     { href: "/", label: "Cockpit", icon: i("home") },
-    { href: "/estimate-builder", label: "Estimate Builder", icon: i("estimator") },
     { href: "/estimates", label: "Estimates", icon: i("estimates") },
     { href: "/projects", label: "Projects", icon: i("projects") },
     { href: "/subs", label: "Subs", icon: i("subs") },
     { href: "/crew", label: "Crew", icon: i("crew") },
-    { href: "/documents", label: "Documents", icon: i("documents") },
     { href: "/pricing", label: "Pricing", icon: i("pricing") },
-    { href: "/time", label: "Time", icon: i("time") },
-    { href: "/trello", label: "Trello", icon: i("trello") },
   ],
   estimator: [
-    { href: "/estimate-builder", label: "Estimate Builder", icon: i("estimator") },
     { href: "/estimates", label: "Estimates", icon: i("estimates") },
     { href: "/projects", label: "Projects", icon: i("projects") },
     { href: "/subs", label: "Subs", icon: i("subs") },
@@ -61,21 +53,16 @@ const ROLE_NAV: Record<Role, NavItem[]> = {
   ],
   admin: [
     { href: "/", label: "Home", icon: i("home") },
-    { href: "/estimate-builder", label: "Estimate Builder", icon: i("estimator") },
     { href: "/estimates", label: "Estimates", icon: i("estimates") },
     { href: "/projects", label: "Projects", icon: i("projects") },
     { href: "/subs", label: "Subs", icon: i("subs") },
     { href: "/crew", label: "Crew", icon: i("crew") },
-    { href: "/documents", label: "Documents", icon: i("documents") },
     { href: "/pricing", label: "Pricing", icon: i("pricing") },
-    { href: "/time", label: "Time", icon: i("time") },
-    { href: "/trello", label: "Trello", icon: i("trello") },
   ],
   editor: [
     { href: "/", label: "Home", icon: i("home") },
     { href: "/projects", label: "Projects", icon: i("projects") },
     { href: "/estimates", label: "Estimates", icon: i("estimates") },
-    { href: "/time", label: "Time", icon: i("time") },
   ],
   viewer: [
     { href: "/", label: "Home", icon: i("home") },

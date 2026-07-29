@@ -10,7 +10,7 @@ function hashToken(raw: string): string {
   return createHash("sha256").update(raw).digest("hex");
 }
 
-// idempotent self-heal — matches the runtime-ensure habit (e.g. trello.ensureCards)
+// idempotent self-heal — matches the runtime-ensure habit used across the app
 async function ensureTable() {
   try {
     await db.execute(`CREATE TABLE IF NOT EXISTS job_share_links (
