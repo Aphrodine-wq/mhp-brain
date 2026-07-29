@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   House, FileText, Folder, Users, UserCircle, PlugsConnected, Gear,
-  ChartLine, Tag, Crosshair, SignOut, List, CaretLeft,
+  ChartLine, Tag, Crosshair, List, CaretLeft,
 } from "@phosphor-icons/react";
 import type { SessionUser, Role } from "@/lib/auth";
 
@@ -107,7 +107,6 @@ const ROLE_LABEL: Record<Role, string> = {
 
 export default function Sidebar({ user }: { user: SessionUser }) {
   const pathname = usePathname();
-  const router = useRouter();
   // Drawer state — only matters on mobile, where the sidebar slides in over the content.
   const [open, setOpen] = useState(false);
   // Collapsed rail — desktop only. Persisted so it survives navigation/reloads.
@@ -156,12 +155,6 @@ export default function Sidebar({ user }: { user: SessionUser }) {
     user.name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?";
   const roleLabel = ROLE_LABEL[user.role] + (user.scope ? ` · ${user.scope}` : "");
 
-  async function logout() {
-    await fetch("/api/logout", { method: "POST" });
-    router.replace("/login");
-    router.refresh();
-  }
-
   return (
     <>
       {/* Mobile-only top bar — hidden on desktop via CSS. Hosts the hamburger. */}
@@ -204,9 +197,6 @@ export default function Sidebar({ user }: { user: SessionUser }) {
             <div className="prole">{roleLabel}</div>
           </div>
         </Link>
-        <button className="logout" onClick={logout} title="Sign out" aria-label="Sign out">
-          <SignOut size={18} />
-        </button>
       </div>
       </aside>
     </>

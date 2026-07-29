@@ -163,15 +163,15 @@ select:focus,input.mk:focus{outline:none;border-color:var(--navy);box-shadow:var
 small.j{color:var(--muted);font-size:11px}
 /* app shell */
 .app{display:flex;min-height:100vh}
-.sidebar{width:180px;flex-shrink:0;background:var(--ink-navy);color:#fff;display:flex;flex-direction:column;
+.sidebar{width:160px;flex-shrink:0;background:var(--ink-navy);color:#fff;display:flex;flex-direction:column;
   position:sticky;top:0;height:100vh;transition:width .2s ease}
 .brand{display:flex;align-items:center;justify-content:center;padding:22px 16px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
 .brand img{height:52px;width:auto}
-/* collapse control — its own slim row pinned above the profile */
-.collapse-row{display:flex;justify-content:flex-end;padding:6px 12px;border-top:1px solid rgba(255,255,255,.1)}
+/* collapse control — one quiet chevron, no chrome */
+.collapse-row{display:flex;justify-content:center;padding:4px}
 .collapse-btn{display:flex;align-items:center;justify-content:center;background:0;border:0;
-  color:rgba(255,255,255,.55);cursor:pointer;padding:4px;border-radius:var(--r-sm);transition:color var(--t),background var(--t)}
-.collapse-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
+  color:rgba(255,255,255,.35);cursor:pointer;padding:6px;border-radius:var(--r-sm);transition:color var(--t)}
+.collapse-btn:hover{color:#fff}
 .collapse-btn svg{width:18px;height:18px;fill:currentColor;transition:transform var(--t)}
 .sidebar nav{padding:14px 12px;display:flex;flex-direction:column;gap:1px;flex:1}
 .nav{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:var(--r-sm);color:rgba(255,255,255,.66);
@@ -205,7 +205,6 @@ small.j{color:var(--muted);font-size:11px}
   .sidebar.collapsed .nav-sep{margin:9px 12px}
   .sidebar.collapsed .profile-row{flex-direction:column}
   .sidebar.collapsed .profile{justify-content:center;padding:14px 0}
-  .sidebar.collapsed .logout{border-left:0;border-top:1px solid rgba(255,255,255,.08);justify-content:center;padding:12px 0}
 }
 /* collapsible category sections (Estimates / Projects / Subs / Documents / Templates) —
    header card with the house cobalt accent edge that swings open into an attached panel */
@@ -289,6 +288,8 @@ small.j{color:var(--muted);font-size:11px}
 .pcard .pc-meta .pdot{width:3px;height:3px;border-radius:50%;background:var(--muted);opacity:.5}
 /* collected-vs-bid progress on the home cards */
 .pc-progress{margin-top:12px}
+.pc-progress-top{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);
+  margin-bottom:6px;font-variant-numeric:tabular-nums}
 .pc-progress-bar{height:6px;background:#edeef1;border-radius:4px;overflow:hidden}
 .pc-progress-fill{height:100%;background:var(--navy);border-radius:4px;transition:width var(--t)}
 .pc-progress small{display:block;margin-top:5px;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -299,17 +300,26 @@ small.j{color:var(--muted);font-size:11px}
 .banner{background:#eef3fb;border:1px solid #d6e2f4;border-radius:var(--r-lg);padding:14px 18px;margin:18px 0 6px;
   font-size:13.5px;color:var(--navy);display:flex;gap:10px;align-items:center}
 .banner b{color:var(--navy)}
-/* weather card — modern square card: icon tile, big temp, condition line, status pill */
-.wx-card{display:flex;align-items:center;gap:14px;margin:18px 0 22px;padding:14px 16px;
+/* weather card — modern square card: today block + 5-day rain/temp strip */
+.wx-card{display:flex;align-items:center;gap:18px;margin:18px 0 22px;padding:14px 18px;
   background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow-sm)}
+.wx-today{display:flex;align-items:center;gap:14px;min-width:0;flex:1}
 .wx-icon{width:44px;height:44px;border-radius:8px;background:var(--paper);border:1px solid var(--line-2);
   display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.wx-main{min-width:0;flex:1}
+.wx-main{min-width:0}
 .wx-temp{font-family:var(--disp);font-size:22px;font-weight:700;line-height:1.1;letter-spacing:-.4px;color:var(--ink)}
 .wx-meta{font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.wx-pill{flex-shrink:0;font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;white-space:nowrap}
-.wx-pill.wet{background:#fdf3e4;color:#b45309;border:1px solid #f0ddba}
-.wx-pill.dry{background:#e9f6ec;color:#1e7d32;border:1px solid #c8e6cf}
+.wx-days{display:flex;gap:4px;flex-shrink:0;overflow-x:auto}
+.wx-day{min-width:52px;text-align:center;padding:6px 8px;border-radius:8px}
+.wx-day-name{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.wx-day-temp{font-size:14px;font-weight:650;color:var(--ink);margin-top:2px;font-variant-numeric:tabular-nums}
+.wx-day-rain{font-size:11px;color:var(--muted);margin-top:1px;font-variant-numeric:tabular-nums}
+.wx-day.wet{background:#fdf3e4}
+.wx-day.wet .wx-day-rain{color:#b45309;font-weight:700}
+@media(max-width:640px){
+  .wx-card{flex-direction:column;align-items:stretch;gap:12px}
+  .wx-days{justify-content:space-between}
+}
 /* Google Business Profile widget — rating + recent review snippets */
 .gbp-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:8px}
 .gbp-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
@@ -594,13 +604,9 @@ body.compact .prow{padding:9px 16px}
   .login-submit{padding:12px;font-size:15px}
   .login-footer{margin-top:20px}
 }
-/* sidebar profile row + logout */
+/* sidebar profile row */
 .profile-row{display:flex;align-items:stretch;border-top:1px solid rgba(255,255,255,.1)}
 .profile-row .profile{flex:1;border-top:0}
-.logout{background:0;border:0;cursor:pointer;color:rgba(255,255,255,.45);padding:0 16px;display:flex;
-  align-items:center;border-left:1px solid rgba(255,255,255,.08);transition:background var(--t),color var(--t)}
-.logout:hover{color:#fff;background:rgba(255,255,255,.06)}
-.logout svg{width:18px;height:18px;fill:currentColor}
 /* modal (Add Sub) */
 .modal-scrim{position:fixed;inset:0;z-index:80;background:rgba(8,16,28,.5);display:flex;align-items:center;
   justify-content:center;padding:20px}

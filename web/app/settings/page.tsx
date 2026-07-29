@@ -5,6 +5,7 @@ import { allSettings } from "@/lib/integration-settings";
 import { alertsConfigured } from "@/lib/alerts";
 import SettingsForm from "./SettingsForm";
 import NotificationPrefs from "./NotificationPrefs";
+import SignOutButton from "./SignOutButton";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +39,7 @@ export default async function SettingsPage() {
         <div className="setrow">
           <div className="sl">Signed in as</div>
           <div className="sd">{signedInAs}</div>
+          <div className="actions"><SignOutButton /></div>
         </div>
         <div className="setrow">
           <div className="sl">Data</div>

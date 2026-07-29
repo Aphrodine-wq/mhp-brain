@@ -22,7 +22,7 @@ export default async function SalesDashboard() {
       SELECT id, name, type, lead_source, current_phase, client_name, client_phone
       FROM projects p
       WHERE status IN ('Active', 'active', 'Aging')
-      ORDER BY COALESCE(actual_start, '9999') DESC
+      ORDER BY COALESCE(actual_start, '0000') DESC
       LIMIT 15
     `).then((r) => r.rows),
     // Win/loss stats

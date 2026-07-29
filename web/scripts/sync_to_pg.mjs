@@ -10,7 +10,7 @@ const src = createClient({ url: SRC });
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
 const DDL = {
-  projects: `CREATE TABLE projects (id TEXT PRIMARY KEY, name TEXT, type TEXT, market TEXT, status TEXT, last_activity TEXT)`,
+  projects: `CREATE TABLE projects (id TEXT PRIMARY KEY, name TEXT, type TEXT, market TEXT, status TEXT, last_activity TEXT, current_phase TEXT, contract_value TEXT, actual_start TEXT, actual_end TEXT, lead_source TEXT, lost_reason TEXT, client_name TEXT, client_phone TEXT, client_email TEXT, address TEXT, deposit_amount TEXT, deposit_date TEXT)`,
   estimates: `CREATE TABLE estimates (id TEXT PRIMARY KEY, project_id TEXT, source_file TEXT, source_type TEXT, sheet TEXT, line_item_count INTEGER, sum_item_total DOUBLE PRECISION, sum_sov_total DOUBLE PRECISION, stated_total DOUBLE PRECISION, parse_confidence TEXT, flags TEXT, est_date TEXT)`,
   line_items: `CREATE TABLE line_items (id BIGINT, estimate_id TEXT, division TEXT, item_no TEXT, description TEXT, qty DOUBLE PRECISION, unit TEXT, unit_price DOUBLE PRECISION, material DOUBLE PRECISION, labor DOUBLE PRECISION, sub_bid DOUBLE PRECISION, item_total DOUBLE PRECISION, sov_total DOUBLE PRECISION, sub_name TEXT, norm_unit TEXT, price_kind TEXT, canon_desc TEXT)`,
   actuals: `CREATE TABLE actuals (project_id TEXT, source_file TEXT, closing_total DOUBLE PRECISION)`,

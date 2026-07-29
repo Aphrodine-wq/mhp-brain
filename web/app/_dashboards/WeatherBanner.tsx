@@ -30,26 +30,30 @@ export default function WeatherBanner() {
   if (!days || !days.length) return null;
 
   const today = days[0];
-  // First day in the window (today included) with a real rain chance — the one to plan around.
-  const wet = days.find((d) => d.rain >= 40);
 
   return (
     <div className="wx-card">
-      <div className="wx-icon" aria-hidden>
-        <svg viewBox="0 0 24 24" width="26" height="26">
-          <circle cx="9" cy="9" r="4.5" fill="#FBBC04" />
-          <path d="M7 18a4.2 4.2 0 0 1 .4-8.4 5.4 5.4 0 0 1 10.4 1.5A3.5 3.5 0 0 1 17.5 18z" fill="#9bb7e6" stroke="#5b87c9" strokeWidth=".8" />
-        </svg>
+      <div className="wx-today">
+        <div className="wx-icon" aria-hidden>
+          <svg viewBox="0 0 24 24" width="26" height="26">
+            <circle cx="9" cy="9" r="4.5" fill="#FBBC04" />
+            <path d="M7 18a4.2 4.2 0 0 1 .4-8.4 5.4 5.4 0 0 1 10.4 1.5A3.5 3.5 0 0 1 17.5 18z" fill="#9bb7e6" stroke="#5b87c9" strokeWidth=".8" />
+          </svg>
+        </div>
+        <div className="wx-main">
+          <div className="wx-temp">{today.temp}°</div>
+          <div className="wx-meta">{location ? `${location} · ` : ""}{today.forecast}</div>
+        </div>
       </div>
-      <div className="wx-main">
-        <div className="wx-temp">{today.temp}°</div>
-        <div className="wx-meta">{location ? `${location} · ` : ""}{today.forecast}</div>
+      <div className="wx-days">
+        {days.slice(1, 6).map((d) => (
+          <div className={`wx-day${d.rain >= 40 ? " wet" : ""}`} key={d.name}>
+            <div className="wx-day-name">{d.name}</div>
+            <div className="wx-day-temp">{d.temp}°</div>
+            <div className="wx-day-rain">{d.rain}%</div>
+          </div>
+        ))}
       </div>
-      {wet ? (
-        <span className="wx-pill wet">Rain {wet.name} · {wet.rain}% — hold the pour</span>
-      ) : (
-        <span className="wx-pill dry">Clear stretch — good to pour</span>
-      )}
     </div>
   );
 }

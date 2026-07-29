@@ -4,7 +4,6 @@ import { Plus } from "@phosphor-icons/react/dist/ssr";
 import { currentUser } from "@/lib/auth";
 import { dashboardForRole } from "@/lib/role-nav";
 import { stats, projectsList } from "@/lib/queries";
-import { db } from "@/lib/db";
 import CeoDashboard from "./_dashboards/CeoDashboard";
 import SalesDashboard from "./_dashboards/SalesDashboard";
 import WeatherBanner from "./_dashboards/WeatherBanner";
@@ -25,22 +24,6 @@ export default async function Home() {
   // Default dashboard (admin, editor, viewer, estimator, materials)
   const [s, projects] = await Promise.all([stats(), projectsList()]);
   const active = projects.filter((p) => p.status === "Active");
-
-  // live context per card when the integrations have synced — Trello stage + next event.
-  // Both reads tolerate the tables not existing yet (no syncs run).
-  const stageById = new Map<string, string>();
-  const nextEventById = new Map<string, string>();
-  try {
-    const cards = (await db.execute("SELECT project_id, list FROM trello_cards WHERE closed = FALSE AND project_id IS NOT NULL")).rows;
-    for (const c of cards) if (!stageById.has(String(c.project_id))) stageById.set(String(c.project_id), String(c.list ?? ""));
-  } catch { /* table appears after the first Trello sync */ }
-  try {
-    const evs = (await db.execute("SELECT project_id, subject, start_at FROM calendar_events WHERE project_id IS NOT NULL ORDER BY start_at")).rows;
-    for (const e of evs) {
-      const pid = String(e.project_id);
-      if (!nextEventById.has(pid)) nextEventById.set(pid, `${String(e.subject ?? "").slice(0, 32)} · ${String(e.start_at ?? "").slice(5, 10)}`);
-    }
-  } catch { /* table appears after the first calendar sync */ }
 
   const overview = (
     <div className="home-bento">
@@ -67,20 +50,8 @@ export default async function Home() {
             <Link key={x.id} href={`/projects/${x.id}`} className="pcard">
               <div className="pc-top">
                 <div className="pc-name">{x.name}</div>
-                {stageById.get(x.id) && <span className="badge bid">{stageById.get(x.id)}</span>}
               </div>
-              <div className="pc-meta">
-                <span>{x.type || "—"}</span><span className="pdot" />
-                <span>{x.market || "—"}</span><span className="pdot" />
-                <span>{x.estimates} bid{x.estimates === 1 ? "" : "s"}</span>
-              </div>
-              <div className="pc-meta" style={{ marginTop: 6 }}>
-                {nextEventById.get(x.id) ? (
-                  <span style={{ color: "var(--navy)", fontWeight: 600 }}>Next: {nextEventById.get(x.id)}</span>
-                ) : (
-                  <span>last activity {x.last || "—"}</span>
-                )}
-              </div>
+              <PcPhaseProgress phase={x.phase} status={x.status} />
             </Link>
           ))
         ) : (
@@ -111,5 +82,31 @@ export default async function Home() {
 
       <GbpReviews />
     </section>
+  );
+}
+
+// Phase-based progress — how far along the job is, not money. Falls back to a coarse
+// status guess when the job has no phase set yet.
+const PHASE_STEPS: Record<string, { label: string; pct: number }> = {
+  lead: { label: "Lead", pct: 10 },
+  quoted: { label: "Quoted", pct: 30 },
+  scheduled: { label: "Scheduled", pct: 45 },
+  in_progress: { label: "In progress", pct: 70 },
+  complete: { label: "Complete", pct: 100 },
+  paid: { label: "Complete", pct: 100 },
+};
+
+function PcPhaseProgress({ phase, status }: { phase: string; status: string }) {
+  const step = PHASE_STEPS[phase] ?? { label: status === "Aging" ? "Aging" : "Active", pct: status === "Aging" ? 85 : 55 };
+  return (
+    <div className="pc-progress">
+      <div className="pc-progress-top">
+        <span>{step.label}</span>
+        <span>{step.pct}%</span>
+      </div>
+      <div className="pc-progress-bar">
+        <div className="pc-progress-fill" style={{ width: `${step.pct}%` }} />
+      </div>
+    </div>
   );
 }
