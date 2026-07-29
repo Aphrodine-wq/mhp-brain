@@ -9,7 +9,6 @@ type Day = { name: string; temp: number; rain: number; forecast: string };
 // loading or error rather than cluttering the dashboard.
 export default function WeatherBanner() {
   const [days, setDays] = useState<Day[] | null>(null);
-  const [location, setLocation] = useState("");
 
   useEffect(() => {
     let live = true;
@@ -18,7 +17,6 @@ export default function WeatherBanner() {
         const d = await (await fetch("/api/weather")).json();
         if (live && d.ok && d.days?.length) {
           setDays(d.days);
-          setLocation(d.location ?? "");
         }
       } catch {
         /* silent — the banner just doesn't render */
@@ -40,10 +38,7 @@ export default function WeatherBanner() {
             <path d="M7 18a4.2 4.2 0 0 1 .4-8.4 5.4 5.4 0 0 1 10.4 1.5A3.5 3.5 0 0 1 17.5 18z" fill="#9bb7e6" stroke="#5b87c9" strokeWidth=".8" />
           </svg>
         </div>
-        <div className="wx-main">
-          <div className="wx-temp">{today.temp}°</div>
-          <div className="wx-meta">{location ? `${location} · ` : ""}{today.forecast}</div>
-        </div>
+        <div className="wx-temp">{today.temp}°</div>
       </div>
       <div className="wx-days">
         {days.slice(1, 6).map((d) => (

@@ -3,29 +3,31 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  CookingPot, Bathtub, HouseLine, Hammer, Buildings, Tree, Wrench, SquaresFour,
+  CookingPot, Bathtub, PaintRoller, SquaresFour, Bed, HouseLine, Garage,
+  Buildings, Warehouse, Tree, House, Wall,
 } from "@phosphor-icons/react";
 import type { CatalogRow } from "@/lib/queries";
 import { money } from "@/lib/format";
-import { ASSEMBLY_LIST, ASSEMBLY_CATEGORIES } from "@/lib/assemblies";
+import { ASSEMBLY_LIST } from "@/lib/assemblies";
 import { detailFor, divisionDetailFor, ESTIMATE_SCOPE } from "@/lib/line-detail";
 import ClientPacket, { type ClientInfo } from "./ClientPacket";
-import CollapseSection from "../_components/CollapseSection";
 import { insightFrom, type RealizationFactor } from "@/lib/flywheel-insight";
 
-const PLACEHOLDER = "Describe the job — scope, size, finishes.";
-
-// Step 1 of the builder — pick the kind of job before describing anything.
-const PROJECT_TYPES = [
-  { key: "Kitchen remodel", icon: <CookingPot size={22} /> },
-  { key: "Bathroom remodel", icon: <Bathtub size={22} /> },
-  { key: "Addition", icon: <HouseLine size={22} /> },
-  { key: "Renovation", icon: <Hammer size={22} /> },
-  { key: "New build", icon: <Buildings size={22} /> },
-  { key: "Outdoor / deck", icon: <Tree size={22} /> },
-  { key: "Repair", icon: <Wrench size={22} /> },
-  { key: "Other", icon: <SquaresFour size={22} /> },
-];
+// Template cards — the builder's front door. One icon per assembly.
+const TEMPLATE_ICONS: Record<string, React.ReactNode> = {
+  kitchen: <CookingPot size={22} />,
+  bathroom: <Bathtub size={22} />,
+  "interior-refresh": <PaintRoller size={22} />,
+  flooring: <SquaresFour size={22} />,
+  "bonus-room": <Bed size={22} />,
+  "room-addition": <HouseLine size={22} />,
+  "garage-conversion": <Garage size={22} />,
+  "new-construction": <Buildings size={22} />,
+  garage: <Warehouse size={22} />,
+  "deck-porch": <Tree size={22} />,
+  reroof: <House size={22} />,
+  siding: <Wall size={22} />,
+};
 
 interface Line {
   key: number;
@@ -59,7 +61,6 @@ interface SeedResult {
 
 export default function Estimator({
   catalog,
-  initialDesc = "",
   initialClientName = "",
   realization = null,
   onBack,
@@ -148,9 +149,6 @@ export default function Estimator({
       setJobState("error");
     }
   }
-  const [desc, setDesc] = useState(initialDesc);
-  const [projType, setProjType] = useState("");
-  const [files, setFiles] = useState<FileList | null>(null);
   const [lines, setLines] = useState<Line[]>([]);
   const [notes, setNotes] = useState<string[]>([]);
   const [markup, setMarkup] = useState(18);
@@ -159,8 +157,6 @@ export default function Estimator({
   const [detailKey, setDetailKey] = useState<number | null>(null);
   const [asmKey, setAsmKey] = useState<string>("");
   const [asmInputs, setAsmInputs] = useState<Record<string, number>>({});
-  // templates are opt-in — hidden by default so the describe-it flow owns the top of the page
-  const [showTemplates, setShowTemplates] = useState(false);
   const router = useRouter();
   const [jobState, setJobState] = useState<"idle" | "creating" | "error">("idle");
   const keyRef = useRef(0);
@@ -204,38 +200,6 @@ export default function Estimator({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ assembly: asmKey, inputs: asmInputs }),
-    });
-    applyResult(await r.json());
-  }
-
-  async function readFiles() {
-    const docs: { name: string; text?: string; mime?: string; data?: string }[] = [];
-    if (files) {
-      for (const f of Array.from(files)) {
-        if (/\.(txt|csv|md)$/i.test(f.name)) {
-          docs.push({ name: f.name, text: await f.text() });
-        } else if (/\.(png|jpe?g|webp)$/i.test(f.name)) {
-          // base64 for the vision pass — strip the data: prefix the API doesn't want
-          const buf = await f.arrayBuffer();
-          const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
-          const mime = f.type || (/\.png$/i.test(f.name) ? "image/png" : /\.webp$/i.test(f.name) ? "image/webp" : "image/jpeg");
-          docs.push({ name: f.name, mime, data: b64 });
-        } else {
-          docs.push({ name: f.name });
-        }
-      }
-    }
-    return docs;
-  }
-
-  async function build() {
-    setView("load");
-    const docs = await readFiles();
-    const fullDesc = projType ? (desc ? `${projType} — ${desc}` : projType) : desc;
-    const r = await fetch("/api/estimate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ description: fullDesc, docs }),
     });
     applyResult(await r.json());
   }
@@ -337,34 +301,21 @@ export default function Estimator({
             )}
             <h2 style={{ margin: 0 }}>Estimate Builder</h2>
           </div>
-          <button className="btn ghost" aria-expanded={showTemplates} onClick={() => setShowTemplates((v) => !v)}>
-            {showTemplates ? "Hide templates" : "Templates"}
-          </button>
         </div>
 
-        {showTemplates && ASSEMBLY_CATEGORIES.map((cat) => {
-          const items = ASSEMBLY_LIST.filter((a) => a.category === cat);
-          return (
-            <CollapseSection
-              key={cat}
-              title={cat}
-              summary={`${items.length} template${items.length === 1 ? "" : "s"}`}
-              forceOpen={items.some((a) => a.key === asmKey)}
+        <div className="type-grid">
+          {ASSEMBLY_LIST.map((a) => (
+            <button
+              key={a.key}
+              className={`type-card${asmKey === a.key ? " active" : ""}`}
+              onClick={() => selectAssembly(asmKey === a.key ? "" : a.key)}
             >
-              <div className="asm-grid" style={{ margin: 0, padding: "14px 16px 16px" }}>
-                {items.map((a) => (
-                  <button
-                    key={a.key}
-                    className={`asm-card${asmKey === a.key ? " active" : ""}`}
-                    onClick={() => selectAssembly(a.key)}
-                  >
-                    <b>{a.label}</b>
-                  </button>
-                ))}
-              </div>
-            </CollapseSection>
-          );
-        })}
+              <span className="type-icon">{TEMPLATE_ICONS[a.key] ?? <SquaresFour size={22} />}</span>
+              <span>{a.label}</span>
+            </button>
+          ))}
+        </div>
+
         {asm && (
           <div className="asm-inputs">
             {asm.inputs.map((d) => (
@@ -381,29 +332,6 @@ export default function Estimator({
             <button className="btn" onClick={buildAssembly}>Build from template →</button>
           </div>
         )}
-
-        {(showTemplates || asm) && <div className="or-sep"><span>or describe it</span></div>}
-
-        <div className="type-grid">
-          {PROJECT_TYPES.map((t) => (
-            <button
-              key={t.key}
-              className={`type-card${projType === t.key ? " active" : ""}`}
-              onClick={() => setProjType((cur) => (cur === t.key ? "" : t.key))}
-            >
-              <span className="type-icon">{t.icon}</span>
-              <span>{t.key}</span>
-            </button>
-          ))}
-        </div>
-
-        <textarea value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={PLACEHOLDER} />
-        <div className="upload">
-          <input type="file" multiple onChange={(e) => setFiles(e.target.files)} />
-        </div>
-        <div className="row">
-          <button className="btn" onClick={build}>Build Estimate →</button>
-        </div>
       </section>
     );
   }

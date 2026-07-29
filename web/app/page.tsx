@@ -35,10 +35,6 @@ export default async function Home() {
         <div className="v sm">{s.bid}</div>
         <div className="k">Out for bid</div>
       </div>
-      <div className="metric">
-        <div className="v sm">{s.projects}</div>
-        <div className="k">Total projects</div>
-      </div>
     </div>
   );
 
@@ -51,7 +47,6 @@ export default async function Home() {
               <div className="pc-top">
                 <div className="pc-name">{x.name}</div>
               </div>
-              <PcPhaseProgress phase={x.phase} status={x.status} />
             </Link>
           ))
         ) : (
@@ -66,14 +61,15 @@ export default async function Home() {
 
   return (
     <section className="view">
-      <div className="row" style={{ justifyContent: "flex-end", marginTop: 0, alignItems: "flex-start" }}>
-        <Link className="btn cta" href="/estimate-builder">
-          <Plus size={16} weight="bold" />
-          New Estimate
-        </Link>
+      <div className="wx-flex">
+        <WeatherBanner />
+        <div className="wx-flex-cta">
+          <Link className="btn cta" href="/estimate-builder">
+            <Plus size={16} weight="bold" />
+            New Estimate
+          </Link>
+        </div>
       </div>
-
-      <WeatherBanner />
 
       {overview}
 
@@ -82,31 +78,5 @@ export default async function Home() {
 
       <GbpReviews />
     </section>
-  );
-}
-
-// Phase-based progress — how far along the job is, not money. Falls back to a coarse
-// status guess when the job has no phase set yet.
-const PHASE_STEPS: Record<string, { label: string; pct: number }> = {
-  lead: { label: "Lead", pct: 10 },
-  quoted: { label: "Quoted", pct: 30 },
-  scheduled: { label: "Scheduled", pct: 45 },
-  in_progress: { label: "In progress", pct: 70 },
-  complete: { label: "Complete", pct: 100 },
-  paid: { label: "Complete", pct: 100 },
-};
-
-function PcPhaseProgress({ phase, status }: { phase: string; status: string }) {
-  const step = PHASE_STEPS[phase] ?? { label: status === "Aging" ? "Aging" : "Active", pct: status === "Aging" ? 85 : 55 };
-  return (
-    <div className="pc-progress">
-      <div className="pc-progress-top">
-        <span>{step.label}</span>
-        <span>{step.pct}%</span>
-      </div>
-      <div className="pc-progress-bar">
-        <div className="pc-progress-fill" style={{ width: `${step.pct}%` }} />
-      </div>
-    </div>
   );
 }
