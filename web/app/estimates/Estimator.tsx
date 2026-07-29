@@ -166,6 +166,9 @@ export default function Estimator({
   const [detailKey, setDetailKey] = useState<number | null>(null);
   const [asmKey, setAsmKey] = useState<string>("");
   const [asmInputs, setAsmInputs] = useState<Record<string, number>>({});
+  // universal build specifics — collected on every template, not just its two dimensions
+  const [finish, setFinish] = useState<"basic" | "standard" | "premium">("standard");
+  const [extraNotes, setExtraNotes] = useState("");
   // wizard step: 0 = pick a template (categories first), 1 = project details, 2 = build specifics
   const [step, setStep] = useState(0);
   const [cat, setCat] = useState<string | null>(null);
@@ -180,11 +183,14 @@ export default function Estimator({
     setAsmInputs(Object.fromEntries((a?.inputs ?? []).map((d) => [d.key, d.default ?? 0])));
   };
 
-  // shared: populate the editable table from an /api/estimate response
+  // shared: populate the editable table from an /api/estimate response.
+  // Finish level scales every rate (basic -10%, premium +15%) — it changes the bid,
+  // not just a label. Extra notes land on the sheet with the template's own notes.
   function applyResult(d: { lines: SeedResult[]; notes: string[]; markup: number }) {
     setMarkup(prefs.markup ?? d.markup); // user's default markup wins over the server's
 
-    setNotes(d.notes);
+    const factor = finish === "basic" ? 0.9 : finish === "premium" ? 1.15 : 1;
+    setNotes(extraNotes.trim() ? [...d.notes, extraNotes.trim()] : d.notes);
     const sorted = [...d.lines].sort((a, b) => (a.division || "").localeCompare(b.division || ""));
     setLines(
       sorted.map((l) => ({
@@ -199,7 +205,7 @@ export default function Estimator({
         p75: l.p75,
         kind: l.kind,
         qty: l.qty == null ? "" : String(l.qty),
-        rate: l.rate == null ? "" : String(l.rate),
+        rate: l.rate == null ? "" : String(Math.round(l.rate * factor)),
       })),
     );
     setView("result");
@@ -399,6 +405,23 @@ export default function Estimator({
                 />
               </label>
             ))}
+            <label>
+              Finish level
+              <select value={finish} onChange={(e) => setFinish(e.target.value as "basic" | "standard" | "premium")}>
+                <option value="basic">Basic — builder grade (−10%)</option>
+                <option value="standard">Standard — MHP typical</option>
+                <option value="premium">Premium — high-end finishes (+15%)</option>
+              </select>
+            </label>
+            <label>
+              Anything else we should know?
+              <textarea
+                value={extraNotes}
+                placeholder="Site access, existing conditions, timeline, client requests…"
+                style={{ minHeight: 96 }}
+                onChange={(e) => setExtraNotes(e.target.value)}
+              />
+            </label>
             <div className="wiz-actions">
               <button className="btn ghost" onClick={() => setStep(1)}>← Back</button>
               <button className="btn" onClick={buildAssembly}>Build Estimate →</button>

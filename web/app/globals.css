@@ -490,10 +490,10 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .wiz h3{margin:0 0 28px;font-family:var(--disp);font-size:32px;letter-spacing:-.5px}
 .wiz label{display:flex;flex-direction:column;gap:8px;font-size:12px;font-weight:700;text-transform:uppercase;
   letter-spacing:.5px;color:var(--muted);margin-bottom:22px}
-.wiz input{padding:13px 15px;border:1px solid var(--line);border-radius:10px;font-family:var(--sans);
+.wiz input,.wiz select{padding:13px 15px;border:1px solid var(--line);border-radius:10px;font-family:var(--sans);
   font-size:16px;background:var(--paper);color:var(--ink);text-transform:none;letter-spacing:0;
   transition:border-color var(--t),box-shadow var(--t),background var(--t)}
-.wiz input:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring);background:#fff}
+.wiz input:focus,.wiz select:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring);background:#fff}
 .wiz-dots{display:flex;gap:6px;margin-bottom:18px}
 .wiz-dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}
 .wiz-dots i.on{background:var(--navy)}
