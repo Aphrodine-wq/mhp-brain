@@ -31,12 +31,12 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
     { id: "gbp", label: "Google Business Profile", configured: isConfigured("gbp"), connection: conn("gbp") },
   ];
   const reviews = await recentReviews(8).catch(() => []);
-  const settings = await allSettings().catch(() => ({}));
+  const settings = await allSettings().catch(() => ({}) as Record<string, Record<string, string>>);
 
   return (
     <section className="view">
       <h2>Integrations</h2>
-      <Connections providers={providers} oauthResult={oauth ?? null} oauthDetail={detail ?? null} />
+      <Connections providers={providers} oauthResult={oauth ?? null} oauthDetail={detail ?? null} apifyConfigured={Boolean(settings.apify?.token)} />
       <SettingsPanel values={settings} />
       {reviews.length > 0 && <ReviewsPanel reviews={reviews} />}
     </section>

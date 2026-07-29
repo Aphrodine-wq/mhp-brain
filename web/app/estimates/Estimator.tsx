@@ -68,6 +68,13 @@ interface SeedResult {
   rate: number | null;
 }
 
+// CSI divisions sort by their leading number, not alphabetically —
+// "Division 2" must follow "Division 1", not "Division 19".
+const divNum = (d: string) => {
+  const m = d.match(/division\s+(\d+)/i);
+  return m ? Number(m[1]) : Number.POSITIVE_INFINITY;
+};
+
 export default function Estimator({
   catalog,
   initialClientName = "",
@@ -199,7 +206,7 @@ export default function Estimator({
 
     const factor = finish === "basic" ? 0.9 : finish === "premium" ? 1.15 : 1;
     setNotes(extraNotes.trim() ? [...d.notes, extraNotes.trim()] : d.notes);
-    const sorted = [...d.lines].sort((a, b) => (a.division || "").localeCompare(b.division || ""));
+    const sorted = [...d.lines].sort((a, b) => divNum(a.division || "") - divNum(b.division || ""));
     setLines(
       sorted.map((l) => ({
         key: nextKey(),

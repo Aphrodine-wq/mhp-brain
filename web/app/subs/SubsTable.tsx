@@ -8,7 +8,6 @@ import {
 } from "@phosphor-icons/react";
 import type { SubRow } from "@/lib/queries";
 import { post } from "@/lib/client";
-import CollapseSection from "../_components/CollapseSection";
 
 const TRADE_ICONS: Record<string, React.ReactNode> = {
   Plumbing: <Drop size={22} />,
@@ -145,7 +144,6 @@ export default function SubsTable({ subs }: { subs: SubRow[] }) {
               key={g}
               group={g}
               rows={groups.get(g)!}
-              filtering
               editing={editing}
               trade={trade}
               phone={phone}
@@ -177,7 +175,6 @@ export default function SubsTable({ subs }: { subs: SubRow[] }) {
 function TradeSection({
   group,
   rows,
-  filtering,
   editing,
   trade,
   phone,
@@ -193,7 +190,6 @@ function TradeSection({
 }: {
   group: string;
   rows: SubRow[];
-  filtering: boolean;
   editing: string | null;
   trade: string;
   phone: string;
@@ -208,7 +204,8 @@ function TradeSection({
   toggleVerified: (s: SubRow) => void;
 }) {
   return (
-    <CollapseSection title={group} summary={`${rows.length} sub${rows.length === 1 ? "" : "s"}`} forceOpen={filtering}>
+    <div style={{ marginTop: 14 }}>
+      <h3 style={{ margin: "0 0 4px", fontFamily: "var(--disp)", fontSize: 20 }}>{group}</h3>
       <table className="dtable">
         <thead>
           <tr><th>Name</th><th>Trade / Type</th><th>Phone</th><th className="n">Jobs</th><th>Source</th><th></th></tr>
@@ -250,7 +247,7 @@ function TradeSection({
           })}
         </tbody>
       </table>
-    </CollapseSection>
+    </div>
   );
 }
 

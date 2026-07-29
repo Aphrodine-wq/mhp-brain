@@ -586,3 +586,44 @@ export async function getOperationalGaps() {
     ORDER BY p.name
   `)).rows;
 }
+
+// ---------------------------------------------------------------------------
+// Invoices — vendor bills against a project (migration 012_invoices)
+// ---------------------------------------------------------------------------
+
+export interface InvoiceInsert {
+  project_id: string;
+  vendor: string;
+  amount: number;
+  invoice_date: string;
+  notes?: string;
+  source?: string;
+  created_by?: string;
+}
+
+export async function createInvoice(i: InvoiceInsert): Promise<number> {
+  const res = await db.execute({
+    sql: `INSERT INTO invoices (project_id, vendor, amount, invoice_date, notes, source, created_by, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, now()::text) RETURNING id`,
+    args: [
+      i.project_id, i.vendor, i.amount, i.invoice_date,
+      i.notes ?? null, i.source ?? "manual", i.created_by ?? null,
+    ],
+  });
+  return Number(res.rows[0].id);
+}
+
+export async function getInvoices(projectId: string) {
+  return (await db.execute({
+    sql: `SELECT * FROM invoices WHERE project_id = ? ORDER BY invoice_date DESC`,
+    args: [projectId],
+  })).rows;
+}
+
+export async function getInvoiceTotal(projectId: string) {
+  const row = (await db.execute({
+    sql: `SELECT COALESCE(SUM(amount), 0) AS total, COUNT(*) AS count FROM invoices WHERE project_id = ?`,
+    args: [projectId],
+  })).rows[0];
+  return { total: Number(row?.total ?? 0), count: Number(row?.count ?? 0) };
+}

@@ -59,14 +59,15 @@ export default async function Home() {
         </Link>
       </div>
 
-      <WeatherBanner />
+      <GbpReviews />
 
-      {overview}
+      <div className="dash-top">
+        <WeatherBanner />
+        <div className="dash-top-stat">{overview}</div>
+      </div>
 
       <div className="sec-h">Active now</div>
       {jobs}
-
-      <GbpReviews />
     </section>
   );
 }

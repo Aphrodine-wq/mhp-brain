@@ -305,6 +305,13 @@ small.j{color:var(--muted);font-size:11px}
 .banner{background:#eef3fb;border:1px solid #d6e2f4;border-radius:var(--r-lg);padding:14px 18px;margin:18px 0 6px;
   font-size:13.5px;color:var(--navy);display:flex;gap:10px;align-items:center}
 .banner b{color:var(--navy)}
+/* dashboard top row — weather card + headline stat side by side */
+.dash-top{display:flex;gap:16px;align-items:stretch;flex-wrap:wrap}
+.dash-top .wx-card{flex:1;min-width:280px}
+.dash-top-stat{display:flex}
+.dash-top-stat .stat-grid{margin:14px 0 18px;display:flex}
+.dash-top-stat .metric{display:flex;flex-direction:column;justify-content:center;min-width:150px}
+@media(max-width:720px){.dash-top-stat{flex:1}}
 /* weather card — modern square card: today temp + 5-day rain/temp strip */
 .wx-card{display:flex;align-items:center;gap:14px;margin:14px 0 18px;padding:10px 14px;max-width:640px;
   background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow-sm)}
@@ -515,7 +522,7 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .type-cat-group{margin-top:22px}
 .type-cat{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
 .type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0 16px;animation:rise .22s ease both}
-.type-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:12px 14px;
+.type-card{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:10px 12px;
   background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);cursor:pointer;
   font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--ink);box-shadow:var(--shadow-sm);
   transition:border-color var(--t),box-shadow var(--t),transform var(--t),background var(--t)}

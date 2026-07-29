@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-  NotePencil, Receipt, CreditCard, Buildings, FolderOpen, FileText,
+  NotePencil, Receipt, CreditCard, Buildings, FolderOpen, FileText, Invoice,
 } from "@phosphor-icons/react/dist/ssr";
 import { projectDetail } from "@/lib/queries";
 import { getProjectOps } from "@/lib/operations";
@@ -35,6 +35,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     { href: `/projects/${id}/estimates`, icon: <FileText size={18} />, name: "Estimates" },
     { href: `/projects/${id}/permits`, icon: <Buildings size={18} />, name: "Permits" },
     { href: `/projects/${id}/payments`, icon: <CreditCard size={18} />, name: "Payments" },
+    { href: `/projects/${id}/invoices`, icon: <Invoice size={18} />, name: "Invoices" },
   ];
 
   return (

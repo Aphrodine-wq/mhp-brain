@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import WeatherPanel from "./WeatherPanel";
+import ApifyPanel from "./ApifyPanel";
 
 export type ProviderState = {
   id: "quickbooks" | "gmail" | "microsoft" | "gbp";
@@ -49,10 +50,12 @@ export default function Connections({
   providers,
   oauthResult,
   oauthDetail,
+  apifyConfigured = false,
 }: {
   providers: ProviderState[];
   oauthResult: string | null;
   oauthDetail?: string | null;
+  apifyConfigured?: boolean;
 }) {
   const [gmailBox, setGmailBox] = useState("");
   const [syncing, setSyncing] = useState<string | null>(null); // which sync is running
@@ -248,6 +251,7 @@ export default function Connections({
         </div>
       ))}
         <WeatherPanel />
+        <ApifyPanel configured={apifyConfigured} />
       </div>
     </div>
   );
