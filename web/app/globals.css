@@ -496,15 +496,15 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .ops-col{display:flex;flex-direction:column;gap:22px;min-width:0}
 @media(max-width:900px){.ops-grid{grid-template-columns:1fr}}
 /* section tiles — the menu into each tucked-away project section */
-.tile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin-top:28px}
-.tile{display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--line);
-  border-radius:var(--r-lg);padding:18px;text-decoration:none;color:var(--ink);
+.tile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:24px}
+.tile{display:flex;flex-direction:column;gap:4px;background:var(--card);border:1px solid var(--line);
+  border-radius:var(--r);padding:12px 14px;text-decoration:none;color:var(--ink);
   box-shadow:var(--shadow-sm);transition:border-color var(--t),box-shadow var(--t),transform var(--t)}
 .tile:hover{border-color:var(--navy);box-shadow:var(--shadow);transform:translateY(-1px)}
 .tile-icon{color:var(--navy);display:flex}
-.tile-icon svg{fill:currentColor}
-.tile-name{font-weight:600;font-size:14px;margin-top:4px}
-.tile-sub{font-size:12px;color:var(--muted)}
+.tile-icon svg{fill:currentColor;width:18px;height:18px}
+.tile-name{font-weight:600;font-size:13px;margin-top:2px}
+.tile-sub{font-size:11px;color:var(--muted)}
 /* compact metric value for money-length numbers; flat = no card chrome inside a panel */
 .metric .v.sm{font-size:22px}
 .metric.flat{background:transparent;border:0;box-shadow:none;padding:8px 0;border-radius:0}

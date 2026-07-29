@@ -45,12 +45,12 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const showLabor = !!(labor && labor.estimatedLabor != null);
 
   const tiles = [
-    { href: `/projects/${id}/log`, icon: <NotePencil size={22} />, name: "Job log", sub: `${jobEvents.length} entr${jobEvents.length === 1 ? "y" : "ies"}` },
-    { href: `/projects/${id}/change-orders`, icon: <Receipt size={22} />, name: "Change orders", sub: `${changeOrders.length} on file` },
-    { href: `/projects/${id}/payments`, icon: <CreditCard size={22} />, name: "Payments", sub: `${payments.length} recorded` },
-    { href: `/projects/${id}/permits`, icon: <Buildings size={22} />, name: "Permits", sub: `${permits.length} tracked` },
-    { href: `/projects/${id}/documents`, icon: <FolderOpen size={22} />, name: "Documents", sub: `${docs.length} on file` },
-    { href: `/projects/${id}/estimates`, icon: <FileText size={22} />, name: "Estimates", sub: `${proj.estimates.length} on file` },
+    { href: `/projects/${id}/log`, icon: <NotePencil size={18} />, name: "Job log", sub: `${jobEvents.length} entr${jobEvents.length === 1 ? "y" : "ies"}` },
+    { href: `/projects/${id}/change-orders`, icon: <Receipt size={18} />, name: "Change orders", sub: `${changeOrders.length} on file` },
+    { href: `/projects/${id}/payments`, icon: <CreditCard size={18} />, name: "Payments", sub: `${payments.length} recorded` },
+    { href: `/projects/${id}/permits`, icon: <Buildings size={18} />, name: "Permits", sub: `${permits.length} tracked` },
+    { href: `/projects/${id}/documents`, icon: <FolderOpen size={18} />, name: "Documents", sub: `${docs.length} on file` },
+    { href: `/projects/${id}/estimates`, icon: <FileText size={18} />, name: "Estimates", sub: `${proj.estimates.length} on file` },
   ];
 
   return (
