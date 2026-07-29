@@ -18,6 +18,7 @@ export interface ClientInfo {
   project: string;
   clientName: string;
   address: string;
+  phone?: string;
   date: string;
   preparedBy: string;
 }
@@ -94,6 +95,7 @@ export default function ClientPacket({
         <div className="cover-meta">
           <div><span>Prepared for</span><b>{client.clientName || "—"}</b></div>
           <div><span>Project address</span><b>{client.address || "—"}</b></div>
+          {client.phone && <div><span>Phone</span><b>{client.phone}</b></div>}
           <div><span>Date</span><b>{client.date || "—"}</b></div>
           <div><span>Prepared by</span><b>{client.preparedBy || "MHP Construction"}</b></div>
         </div>

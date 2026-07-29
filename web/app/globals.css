@@ -301,10 +301,7 @@ small.j{color:var(--muted);font-size:11px}
   font-size:13.5px;color:var(--navy);display:flex;gap:10px;align-items:center}
 .banner b{color:var(--navy)}
 /* weather card — modern square card: today temp + 5-day rain/temp strip */
-.wx-flex{display:flex;align-items:center;gap:16px;margin:18px 0 22px;flex-wrap:wrap}
-.wx-flex .wx-card{margin:0;flex:1;min-width:280px}
-.wx-flex-cta{display:flex;align-items:center}
-.wx-card{display:flex;align-items:center;gap:18px;padding:14px 18px;max-width:720px;
+.wx-card{display:flex;align-items:center;gap:18px;margin:18px 0 22px;padding:14px 18px;max-width:720px;
   background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow-sm)}
 .wx-today{display:flex;align-items:center;gap:14px;min-width:0;flex:1}
 .wx-icon{width:44px;height:44px;border-radius:8px;background:var(--paper);border:1px solid var(--line-2);
@@ -484,6 +481,16 @@ small.j{color:var(--muted);font-size:11px}
 main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .view-inner{max-width:1160px;margin:0 auto}
 /* builder template picker — cards grouped under category headers */
+/* builder wizard — one question page at a time after a template is picked */
+.wiz{max-width:440px;margin-top:26px;background:var(--card);border:1px solid var(--line);
+  border-radius:var(--r-lg);padding:26px;box-shadow:var(--shadow-sm)}
+.wiz-step{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px}
+.wiz h3{margin:0 0 18px;font-family:var(--disp);font-size:20px;letter-spacing:-.3px}
+.wiz label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:14px}
+.wiz input{padding:11px 13px;border:1px solid var(--line);border-radius:var(--r-sm);font-family:var(--sans);
+  font-size:15px;background:#fff;color:var(--ink);transition:border-color var(--t),box-shadow var(--t)}
+.wiz input:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
+.wiz-actions{display:flex;gap:10px;align-items:center;margin-top:6px}
 .type-cat-group{margin-top:22px}
 .type-cat{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
 .type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0 16px}

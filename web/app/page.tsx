@@ -61,17 +61,15 @@ export default async function Home() {
 
   return (
     <section className="view">
-      <Greeting name={user.name} />
-
-      <div className="wx-flex">
-        <WeatherBanner />
-        <div className="wx-flex-cta">
-          <Link className="btn cta" href="/estimate-builder">
-            <Plus size={16} weight="bold" />
-            New Estimate
-          </Link>
-        </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14, flexWrap: "wrap" }}>
+        <Greeting name={user.name} />
+        <Link className="btn cta" href="/estimate-builder">
+          <Plus size={16} weight="bold" />
+          New Estimate
+        </Link>
       </div>
+
+      <WeatherBanner />
 
       {overview}
 
@@ -97,7 +95,7 @@ function Greeting({ name }: { name: string }) {
   return (
     <div style={{ marginBottom: 4 }}>
       <h2 style={{ margin: 0 }}>Good {part}, {name.split(" ")[0]}</h2>
-      <div className="sub" style={{ marginTop: 4 }}>{date}</div>
+      <div style={{ marginTop: 4, fontSize: 14, color: "var(--ink)" }}>{date}</div>
     </div>
   );
 }

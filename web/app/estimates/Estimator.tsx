@@ -157,6 +157,8 @@ export default function Estimator({
   const [detailKey, setDetailKey] = useState<number | null>(null);
   const [asmKey, setAsmKey] = useState<string>("");
   const [asmInputs, setAsmInputs] = useState<Record<string, number>>({});
+  // wizard step: 0 = pick a template, 1 = project details, 2 = build specifics
+  const [step, setStep] = useState(0);
   const router = useRouter();
   const [jobState, setJobState] = useState<"idle" | "creating" | "error">("idle");
   const keyRef = useRef(0);
@@ -303,7 +305,7 @@ export default function Estimator({
           </div>
         </div>
 
-        {ASSEMBLY_CATEGORIES.map((cat) => {
+        {step === 0 && ASSEMBLY_CATEGORIES.map((cat) => {
           const items = ASSEMBLY_LIST.filter((a) => a.category === cat);
           if (!items.length) return null;
           return (
@@ -313,8 +315,8 @@ export default function Estimator({
                 {items.map((a) => (
                   <button
                     key={a.key}
-                    className={`type-card${asmKey === a.key ? " active" : ""}`}
-                    onClick={() => selectAssembly(asmKey === a.key ? "" : a.key)}
+                    className="type-card"
+                    onClick={() => { selectAssembly(a.key); setStep(1); }}
                   >
                     <span className="type-icon">{TEMPLATE_ICONS[a.key] ?? <SquaresFour size={22} />}</span>
                     <span>{a.label}</span>
@@ -325,8 +327,47 @@ export default function Estimator({
           );
         })}
 
-        {asm && (
-          <div className="asm-inputs">
+        {step === 1 && (
+          <div className="wiz">
+            <div className="wiz-step">{asm?.label} · Step 1 of 2</div>
+            <h3>Project details</h3>
+            <label>
+              Project name
+              <input
+                value={client.project}
+                placeholder="Smith — Kitchen Remodel"
+                autoFocus
+                onChange={(e) => setC("project", e.target.value)}
+              />
+            </label>
+            <label>
+              Address
+              <input
+                value={client.address}
+                placeholder="123 County Rd 101, Oxford, MS"
+                onChange={(e) => setC("address", e.target.value)}
+              />
+            </label>
+            <label>
+              Phone number
+              <input
+                value={client.phone ?? ""}
+                placeholder="(662) 555-1234"
+                type="tel"
+                onChange={(e) => setC("phone", e.target.value)}
+              />
+            </label>
+            <div className="wiz-actions">
+              <button className="btn ghost" onClick={() => setStep(0)}>← Templates</button>
+              <button className="btn" onClick={() => setStep(2)}>Next →</button>
+            </div>
+          </div>
+        )}
+
+        {step === 2 && asm && (
+          <div className="wiz">
+            <div className="wiz-step">{asm.label} · Step 2 of 2</div>
+            <h3>Build specifics</h3>
             {asm.inputs.map((d) => (
               <label key={d.key}>
                 {d.label}
@@ -338,7 +379,10 @@ export default function Estimator({
                 />
               </label>
             ))}
-            <button className="btn" onClick={buildAssembly}>Build from template →</button>
+            <div className="wiz-actions">
+              <button className="btn ghost" onClick={() => setStep(1)}>← Back</button>
+              <button className="btn" onClick={buildAssembly}>Build Estimate →</button>
+            </div>
           </div>
         )}
       </section>
