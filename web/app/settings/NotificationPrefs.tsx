@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Bell } from "@phosphor-icons/react";
 
 // Every Teams alert the brain can fire, with its default. The two original alerts ship "on";
 // the rest default "off" so turning the feature on doesn't suddenly flood the channel — the
@@ -57,7 +58,7 @@ export default function NotificationPrefs({
 
   return (
     <details className="panel settings-fold" style={{ marginTop: 18 }}>
-      <summary>Notifications</summary>
+      <summary><span className="fold-icon"><Bell size={18} /></span>Notifications</summary>
 
       {/* Teams webhook connection status + one-click test */}
       <div className="setrow">

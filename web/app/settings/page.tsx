@@ -6,6 +6,7 @@ import { alertsConfigured } from "@/lib/alerts";
 import SettingsForm from "./SettingsForm";
 import NotificationPrefs from "./NotificationPrefs";
 import SignOutButton from "./SignOutButton";
+import { Buildings } from "@phosphor-icons/react/dist/ssr";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,7 @@ export default async function SettingsPage() {
       {canManageAlerts && <NotificationPrefs initial={alertSettings} configured={alertsConfigured()} />}
 
       <details className="panel settings-fold" style={{ marginTop: 18 }}>
-        <summary>Company & account</summary>
+        <summary><span className="fold-icon"><Buildings size={18} /></span>Company & account</summary>
         <div className="setrow">
           <div>
             <div className="sl">North Mississippi Home Professionals, LLC</div>

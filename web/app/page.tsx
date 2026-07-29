@@ -7,7 +7,6 @@ import { projectsList } from "@/lib/queries";
 import CeoDashboard from "./_dashboards/CeoDashboard";
 import SalesDashboard from "./_dashboards/SalesDashboard";
 import WeatherBanner from "./_dashboards/WeatherBanner";
-import GbpReviews from "./_dashboards/GbpReviews";
 
 export const dynamic = "force-dynamic";
 
@@ -23,15 +22,6 @@ export default async function Home() {
 
   // Default dashboard (admin, editor, viewer, estimator, materials)
   const active = (await projectsList()).filter((p) => p.status === "Active");
-
-  const overview = (
-    <div className="stat-grid">
-      <div className="metric accent hero-stat">
-        <div className="v">{active.length}</div>
-        <div className="k">Active projects</div>
-      </div>
-    </div>
-  );
 
   const jobs = (
     <div className="proj-cards">
@@ -51,20 +41,21 @@ export default async function Home() {
 
   return (
     <section className="view">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
         <Greeting name={user.name} />
-        <Link className="btn cta" href="/estimate-builder">
-          <Plus size={16} weight="bold" />
-          New Estimate
-        </Link>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div className="stat-chip">
+            <b>{active.length}</b>
+            <span>Active projects</span>
+          </div>
+          <Link className="btn cta" href="/estimate-builder">
+            <Plus size={16} weight="bold" />
+            New Estimate
+          </Link>
+        </div>
       </div>
 
-      <GbpReviews />
-
-      <div className="dash-top">
-        <WeatherBanner />
-        <div className="dash-top-stat">{overview}</div>
-      </div>
+      <WeatherBanner />
 
       <div className="sec-h">Active now</div>
       {jobs}

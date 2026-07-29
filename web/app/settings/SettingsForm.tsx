@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Tag, Eye } from "@phosphor-icons/react";
 
 export default function SettingsForm() {
   const [markup, setMarkup] = useState(18);
@@ -50,7 +51,7 @@ export default function SettingsForm() {
   return (
     <>
       <details className="panel settings-fold" style={{ marginTop: 18 }}>
-        <summary>Estimating defaults</summary>
+        <summary><span className="fold-icon"><Tag size={18} /></span>Estimating defaults</summary>
         <div className="setrow">
           <div>
             <div className="sl">Default markup</div>
@@ -100,7 +101,7 @@ export default function SettingsForm() {
       </details>
 
       <details className="panel settings-fold" style={{ marginTop: 18 }}>
-        <summary>Estimator display</summary>
+        <summary><span className="fold-icon"><Eye size={18} /></span>Estimator display</summary>
         <div className="setrow">
           <div>
             <div className="sl">Show price history</div>
