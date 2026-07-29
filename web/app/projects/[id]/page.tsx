@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import {
+  NotePencil, Receipt, CreditCard, Buildings, FolderOpen, FileText,
+} from "@phosphor-icons/react/dist/ssr";
 import { projectDetail } from "@/lib/queries";
 import {
   getProjectOps,
@@ -9,43 +12,29 @@ import {
   getPayments,
 } from "@/lib/operations";
 import { requireRole } from "@/lib/auth";
-import { eventsForProject } from "@/lib/calendar";
 import { listDocuments } from "@/lib/documents-store";
 import { projectMargin } from "@/lib/margin";
 import { laborVariance } from "@/lib/labor-variance";
 import { hasActiveShareLink } from "@/lib/share";
 import { money, BADGE } from "@/lib/format";
-import EntityDocs from "../../_components/EntityDocs";
 import HeaderEdit, { type ProjectOps } from "./HeaderEdit";
-import ChangeOrderPanel, { type ChangeOrder } from "./ChangeOrderPanel";
-import EventLogForm, { type JobEvent } from "./EventLogForm";
-import PaymentForm, { type Payment } from "./PaymentForm";
-import PermitPanel, { type Permit } from "./PermitPanel";
 import ShareLink from "./ShareLink";
 
 export const dynamic = "force-dynamic";
-
-const CONF: Record<string, string> = {
-  HIGH: "active",
-  MEDIUM: "aging",
-  PARTIAL: "bid",
-  LOW: "dead",
-};
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const proj = await projectDetail(id);
   if (!proj) notFound();
-  const events = await eventsForProject(id).catch(() => []);
 
-  // operational layer: app-owned tables written through lib/operations (audited)
   const canWrite = !!(await requireRole("editor"));
+  // Counts for the tiles — the actual records live on each section's own page now.
   const [ops, changeOrders, jobEvents, permits, payments, margin, labor, shareActive, docs] = await Promise.all([
     getProjectOps(id).catch(() => null) as Promise<ProjectOps | null>,
-    getChangeOrders(id).catch(() => []) as Promise<unknown> as Promise<ChangeOrder[]>,
-    getJobEvents(id).catch(() => []) as Promise<unknown> as Promise<JobEvent[]>,
-    getPermits(id).catch(() => []) as Promise<unknown> as Promise<Permit[]>,
-    getPayments(id).catch(() => []) as Promise<unknown> as Promise<Payment[]>,
+    getChangeOrders(id).catch(() => []),
+    getJobEvents(id).catch(() => []),
+    getPermits(id).catch(() => []),
+    getPayments(id).catch(() => []),
     projectMargin(id).catch(() => null),
     laborVariance(id).catch(() => null),
     canWrite ? hasActiveShareLink(id).catch(() => false) : Promise.resolve(false),
@@ -54,6 +43,15 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const pct = (n: number | null) => (n == null ? "—" : `${Math.round(n * 100)}%`);
   const showMargin = !!(margin && (margin.bid != null || margin.collected > 0));
   const showLabor = !!(labor && labor.estimatedLabor != null);
+
+  const tiles = [
+    { href: `/projects/${id}/log`, icon: <NotePencil size={22} />, name: "Job log", sub: `${jobEvents.length} entr${jobEvents.length === 1 ? "y" : "ies"}` },
+    { href: `/projects/${id}/change-orders`, icon: <Receipt size={22} />, name: "Change orders", sub: `${changeOrders.length} on file` },
+    { href: `/projects/${id}/payments`, icon: <CreditCard size={22} />, name: "Payments", sub: `${payments.length} recorded` },
+    { href: `/projects/${id}/permits`, icon: <Buildings size={22} />, name: "Permits", sub: `${permits.length} tracked` },
+    { href: `/projects/${id}/documents`, icon: <FolderOpen size={22} />, name: "Documents", sub: `${docs.length} on file` },
+    { href: `/projects/${id}/estimates`, icon: <FileText size={22} />, name: "Estimates", sub: `${proj.estimates.length} on file` },
+  ];
 
   return (
     <section className="view">
@@ -74,10 +72,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         {proj.market || "—"} · {proj.type || "—"} · last activity {proj.last || "—"}
       </div>
 
-      <div className="stat-strip">
-        <div><div className="sv">{proj.value ? money(proj.value) : "—"}</div><div className="sk">Current bid value</div></div>
-        <div><div className="sv">{proj.estimates.length}</div><div className="sk">Estimates on file</div></div>
-        <div><div className="sv">{proj.last || "—"}</div><div className="sk">Last activity</div></div>
+      <div className="stat-grid">
+        <div className="metric"><div className="v sm">{proj.value ? money(proj.value) : "—"}</div><div className="k">Current bid value</div></div>
+        <div className="metric"><div className="v sm">{proj.estimates.length}</div><div className="k">Estimates on file</div></div>
+        <div className="metric"><div className="v sm">{proj.last || "—"}</div><div className="k">Last activity</div></div>
       </div>
 
       {(showMargin || showLabor) && (
@@ -85,11 +83,11 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           {showMargin && margin && (
             <div className="panel">
               <h3>Margin (estimated)</h3>
-              <div className="stat-strip" style={{ margin: 0, border: 0, padding: "10px 2px", gap: 28, flexWrap: "wrap" }}>
-                <div><div className="sv">{margin.bid != null ? money(margin.bid) : "—"}</div><div className="sk">Bid</div></div>
-                <div><div className="sv">{margin.estimatedCost != null ? money(margin.estimatedCost) : "—"}</div><div className="sk">Est. cost</div></div>
-                <div><div className="sv">{margin.marginDollars != null ? money(margin.marginDollars) : "—"}</div><div className="sk">Est. margin · {pct(margin.marginPct)}</div></div>
-                <div><div className="sv">{money(margin.collected)}</div><div className="sk">Collected · {pct(margin.collectedPct)}</div></div>
+              <div className="stat-grid" style={{ margin: 0, padding: "4px 16px 16px" }}>
+                <div className="metric flat"><div className="v sm">{margin.bid != null ? money(margin.bid) : "—"}</div><div className="k">Bid</div></div>
+                <div className="metric flat"><div className="v sm">{margin.estimatedCost != null ? money(margin.estimatedCost) : "—"}</div><div className="k">Est. cost</div></div>
+                <div className="metric flat"><div className="v sm">{margin.marginDollars != null ? money(margin.marginDollars) : "—"}</div><div className="k">Est. margin · {pct(margin.marginPct)}</div></div>
+                <div className="metric flat"><div className="v sm">{money(margin.collected)}</div><div className="k">Collected · {pct(margin.collectedPct)}</div></div>
               </div>
               <div className="setrow"><div className="sd">Estimated from the bid — actual cost lands when QuickBooks is connected.</div></div>
             </div>
@@ -98,10 +96,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           {showLabor && labor && (
             <div className="panel">
               <h3>Labor (estimate vs actual)</h3>
-              <div className="stat-strip" style={{ margin: 0, border: 0, padding: "10px 2px", gap: 28, flexWrap: "wrap" }}>
-                <div><div className="sv">{money(labor.estimatedLabor)}</div><div className="sk">Est. labor</div></div>
-                <div><div className="sv">{labor.actualLabor != null ? money(labor.actualLabor) : "—"}</div><div className="sk">Actual labor</div></div>
-                <div><div className="sv">{labor.varianceDollars != null ? money(labor.varianceDollars) : "—"}</div><div className="sk">Variance{labor.variancePct != null ? ` · ${pct(labor.variancePct)}` : ""}</div></div>
+              <div className="stat-grid" style={{ margin: 0, padding: "4px 16px 16px" }}>
+                <div className="metric flat"><div className="v sm">{money(labor.estimatedLabor)}</div><div className="k">Est. labor</div></div>
+                <div className="metric flat"><div className="v sm">{labor.actualLabor != null ? money(labor.actualLabor) : "—"}</div><div className="k">Actual labor</div></div>
+                <div className="metric flat"><div className="v sm">{labor.varianceDollars != null ? money(labor.varianceDollars) : "—"}</div><div className="k">Variance{labor.variancePct != null ? ` · ${pct(labor.variancePct)}` : ""}</div></div>
               </div>
               <div className="setrow"><div className="sd">
                 {labor.status === "awaiting_quickbooks"
@@ -113,121 +111,14 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         </div>
       )}
 
-      <div className="ops-grid">
-        <div className="ops-col">
-          <div className="panel">
-            <h3>Job log</h3>
-            <EventLogForm projectId={id} events={jobEvents} canWrite={canWrite} />
-          </div>
-
-          <div className="panel">
-            <h3>Change orders</h3>
-            <ChangeOrderPanel projectId={id} changeOrders={changeOrders} canWrite={canWrite} />
-          </div>
-        </div>
-
-        <div className="ops-col">
-          <div className="panel">
-            <h3>Payments</h3>
-            <PaymentForm projectId={id} payments={payments} contractValue={ops?.contract_value ?? null} canWrite={canWrite} />
-          </div>
-
-          <div className="panel">
-            <h3>Permits & inspections</h3>
-            <PermitPanel projectId={id} permits={permits} canWrite={canWrite} />
-          </div>
-
-          {events.length > 0 && (
-            <div className="panel">
-              <h3>Coming up</h3>
-              {events.map((ev, i) => (
-                <div className="setrow" key={i}>
-                  <div>
-                    <div className="sl">
-                      {ev.webLink ? <a href={ev.webLink} target="_blank" rel="noreferrer" className="cell-link">{ev.subject}</a> : ev.subject}
-                    </div>
-                    {ev.location && <div className="sd">{ev.location}</div>}
-                  </div>
-                  <span className="sd" style={{ whiteSpace: "nowrap" }}>
-                    {ev.startAt.slice(0, 10)}{ev.isAllDay ? "" : ` · ${ev.startAt.slice(11, 16)}`}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div style={{ marginTop: 24 }}>
-        <EntityDocs
-          entityType="project"
-          entityId={id}
-          entityLabel={proj.name}
-          docs={docs}
-          slots={[
-            { category: "Contract", required: true },
-            { category: "Permit", required: false },
-            { category: "Plan", required: false },
-            { category: "Insurance (COI)", required: false },
-            { category: "Other", required: false, hint: "Anything else worth keeping on this job." },
-          ]}
-        />
-      </div>
-
-      <div className="sec-h">Estimate originals</div>
-      <div className="card" style={{ marginTop: 16 }}>
-        <table className="dtable">
-          <thead>
-            <tr>
-              <th>Date</th><th>Source</th><th className="n">Line items</th>
-              <th className="n">Total</th><th>Parse</th>
-            </tr>
-          </thead>
-          <tbody>
-            {proj.estimates.length === 0 ? (
-              <tr>
-                <td colSpan={5}>
-                  <div className="empty">
-                    <div className="big">No estimates on file</div>
-                    Nothing parsed for this job yet.
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              proj.estimates.map((e) => (
-                <tr key={e.id}>
-                  <td>
-                    <Link href={`/estimates/${e.id}`} className="cell-link">{e.date || "View estimate"}</Link>
-                  </td>
-                  <td>
-                    {e.hasDoc ? (
-                      <a
-                        href={`/api/estimates/${e.id}/document`}
-                        title={`Download original: ${e.source}`}
-                        style={{ display: "inline-block", maxWidth: 240, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", verticalAlign: "bottom" }}
-                      >
-                        {e.source || "Document"} ↓
-                      </a>
-                    ) : (
-                      <small
-                        className="j"
-                        title={e.source}
-                        style={{ display: "inline-block", maxWidth: 240, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", verticalAlign: "bottom" }}
-                      >
-                        {e.source || "—"}
-                      </small>
-                    )}
-                  </td>
-                  <td className="n">{e.lineItems}</td>
-                  <td className="n">{e.total ? money(e.total) : "—"}</td>
-                  <td>
-                    <span className={`badge ${CONF[e.confidence] || "unknown"}`}>{e.confidence || "—"}</span>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      <div className="tile-grid">
+        {tiles.map((t) => (
+          <Link key={t.href} href={t.href} className="tile">
+            <span className="tile-icon">{t.icon}</span>
+            <span className="tile-name">{t.name}</span>
+            <span className="tile-sub">{t.sub}</span>
+          </Link>
+        ))}
       </div>
     </section>
   );
