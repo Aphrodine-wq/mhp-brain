@@ -95,7 +95,7 @@ function Greeting({ name }: { name: string }) {
   return (
     <div style={{ marginBottom: 4 }}>
       <h2 style={{ margin: 0 }}>Good {part}, {name.split(" ")[0]}</h2>
-      <div style={{ marginTop: 4, fontSize: 14, color: "var(--ink)" }}>{date}</div>
+      <div style={{ marginTop: 6, fontSize: 18, fontWeight: 600, color: "var(--ink)", letterSpacing: "-.2px" }}>{date}</div>
     </div>
   );
 }

@@ -93,10 +93,6 @@ export default function LoginForm({
           <h1 className="login-pitch-title">Estimating and job tracking for North Mississippi Home Professionals</h1>
         </aside>
       <div className="login-box">
-        {/* Logo — big and centered */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="login-logo" src="/logo.png" alt="MHP Construction" />
-        <h2 className="login-title">MHP Construction</h2>
         <p className="login-subtitle">Sign in to your account</p>
 
         {shownError && <div className="login-err">{shownError}</div>}

@@ -13,7 +13,16 @@ import { detailFor, divisionDetailFor, ESTIMATE_SCOPE } from "@/lib/line-detail"
 import ClientPacket, { type ClientInfo } from "./ClientPacket";
 import { insightFrom, type RealizationFactor } from "@/lib/flywheel-insight";
 
-// Template cards — the builder's front door. One icon per assembly.
+// Category cards — step 0 of the builder. Five doors into the 35 templates.
+const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  "New Builds": <Buildings size={22} />,
+  "Additions & Conversions": <HouseLine size={22} />,
+  "Remodels & Interiors": <PaintRoller size={22} />,
+  "Exterior & Outdoor": <Tree size={22} />,
+  Commercial: <Warehouse size={22} />,
+};
+
+// Template cards — one icon per assembly.
 const TEMPLATE_ICONS: Record<string, React.ReactNode> = {
   kitchen: <CookingPot size={22} />,
   bathroom: <Bathtub size={22} />,
@@ -157,8 +166,9 @@ export default function Estimator({
   const [detailKey, setDetailKey] = useState<number | null>(null);
   const [asmKey, setAsmKey] = useState<string>("");
   const [asmInputs, setAsmInputs] = useState<Record<string, number>>({});
-  // wizard step: 0 = pick a template, 1 = project details, 2 = build specifics
+  // wizard step: 0 = pick a template (categories first), 1 = project details, 2 = build specifics
   const [step, setStep] = useState(0);
+  const [cat, setCat] = useState<string | null>(null);
   const router = useRouter();
   const [jobState, setJobState] = useState<"idle" | "creating" | "error">("idle");
   const keyRef = useRef(0);
@@ -305,31 +315,40 @@ export default function Estimator({
           </div>
         </div>
 
-        {step === 0 && ASSEMBLY_CATEGORIES.map((cat) => {
-          const items = ASSEMBLY_LIST.filter((a) => a.category === cat);
-          if (!items.length) return null;
-          return (
-            <div key={cat} className="type-cat-group">
-              <div className="type-cat">{cat}</div>
-              <div className="type-grid">
-                {items.map((a) => (
-                  <button
-                    key={a.key}
-                    className="type-card"
-                    onClick={() => { selectAssembly(a.key); setStep(1); }}
-                  >
-                    <span className="type-icon">{TEMPLATE_ICONS[a.key] ?? <SquaresFour size={22} />}</span>
-                    <span>{a.label}</span>
-                  </button>
-                ))}
-              </div>
+        {step === 0 && !cat && (
+          <div className="type-grid" style={{ marginTop: 22 }}>
+            {ASSEMBLY_CATEGORIES.map((c) => (
+              <button key={c} className="type-card" onClick={() => setCat(c)}>
+                <span className="type-icon">{CATEGORY_ICONS[c] ?? <SquaresFour size={22} />}</span>
+                <span>{c}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {step === 0 && cat && (
+          <div className="type-cat-group">
+            <button className="btn ghost sm" onClick={() => setCat(null)}>← All categories</button>
+            <div className="type-cat" style={{ marginTop: 14 }}>{cat}</div>
+            <div className="type-grid">
+              {ASSEMBLY_LIST.filter((a) => a.category === cat).map((a) => (
+                <button
+                  key={a.key}
+                  className="type-card"
+                  onClick={() => { selectAssembly(a.key); setStep(1); }}
+                >
+                  <span className="type-icon">{TEMPLATE_ICONS[a.key] ?? <SquaresFour size={22} />}</span>
+                  <span>{a.label}</span>
+                </button>
+              ))}
             </div>
-          );
-        })}
+          </div>
+        )}
 
         {step === 1 && (
           <div className="wiz">
             <div className="wiz-step">{asm?.label} · Step 1 of 2</div>
+            <div className="wiz-dots"><i className="on" /><i /></div>
             <h3>Project details</h3>
             <label>
               Project name
@@ -367,6 +386,7 @@ export default function Estimator({
         {step === 2 && asm && (
           <div className="wiz">
             <div className="wiz-step">{asm.label} · Step 2 of 2</div>
+            <div className="wiz-dots"><i className="on" /><i className="on" /></div>
             <h3>Build specifics</h3>
             {asm.inputs.map((d) => (
               <label key={d.key}>
