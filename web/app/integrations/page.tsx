@@ -36,7 +36,7 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
   return (
     <section className="view">
       <h2>Integrations</h2>
-      <Connections providers={providers} oauthResult={oauth ?? null} oauthDetail={detail ?? null} apifyConfigured={Boolean(settings.apify?.token)} />
+      <Connections providers={providers} oauthResult={oauth ?? null} oauthDetail={detail ?? null} apifyConfigured={Boolean(process.env.APIFY_TOKEN)} />
       <SettingsPanel values={settings} />
       {reviews.length > 0 && <ReviewsPanel reviews={reviews} />}
     </section>

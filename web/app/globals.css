@@ -265,6 +265,9 @@ small.j{color:var(--muted);font-size:11px}
 .metric .k{color:var(--muted);font-size:12px;margin-top:5px;text-transform:uppercase;letter-spacing:.5px}
 .metric.accent{background:var(--navy);border-color:var(--navy)}
 .metric.accent .v{color:#fff}.metric.accent .k{color:rgba(255,255,255,.7)}
+/* the dashboard's headline stat — navy anchor next to the weather card */
+.metric.hero-stat .v{font-size:34px}
+.dash-top-stat .metric.hero-stat{justify-content:center}
 .cols{display:grid;grid-template-columns:1.4fr 1fr;gap:22px;margin-top:8px}
 @media(max-width:900px){.cols{grid-template-columns:1fr}}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;
@@ -305,6 +308,10 @@ small.j{color:var(--muted);font-size:11px}
 .banner{background:#eef3fb;border:1px solid #d6e2f4;border-radius:var(--r-lg);padding:14px 18px;margin:18px 0 6px;
   font-size:13.5px;color:var(--navy);display:flex;gap:10px;align-items:center}
 .banner b{color:var(--navy)}
+/* Google Maps business embed on the dashboard */
+.gmb-card{margin:16px 0 4px;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;
+  box-shadow:var(--shadow-sm);background:var(--card)}
+.gmb-card iframe{display:block;width:100%;height:260px;border:0}
 /* dashboard top row — weather card + headline stat side by side */
 .dash-top{display:flex;gap:16px;align-items:stretch;flex-wrap:wrap}
 .dash-top .wx-card{flex:1;min-width:280px}
