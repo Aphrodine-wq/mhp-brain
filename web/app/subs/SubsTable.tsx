@@ -47,14 +47,13 @@ interface ContactsManager {
 
 export default function SubsTable({ subs }: { subs: SubRow[] }) {
   const router = useRouter();
-  const [f, setF] = useState("");
   const [editing, setEditing] = useState<string | null>(null);
   const [trade, setTrade] = useState("");
   const [phone, setPhone] = useState("");
   const [license, setLicense] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
-  const list = subs.filter((x) => (x.name + " " + x.trade).toLowerCase().includes(f.toLowerCase()));
+  const list = subs;
 
   const groups = new Map<string, SubRow[]>();
   for (const s of list) {
@@ -96,9 +95,8 @@ export default function SubsTable({ subs }: { subs: SubRow[] }) {
 
   return (
     <>
-      <div className="filterbar">
-        <input placeholder="Filter subs…" value={f} onChange={(e) => setF(e.target.value)} />
-        <button className="btn" style={{ marginLeft: "auto" }} onClick={() => setShowAdd(true)}>+ Add Sub</button>
+      <div className="row" style={{ justifyContent: "flex-end", marginTop: 0 }}>
+        <button className="btn" onClick={() => setShowAdd(true)}>+ Add Sub</button>
       </div>
 
       {order.map((g) => (
@@ -106,7 +104,7 @@ export default function SubsTable({ subs }: { subs: SubRow[] }) {
           key={g}
           group={g}
           rows={groups.get(g)!}
-          filtering={f !== ""}
+          filtering={false}
           editing={editing}
           trade={trade}
           phone={phone}

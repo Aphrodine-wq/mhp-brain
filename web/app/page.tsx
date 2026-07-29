@@ -61,6 +61,8 @@ export default async function Home() {
 
   return (
     <section className="view">
+      <Greeting name={user.name} />
+
       <div className="wx-flex">
         <WeatherBanner />
         <div className="wx-flex-cta">
@@ -78,5 +80,24 @@ export default async function Home() {
 
       <GbpReviews />
     </section>
+  );
+}
+
+// "Good morning, Rick — Wednesday, July 29, 2026" — time-aware greeting in the
+// company's own timezone (the server may be UTC).
+function Greeting({ name }: { name: string }) {
+  const now = new Date();
+  const hour = Number(
+    new Intl.DateTimeFormat("en-US", { hour: "numeric", hour12: false, timeZone: "America/Chicago" }).format(now),
+  );
+  const part = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+  const date = new Intl.DateTimeFormat("en-US", {
+    weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "America/Chicago",
+  }).format(now);
+  return (
+    <div style={{ marginBottom: 4 }}>
+      <h2 style={{ margin: 0 }}>Good {part}, {name.split(" ")[0]}</h2>
+      <div className="sub" style={{ marginTop: 4 }}>{date}</div>
+    </div>
   );
 }

@@ -6,18 +6,20 @@ import { useRouter } from "next/navigation";
 import type { ProjectRow } from "@/lib/queries";
 import { money, BADGE } from "@/lib/format";
 import { post } from "@/lib/client";
-import CollapseSection, { yearOf, sortYears } from "../_components/CollapseSection";
+import CollapseSection from "../_components/CollapseSection";
 
 const STATUSES = ["Active", "Aging", "Bid", "Paused", "Likely Done", "Dead", "Unknown"];
 
+// Grouping key: the first type listed on the job ("Kitchen Remodel; Bathroom" → "Kitchen Remodel").
+// Type strings are messy imports; the primary segment is the honest read of what the job IS.
+function primaryType(p: ProjectRow): string {
+  const t = (p.type || "").split(";")[0].trim();
+  return t || "Other";
+}
+
 export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) {
   const router = useRouter();
-  const [f, setF] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
-  const q = f.toLowerCase();
-  const list = projects.filter((p) => p.name.toLowerCase().includes(q));
-  const residential = list.filter((p) => p.category === "Residential");
-  const commercial = list.filter((p) => p.category === "Commercial");
 
   async function setStatus(p: ProjectRow, status: string) {
     if (status === p.status) return;
@@ -30,79 +32,47 @@ export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) 
     }
   }
 
+  const byType = new Map<string, ProjectRow[]>();
+  for (const p of projects) {
+    const t = primaryType(p);
+    if (!byType.has(t)) byType.set(t, []);
+    byType.get(t)!.push(p);
+  }
+  // biggest groups first; "Other" always last
+  const groups = [...byType.entries()].sort((a, b) =>
+    (a[0] === "Other" ? 1 : 0) - (b[0] === "Other" ? 1 : 0) || b[1].length - a[1].length || a[0].localeCompare(b[0]),
+  );
+
   return (
     <>
-      <div className="filterbar">
-        <input placeholder="Filter projects…" value={f} onChange={(e) => setF(e.target.value)} />
-      </div>
-      <CategorySection title="Residential" rows={residential} filtering={q !== ""} busy={busy} setStatus={setStatus} />
-      <CategorySection title="Commercial" rows={commercial} filtering={q !== ""} busy={busy} setStatus={setStatus} />
+      {groups.map(([type, rows]) => (
+        <TypeSection key={type} type={type} rows={rows} busy={busy} setStatus={setStatus} />
+      ))}
     </>
   );
 }
 
-function CategorySection({
-  title,
+function TypeSection({
+  type,
   rows,
-  filtering,
   busy,
   setStatus,
 }: {
-  title: string;
+  type: string;
   rows: ProjectRow[];
-  filtering: boolean;
-  busy: string | null;
-  setStatus: (p: ProjectRow, status: string) => void;
-}) {
-  const total = rows.reduce((s, p) => s + p.value, 0);
-  const byYear = new Map<string, ProjectRow[]>();
-  for (const p of rows) {
-    const y = yearOf(p.last);
-    if (!byYear.has(y)) byYear.set(y, []);
-    byYear.get(y)!.push(p);
-  }
-  const years = sortYears([...byYear.keys()]);
-  return (
-    <CollapseSection
-      title={title}
-      summary={`${rows.length} project${rows.length === 1 ? "" : "s"} · ${money(total)}`}
-      forceOpen={filtering}
-    >
-      {rows.length === 0 && (
-        <div className="empty" style={{ padding: "32px 20px" }}>No {title.toLowerCase()} projects match.</div>
-      )}
-      {years.map((y) => (
-        <YearSection key={y} year={y} rows={byYear.get(y)!} filtering={filtering} busy={busy} setStatus={setStatus} />
-      ))}
-    </CollapseSection>
-  );
-}
-
-function YearSection({
-  year,
-  rows,
-  filtering,
-  busy,
-  setStatus,
-}: {
-  year: string;
-  rows: ProjectRow[];
-  filtering: boolean;
   busy: string | null;
   setStatus: (p: ProjectRow, status: string) => void;
 }) {
   const total = rows.reduce((s, p) => s + p.value, 0);
   return (
     <CollapseSection
-      nested
-      title={year}
+      title={type}
       summary={`${rows.length} project${rows.length === 1 ? "" : "s"} · ${money(total)}`}
-      forceOpen={filtering}
     >
       <table className="dtable">
         <thead>
           <tr>
-            <th>Project</th><th>Market</th><th>Type</th><th>Status</th><th>Last activity</th>
+            <th>Project</th><th>Market</th><th>Status</th><th>Last activity</th>
             <th className="n">Est. Value</th><th className="n">Bids</th>
           </tr>
         </thead>
@@ -111,7 +81,6 @@ function YearSection({
               <tr key={p.id}>
                 <td><Link href={`/projects/${p.id}`} className="cell-link">{p.name}</Link></td>
                 <td>{p.market || "—"}</td>
-                <td>{p.type || "—"}</td>
                 <td>
                   <select
                     className={`badge ${BADGE[p.status] || "unknown"}`}

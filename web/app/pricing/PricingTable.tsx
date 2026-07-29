@@ -87,7 +87,7 @@ export default function PricingTable({ materials }: { materials: TrackedMaterial
 
   return (
     <>
-      <div className="filterbar">
+      <div className="row">
         <button className="btn" disabled={busy !== null} onClick={run}>
           {busy === "run" ? "Running…" : "Run — recompute MHP rates"}
         </button>

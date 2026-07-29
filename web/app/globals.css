@@ -310,6 +310,7 @@ small.j{color:var(--muted);font-size:11px}
 .wx-icon{width:44px;height:44px;border-radius:8px;background:var(--paper);border:1px solid var(--line-2);
   display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .wx-temp{font-family:var(--disp);font-size:22px;font-weight:700;line-height:1.1;letter-spacing:-.4px;color:var(--ink)}
+.wx-city{font-size:12px;color:var(--muted);margin-top:1px}
 .wx-days{display:flex;gap:4px;flex-shrink:0;overflow-x:auto}
 .wx-day{min-width:52px;text-align:center;padding:6px 8px;border-radius:8px}
 .wx-day-name{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
@@ -564,16 +565,6 @@ body.compact .sheet-line{padding:5px 0}
 body.compact .prow{padding:9px 16px}
 .empty{text-align:center;padding:70px 20px;color:var(--muted)}
 .empty .big{font-family:var(--disp);font-size:22px;color:var(--ink);margin-bottom:8px;letter-spacing:-.3px}
-.filterbar{display:flex;gap:8px;margin:18px 0;align-items:center;flex-wrap:wrap}
-/* filter chips (estimates list) */
-.chip{border:1px solid var(--line);background:var(--card);color:var(--ink-2);border-radius:999px;
-  padding:7px 14px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;
-  transition:border-color var(--t),background var(--t),color var(--t)}
-.chip:hover{border-color:var(--navy);color:var(--ink)}
-.chip.active{background:var(--navy);border-color:var(--navy);color:#fff}
-.filterbar input{flex:1;max-width:320px;padding:9px 12px;border:1px solid var(--line);border-radius:var(--r-sm);
-  font-family:var(--sans);transition:border-color var(--t),box-shadow var(--t)}
-.filterbar input:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
 /* login: centered, clean, mobile-first */
 .login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;
   background:linear-gradient(160deg, var(--ink-navy) 0%, #0d2d5e 50%, #0b3d91 100%);
@@ -726,9 +717,7 @@ body.compact .prow{padding:9px 16px}
   .stat-strip .sv{font-size:23px}
   .tot{gap:24px;flex-wrap:wrap}
 
-  /* filters / add-line rows stack and go full width */
-  .filterbar{flex-wrap:wrap}
-  .filterbar input{max-width:none;width:100%}
+  /* add-line rows stack and go full width */
   .sheet-add{flex-wrap:wrap}
   .sheet-add select{flex:1 1 100%;min-width:0;max-width:100%}
 
