@@ -488,6 +488,23 @@ small.j{color:var(--muted);font-size:11px}
 .toggle.on::after{left:23px}
 main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .view-inner{max-width:1160px;margin:0 auto}
+/* builder project-type picker — 8 cards, 2 rows of 4 on desktop */
+.type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0 16px}
+.type-card{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:16px;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);cursor:pointer;
+  font-family:var(--sans);font-size:13px;font-weight:600;color:var(--ink);box-shadow:var(--shadow-sm);
+  transition:border-color var(--t),box-shadow var(--t),transform var(--t),background var(--t)}
+.type-card:hover{border-color:var(--navy);box-shadow:var(--shadow);transform:translateY(-1px)}
+.type-card.active{border-color:var(--navy);background:#eef3fb;box-shadow:var(--shadow)}
+.type-icon{color:var(--navy);display:flex}
+.type-icon svg{fill:currentColor}
+@media(max-width:760px){.type-grid{grid-template-columns:repeat(2,1fr)}}
+/* one-row compact stat strip (project detail top) — never wraps, scrolls on phones */
+.stat-row{display:flex;gap:10px;margin:22px 0 4px}
+.stat-row .metric{flex:1;min-width:0;padding:12px 14px}
+.stat-row .metric .v.sm{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat-row .metric .k{font-size:10px}
+@media(max-width:760px){.stat-row{overflow-x:auto}.stat-row .metric{min-width:120px}}
 /* project detail — two-column ops layout with real air between panels */
 .ops-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:24px}
 .ops-col{display:flex;flex-direction:column;gap:22px;min-width:0}

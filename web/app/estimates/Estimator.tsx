@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  CookingPot, Bathtub, HouseLine, Hammer, Buildings, Tree, Wrench, SquaresFour,
+} from "@phosphor-icons/react";
 import type { CatalogRow } from "@/lib/queries";
 import { money } from "@/lib/format";
 import { ASSEMBLY_LIST, ASSEMBLY_CATEGORIES } from "@/lib/assemblies";
@@ -11,6 +14,18 @@ import CollapseSection from "../_components/CollapseSection";
 import { insightFrom, type RealizationFactor } from "@/lib/flywheel-insight";
 
 const PLACEHOLDER = "Describe the job — scope, size, finishes.";
+
+// Step 1 of the builder — pick the kind of job before describing anything.
+const PROJECT_TYPES = [
+  { key: "Kitchen remodel", icon: <CookingPot size={22} /> },
+  { key: "Bathroom remodel", icon: <Bathtub size={22} /> },
+  { key: "Addition", icon: <HouseLine size={22} /> },
+  { key: "Renovation", icon: <Hammer size={22} /> },
+  { key: "New build", icon: <Buildings size={22} /> },
+  { key: "Outdoor / deck", icon: <Tree size={22} /> },
+  { key: "Repair", icon: <Wrench size={22} /> },
+  { key: "Other", icon: <SquaresFour size={22} /> },
+];
 
 interface Line {
   key: number;
@@ -134,6 +149,7 @@ export default function Estimator({
     }
   }
   const [desc, setDesc] = useState(initialDesc);
+  const [projType, setProjType] = useState("");
   const [files, setFiles] = useState<FileList | null>(null);
   const [lines, setLines] = useState<Line[]>([]);
   const [notes, setNotes] = useState<string[]>([]);
@@ -215,10 +231,11 @@ export default function Estimator({
   async function build() {
     setView("load");
     const docs = await readFiles();
+    const fullDesc = projType ? (desc ? `${projType} — ${desc}` : projType) : desc;
     const r = await fetch("/api/estimate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ description: desc, docs }),
+      body: JSON.stringify({ description: fullDesc, docs }),
     });
     applyResult(await r.json());
   }
@@ -366,6 +383,19 @@ export default function Estimator({
         )}
 
         {(showTemplates || asm) && <div className="or-sep"><span>or describe it</span></div>}
+
+        <div className="type-grid">
+          {PROJECT_TYPES.map((t) => (
+            <button
+              key={t.key}
+              className={`type-card${projType === t.key ? " active" : ""}`}
+              onClick={() => setProjType((cur) => (cur === t.key ? "" : t.key))}
+            >
+              <span className="type-icon">{t.icon}</span>
+              <span>{t.key}</span>
+            </button>
+          ))}
+        </div>
 
         <textarea value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={PLACEHOLDER} />
         <div className="upload">

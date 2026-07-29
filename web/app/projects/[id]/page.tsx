@@ -67,11 +67,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           <span className={`badge ${BADGE[proj.status] || "unknown"}`}>{proj.status}</span>
         )}
       </div>
-      <div className="sub" style={{ marginTop: 6 }}>
-        {proj.market || "—"} · {proj.type || "—"} · last activity {proj.last || "—"}
-      </div>
 
-      <div className="stat-grid">
+      <div className="stat-row">
         <div className="metric"><div className="v sm">{proj.value ? money(proj.value) : "—"}</div><div className="k">Current bid value</div></div>
         <div className="metric"><div className="v sm">{margin?.estimatedCost != null ? money(margin.estimatedCost) : "—"}</div><div className="k">Est. cost</div></div>
         <div className="metric"><div className="v sm">{margin?.marginDollars != null ? money(margin.marginDollars) : "—"}</div><div className="k">Est. margin · {pct(margin?.marginPct ?? null)}</div></div>
