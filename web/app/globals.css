@@ -506,12 +506,10 @@ body.compact .prow{padding:9px 16px}
   background:linear-gradient(160deg, var(--ink-navy) 0%, #0d2d5e 50%, #0b3d91 100%);
   padding:24px}
 .login-shell{display:flex;align-items:center;gap:56px;width:100%;max-width:960px}
-.login-pitch{flex:1;color:#fff;min-width:0;text-align:center}
-.login-pitch-logo{height:64px;width:auto;margin:0 auto 20px;display:block}
-.login-pitch-title{font-family:var(--disp);font-weight:700;font-size:32px;line-height:1.2;
-  letter-spacing:-.6px;margin:0 0 12px}
-.login-pitch-sub{font-size:15px;line-height:1.6;color:rgba(255,255,255,.78);margin:0 auto;
-  max-width:360px}
+.login-pitch{flex:1.2;color:#fff;min-width:0}
+.login-pitch-logo{height:72px;width:auto;margin:0 0 20px;display:block}
+.login-pitch-title{font-family:var(--disp);font-weight:700;font-size:38px;line-height:1.2;
+  letter-spacing:-.6px;margin:0;max-width:460px}
 .login-box{width:100%;max-width:360px;background:#fff;border-radius:16px;padding:32px 28px;
   box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center}
 .login-logo{height:72px;width:auto;margin:0 auto 16px;display:block}
@@ -523,8 +521,6 @@ body.compact .prow{padding:9px 16px}
   font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;
   box-shadow:var(--shadow-sm);transition:all var(--t)}
 .login-oauth-btn:hover{border-color:#b0b8c4;box-shadow:var(--shadow);background:#fafbfc;transform:translateY(-1px)}
-.login-oauth-ms:hover{border-color:#0078d4;background:#f6faff}
-.login-oauth-qb:hover{border-color:#2CA01C;background:#f4fbf3}
 .login-divider{display:flex;align-items:center;gap:14px;margin:22px 0;color:var(--muted);font-size:12px;
   text-transform:uppercase;letter-spacing:.5px}
 .login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--line)}
@@ -561,8 +557,7 @@ body.compact .prow{padding:9px 16px}
 @media(max-width:900px){
   .login-shell{flex-direction:column;gap:24px;max-width:360px}
   .login-pitch-logo{height:44px;margin-bottom:10px}
-  .login-pitch-title{font-size:22px;margin-bottom:6px}
-  .login-pitch-sub{font-size:14px}
+  .login-pitch-title{font-size:22px}
 }
 
 /* Mobile: tighten the whole card so it fits comfortably on a phone without scrolling.

@@ -30,30 +30,6 @@ function GoogleMark() {
   );
 }
 
-function MicrosoftMark() {
-  return (
-    <svg viewBox="0 0 18 18" width="20" height="20" aria-hidden="true">
-      <rect fill="#F25022" x="0" y="0" width="8.5" height="8.5" />
-      <rect fill="#7FBA00" x="9.5" y="0" width="8.5" height="8.5" />
-      <rect fill="#00A4EF" x="0" y="9.5" width="8.5" height="8.5" />
-      <rect fill="#FFB900" x="9.5" y="9.5" width="8.5" height="8.5" />
-    </svg>
-  );
-}
-
-function QuickBooksMark() {
-  // Intuit QuickBooks mark — green disc with a centered "qb"-style hole.
-  return (
-    <svg viewBox="0 0 18 18" width="20" height="20" aria-hidden="true">
-      <circle cx="9" cy="9" r="9" fill="#2CA01C" />
-      <path
-        fill="#fff"
-        d="M5.2 5.2a3.8 3.8 0 0 0 0 7.6h.7V11.4h-.7a2.4 2.4 0 0 1 0-4.8h.5v7.9h1.4V5.2H5.2zm6.2 0v1.4h.7a2.4 2.4 0 0 1 0 4.8h-.5V4.1h-1.4v9.5h2.4a3.8 3.8 0 0 0 0-7.6h-.7z"
-      />
-    </svg>
-  );
-}
-
 export default function LoginForm({
   next,
   dev,
@@ -115,7 +91,6 @@ export default function LoginForm({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="login-pitch-logo" src="/logo-light.png" alt="MHP Construction" />
           <h1 className="login-pitch-title">Estimates and job tracking built on 149 real jobs.</h1>
-          <p className="login-pitch-sub">Pricing, projects, and money in one place.</p>
         </aside>
       <div className="login-box">
         {/* Logo — big and centered */}
@@ -126,22 +101,12 @@ export default function LoginForm({
 
         {shownError && <div className="login-err">{shownError}</div>}
 
-        {/* OAuth buttons — always rendered. Each provider's /start route degrades
-            gracefully (bounces back to /login?error=*_unavailable) when its creds
-            aren't set, so a not-yet-configured provider shows a friendly message
-            instead of being silently hidden. */}
+        {/* Google OAuth — its /start route degrades gracefully (bounces back to
+            /login?error=google_unavailable) when creds aren't set. */}
         <div className="login-oauth">
           <a className="login-oauth-btn" href={`/api/auth/google/start?next=${encodeURIComponent(next)}`}>
             <GoogleMark />
             Sign in with Google
-          </a>
-          <a className="login-oauth-btn login-oauth-ms" href={`/api/auth/microsoft/start?next=${encodeURIComponent(next)}`}>
-            <MicrosoftMark />
-            Sign in with Microsoft
-          </a>
-          <a className="login-oauth-btn login-oauth-qb" href={`/api/auth/quickbooks/start?next=${encodeURIComponent(next)}`}>
-            <QuickBooksMark />
-            Sign in with QuickBooks
           </a>
         </div>
 
