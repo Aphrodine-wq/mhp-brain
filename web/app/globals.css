@@ -467,6 +467,13 @@ small.j{color:var(--muted);font-size:11px}
 .sheet-scope .doc-sub{margin-top:0}
 .sheet-foot{margin-top:30px;padding-top:14px;border-top:1px solid var(--line-2);text-align:center;
   font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+/* payment schedule block (sheet + packet) — milestone, pct, dollars */
+.pay-sched{max-width:340px;margin:22px 0 0 auto}
+.pay-sched .doc-sub{margin:0 0 8px}
+.pay-row{display:flex;align-items:baseline;gap:14px;padding:5px 0;font-size:13.5px;color:var(--muted)}
+.pay-row span:first-child{flex:1}
+.pay-row .pay-pct{font-variant-numeric:tabular-nums}
+.pay-row b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600}
 /* settings */
 .setrow{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:16px 20px;border-bottom:1px solid var(--line-2)}
 .setrow:last-child{border-bottom:0}
@@ -484,6 +491,8 @@ small.j{color:var(--muted);font-size:11px}
 main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .view-inner{max-width:1160px;margin:0 auto}
 /* builder template picker — cards grouped under category headers */
+.type-grid.cats{grid-template-columns:repeat(5,1fr)}
+@media(max-width:900px){.type-grid.cats{grid-template-columns:repeat(2,1fr)}}
 /* builder wizard — borderless question page, room to breathe */
 .wiz{max-width:620px;margin:44px auto 0;padding:8px 0;animation:rise .22s ease both}
 .wiz-step{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--navy);margin-bottom:10px}

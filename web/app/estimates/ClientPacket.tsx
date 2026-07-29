@@ -19,6 +19,7 @@ export interface ClientInfo {
   clientName: string;
   address: string;
   phone?: string;
+  email?: string;
   date: string;
   preparedBy: string;
 }
@@ -31,6 +32,7 @@ export default function ClientPacket({
   taxPct = MS_SALES_TAX_PCT,
   initialShowLines = false,
   client,
+  milestones = [],
   onBack,
 }: {
   lines: PacketLine[];
@@ -38,14 +40,18 @@ export default function ClientPacket({
   taxPct?: number;
   initialShowLines?: boolean;
   client: ClientInfo;
+  milestones?: { label: string; pct: number }[];
   onBack: () => void;
 }) {
   const [showLines, setShowLines] = useState(initialShowLines);
 
   const priced = lines.filter((l) => l.qty > 0 && l.rate > 0);
   const total = (l: PacketLine) => l.qty * l.rate;
+  // Client-facing prices carry the markup inside them — no "overhead & profit" line anywhere.
+  // Division sums and line detail add cleanly to the bid without ever exposing margin.
+  const dispTotal = (l: PacketLine) => total(l) * (1 + (markup || 0) / 100);
 
-  // division rollup, preserving first-seen order
+  // division rollup, preserving first-seen order (sums shown with markup baked in)
   const order: string[] = [];
   const byDiv = new Map<string, { sum: number; lines: PacketLine[] }>();
   for (const l of priced) {
@@ -55,16 +61,12 @@ export default function ClientPacket({
       order.push(d);
     }
     const g = byDiv.get(d)!;
-    g.sum += total(l);
+    g.sum += dispTotal(l);
     g.lines.push(l);
   }
 
-  // Mirror the working estimate's model exactly: bid = subtotal × (1 + markup), then tax.
-  // Contingency is the contractor's internal buffer (shown on the working sheet, not added
-  // into the client price), so the client breakdown sums cleanly to the total.
   const subtotal = priced.reduce((s, l) => s + total(l), 0);
   const bid = subtotal * (1 + (markup || 0) / 100);
-  const oandp = bid - subtotal;
   const { tax, grand } = applySalesTax(bid, taxPct);
 
   // Schedule A — client-selectable finishes grouped by category. These lines are
@@ -102,7 +104,7 @@ export default function ClientPacket({
         <div className="cover-total">
           <span>Estimated investment</span>
           <b>{money(grand)}</b>
-          <small>includes {markup || 0}% overhead &amp; profit and {taxPct || 0}% MS sales tax</small>
+          <small>includes {taxPct || 0}% MS sales tax</small>
         </div>
         <div className="cover-foot">MHP Construction · Oxford, MS · MS Residential Builder R21909</div>
       </article>
@@ -177,17 +179,28 @@ export default function ClientPacket({
             {order.map((d) => {
               const g = byDiv.get(d)!;
               return (
-                <DivRow key={d} name={d} sum={g.sum} lines={g.lines} total={total} show={showLines} />
+                <DivRow key={d} name={d} sum={g.sum} lines={g.lines} total={dispTotal} show={showLines} />
               );
             })}
           </tbody>
           <tfoot>
-            <tr><td>Subtotal</td><td className="n">{money(subtotal)}</td></tr>
-            <tr><td>Overhead &amp; profit ({markup || 0}%)</td><td className="n">{money(oandp)}</td></tr>
             <tr><td>MS sales tax ({taxPct || 0}%)</td><td className="n">{money(tax)}</td></tr>
             <tr className="grand"><td>Total estimated investment</td><td className="n"><b>{money(grand)}</b></td></tr>
           </tfoot>
         </table>
+
+        {milestones.length > 0 && (
+          <div className="pay-sched" style={{ margin: "22px auto 0 0", maxWidth: 420 }}>
+            <div className="doc-sub">Payment schedule</div>
+            {milestones.map((m, i) => (
+              <div className="pay-row" key={i}>
+                <span>{m.label}</span>
+                <span className="pay-pct">{m.pct}%</span>
+                <b>{money(grand * (m.pct / 100))}</b>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="scope-grid" style={{ marginTop: 22 }}>
           <div><h4>Included</h4><ul>{ESTIMATE_SCOPE.included.map((s, i) => <li key={i}>{s}</li>)}</ul></div>

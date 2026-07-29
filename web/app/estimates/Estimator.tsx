@@ -72,7 +72,6 @@ export default function Estimator({
   catalog,
   initialClientName = "",
   realization = null,
-  onBack,
 }: {
   catalog: CatalogRow[];
   initialDesc?: string;
@@ -167,6 +166,12 @@ export default function Estimator({
   // universal build specifics — collected on every template, not just its two dimensions
   const [finish, setFinish] = useState<"basic" | "standard" | "premium">("standard");
   const [extraNotes, setExtraNotes] = useState("");
+  // payment schedule — MHP bills in milestones; percentages, converted to dollars on the sheet
+  const [milestones, setMilestones] = useState<{ label: string; pct: number }[]>([
+    { label: "Contract signing", pct: 30 },
+    { label: "Rough-in complete", pct: 40 },
+    { label: "Final walkthrough", pct: 30 },
+  ]);
   // wizard step: 0 = pick a template (categories first), 1 = project details, 2 = build specifics
   const [step, setStep] = useState(0);
   const [cat, setCat] = useState<string | null>(null);
@@ -254,11 +259,7 @@ export default function Estimator({
   const mk = 1 + (markup || 0) / 100;
   const lineTotal = (l: Line) => (parseFloat(l.qty) || 0) * (parseFloat(l.rate) || 0);
   const sub = lines.reduce((s, l) => s + lineTotal(l), 0);
-  const cont = prefs.cont ? sub * (prefs.contPct / 100) : 0;
   const bid = sub * mk;
-
-  // markup is not margin — show what the chosen markup actually nets (on direct cost)
-  const marginPct = markup > 0 ? (markup / (100 + markup)) * 100 : 0;
 
   // group consecutive lines by division for header rows
   const groups: { division: string; lines: Line[] }[] = [];
@@ -274,18 +275,11 @@ export default function Estimator({
     return (
       <section className="view">
         <div className="row" style={{ justifyContent: "space-between", marginTop: 0, alignItems: "flex-start" }}>
-          <div>
-            {onBack && (
-              <button className="btn ghost sm" onClick={onBack} style={{ marginBottom: 8 }}>
-                ← All projects
-              </button>
-            )}
-            <h2 style={{ margin: 0 }}>Estimate Builder</h2>
-          </div>
+          <h2 style={{ margin: 0 }}>Estimate Builder</h2>
         </div>
 
         {step === 0 && !cat && (
-          <div className="type-grid" style={{ marginTop: 22 }}>
+          <div className="type-grid cats" style={{ marginTop: 22 }}>
             {ASSEMBLY_CATEGORIES.map((c) => (
               <button key={c} className="type-card" onClick={() => setCat(c)}>
                 <span className="type-icon">{CATEGORY_ICONS[c] ?? <SquaresFour size={22} />}</span>
@@ -316,9 +310,9 @@ export default function Estimator({
 
         {step === 1 && (
           <div className="wiz">
-            <div className="wiz-step">{asm?.label} · Step 1 of 2</div>
-            <div className="wiz-dots"><i className="on" /><i /></div>
-            <h3>Project details</h3>
+            <div className="wiz-step">{asm?.label} · Step 1 of 4</div>
+            <div className="wiz-dots"><i className="on" /><i /><i /><i /></div>
+            <h3>The project</h3>
             <label>
               Project name
               <input
@@ -336,6 +330,27 @@ export default function Estimator({
                 onChange={(e) => setC("address", e.target.value)}
               />
             </label>
+            <div className="wiz-actions">
+              <button className="btn ghost" onClick={() => setStep(0)}>← Templates</button>
+              <button className="btn" onClick={() => setStep(2)}>Next →</button>
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="wiz">
+            <div className="wiz-step">{asm?.label} · Step 2 of 4</div>
+            <div className="wiz-dots"><i className="on" /><i className="on" /><i /><i /></div>
+            <h3>The client</h3>
+            <label>
+              Client name
+              <input
+                value={client.clientName}
+                placeholder="John Smith"
+                autoFocus
+                onChange={(e) => setC("clientName", e.target.value)}
+              />
+            </label>
             <label>
               Phone number
               <input
@@ -345,17 +360,26 @@ export default function Estimator({
                 onChange={(e) => setC("phone", e.target.value)}
               />
             </label>
+            <label>
+              Email
+              <input
+                value={client.email ?? ""}
+                placeholder="client@email.com"
+                type="email"
+                onChange={(e) => setC("email", e.target.value)}
+              />
+            </label>
             <div className="wiz-actions">
-              <button className="btn ghost" onClick={() => setStep(0)}>← Templates</button>
-              <button className="btn" onClick={() => setStep(2)}>Next →</button>
+              <button className="btn ghost" onClick={() => setStep(1)}>← Back</button>
+              <button className="btn" onClick={() => setStep(3)}>Next →</button>
             </div>
           </div>
         )}
 
-        {step === 2 && asm && (
+        {step === 3 && asm && (
           <div className="wiz">
-            <div className="wiz-step">{asm.label} · Step 2 of 2</div>
-            <div className="wiz-dots"><i className="on" /><i className="on" /></div>
+            <div className="wiz-step">{asm.label} · Step 3 of 4</div>
+            <div className="wiz-dots"><i className="on" /><i className="on" /><i className="on" /><i /></div>
             <h3>Build specifics</h3>
             {asm.inputs.map((d) => (
               <label key={d.key}>
@@ -386,7 +410,60 @@ export default function Estimator({
               />
             </label>
             <div className="wiz-actions">
-              <button className="btn ghost" onClick={() => setStep(1)}>← Back</button>
+              <button className="btn ghost" onClick={() => setStep(2)}>← Back</button>
+              <button className="btn" onClick={() => setStep(4)}>Next →</button>
+            </div>
+          </div>
+        )}
+
+        {step === 4 && asm && (
+          <div className="wiz">
+            <div className="wiz-step">{asm.label} · Step 4 of 4</div>
+            <div className="wiz-dots"><i className="on" /><i className="on" /><i className="on" /><i className="on" /></div>
+            <h3>Payment schedule</h3>
+            <p style={{ margin: "0 0 18px", fontSize: 14, color: "var(--ink-2)" }}>
+              When does the client pay? Percentages of the total bid.
+            </p>
+            {milestones.map((m, i) => (
+              <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-end", marginBottom: 12 }}>
+                <label style={{ flex: 1, marginBottom: 0 }}>
+                  Milestone
+                  <input
+                    value={m.label}
+                    onChange={(e) => setMilestones((ms) => ms.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))}
+                  />
+                </label>
+                <label style={{ width: 90, marginBottom: 0 }}>
+                  %
+                  <input
+                    type="number"
+                    value={m.pct}
+                    onChange={(e) => setMilestones((ms) => ms.map((x, j) => (j === i ? { ...x, pct: Number(e.target.value) } : x)))}
+                  />
+                </label>
+                <button
+                  className="x"
+                  style={{ marginBottom: 10 }}
+                  onClick={() => setMilestones((ms) => ms.filter((_, j) => j !== i))}
+                  disabled={milestones.length <= 1}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "6px 0 18px" }}>
+              <button
+                className="btn ghost sm"
+                onClick={() => setMilestones((ms) => [...ms, { label: "", pct: 0 }])}
+              >
+                + Add milestone
+              </button>
+              <span style={{ fontSize: 13, fontWeight: 600, color: milestones.reduce((s, m) => s + (m.pct || 0), 0) === 100 ? "var(--muted)" : "#b45309" }}>
+                Total: {milestones.reduce((s, m) => s + (m.pct || 0), 0)}%
+              </span>
+            </div>
+            <div className="wiz-actions">
+              <button className="btn ghost" onClick={() => setStep(3)}>← Back</button>
               <button className="btn" onClick={buildAssembly}>Build Estimate →</button>
             </div>
           </div>
@@ -424,6 +501,7 @@ export default function Estimator({
         taxPct={prefs.taxPct}
         initialShowLines={prefs.packetDetail}
         client={client}
+        milestones={milestones.filter((m) => m.label && m.pct > 0)}
         onBack={() => setView("result")}
       />
     );
@@ -525,17 +603,21 @@ export default function Estimator({
         </div>
 
         <div className="sheet-totals">
-          <div><span>Subtotal cost</span><b>{money(sub)}</b></div>
-          {prefs.cont && <div><span>Contingency ({prefs.contPct}%) <small className="j">internal — not in bid</small></span><b>{money(cont)}</b></div>}
-          <div>
-            <span>
-              Markup <input className="mk" type="number" value={markup} style={{ width: 52 }} onChange={(e) => setMarkup(Number(e.target.value))} /> %
-              <small className="j"> = {marginPct.toFixed(1)}% margin</small>
-            </span>
-            <b>{money(bid - sub)}</b>
-          </div>
           <div className="grand"><span>Bid</span><b>{money(bid)}</b></div>
         </div>
+
+        {milestones.some((m) => m.label && m.pct > 0) && (
+          <div className="pay-sched">
+            <div className="doc-sub">Payment schedule</div>
+            {milestones.filter((m) => m.label && m.pct > 0).map((m, i) => (
+              <div className="pay-row" key={i}>
+                <span>{m.label}</span>
+                <span className="pay-pct">{m.pct}%</span>
+                <b>{money(bid * (m.pct / 100))}</b>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="sheet-scope">
           <div className="doc-sub">Scope, assumptions &amp; terms</div>

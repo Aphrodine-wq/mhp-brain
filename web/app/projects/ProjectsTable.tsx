@@ -38,9 +38,10 @@ export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) 
     if (!byType.has(t)) byType.set(t, []);
     byType.get(t)!.push(p);
   }
-  // biggest groups first; "Other" always last
+  // biggest groups first; unclassified catch-alls always last
+  const tail = (t: string) => (t === "Other" || t === "Unclassified" ? 1 : 0);
   const groups = [...byType.entries()].sort((a, b) =>
-    (a[0] === "Other" ? 1 : 0) - (b[0] === "Other" ? 1 : 0) || b[1].length - a[1].length || a[0].localeCompare(b[0]),
+    tail(a[0]) - tail(b[0]) || b[1].length - a[1].length || a[0].localeCompare(b[0]),
   );
 
   return (
