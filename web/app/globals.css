@@ -284,7 +284,7 @@ small.j{color:var(--muted);font-size:11px}
 .stat-strip .sv{font-family:var(--disp);font-size:27px;font-weight:650;line-height:1;letter-spacing:-.6px}
 .stat-strip .sk{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px;margin-top:7px}
 .sec-h{font-family:var(--disp);font-size:18px;font-weight:600;margin:30px 0 0;letter-spacing:-.2px}
-.proj-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(288px,1fr));gap:16px;margin-top:16px}
+.proj-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(288px,100%),1fr));gap:16px;margin-top:16px}
 .pcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px;cursor:pointer;
   box-shadow:var(--shadow-sm);transition:border-color var(--t),box-shadow var(--t),transform var(--t)}
 .pcard:hover{border-color:#c2cede;box-shadow:var(--shadow-lg);transform:translateY(-2px)}
@@ -349,7 +349,7 @@ small.j{color:var(--muted);font-size:11px}
   margin:0;padding:14px 18px;border-bottom:1px solid var(--line-2)}
 .prio{display:flex;gap:11px;align-items:center;padding:11px 18px;border-bottom:1px solid var(--line-2);font-size:14px}
 .prio:last-child{border-bottom:0}.prio:hover{background:var(--hover)}
-.living-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(335px,1fr));gap:16px;margin-top:8px}
+.living-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(335px,100%),1fr));gap:16px;margin-top:8px}
 .living{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:var(--r-lg);
   padding:18px 20px;box-shadow:var(--shadow-sm)}
 .living.red{border-left-color:#c0392b}.living.amber{border-left-color:#d99a2b}.living.green{border-left-color:#2f9e44}
@@ -368,7 +368,7 @@ small.j{color:var(--muted);font-size:11px}
 .forecast{margin-top:14px;padding-top:13px;border-top:1px dashed var(--line);font-size:12.5px;color:var(--muted)}
 .forecast b{color:var(--ink)}
 /* crew cards */
-.crew-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:22px}
+.crew-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:16px;margin-top:22px}
 .crew-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px;
   box-shadow:var(--shadow-sm);transition:border-color var(--t),box-shadow var(--t),transform var(--t)}
 .crew-card:hover{border-color:#c2cede;box-shadow:var(--shadow);transform:translateY(-1px)}
@@ -701,6 +701,9 @@ body.compact .prow{padding:9px 16px}
     opacity:0;pointer-events:none;transition:opacity .25s ease}
   .scrim.show{opacity:1;pointer-events:auto}
   body.nav-open{overflow:hidden}
+
+  /* the builder's sticky action bar must clear the sticky topbar */
+  .doc-bar{top:64px}
 }
 
 @media(max-width:720px){
@@ -735,5 +738,28 @@ body.compact .prow{padding:9px 16px}
 
   /* settings rows: label over control instead of side-by-side */
   .setrow{flex-direction:column;align-items:stretch;gap:10px}
+
+  /* form controls: 16px keeps iOS from zooming on focus */
+  .setrow input,.setrow select,input.mk,textarea{font-size:16px}
+
+  /* estimate sheet lines: name takes a full row, numbers share the next — no crush */
+  .sheet-line{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline}
+  .sheet-line>div{flex:1 1 100%}
+  .sl-qty{justify-content:flex-start}
+  .sl-rate{text-align:left}
+  .sl-total{margin-left:auto}
+
+  /* stat grids can go 2-up on a phone instead of collapsing to one column */
+  .stat-grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+
+  /* milestone labels + tiles tighten for narrow screens */
+  .mstone-label{font-size:10px}
+  .tile-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
+
+  /* file picker never overflows its card */
+  .upload input[type=file]{max-width:100%}
+
+  /* weather card spans the phone — the 720px cap is a desktop nicety */
+  .wx-card{max-width:none}
 
 }

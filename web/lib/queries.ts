@@ -51,11 +51,19 @@ export interface ProjectRow {
   value: number;
   estimates: number;
   category: "Residential" | "Commercial";
+  phase: string;
+}
+
+// Future-dated activity is always dirty import data (we've seen 2027/2028 rows) — clamp it away
+// rather than show "last activity 2028" on a card.
+function clampActivity(la: string | null): string {
+  if (!la) return "";
+  return la > new Date().toISOString().slice(0, 7) ? "" : la;
 }
 
 export async function projectsList(): Promise<ProjectRow[]> {
   const ov = await loadOverrides("project");
-  const prows = (await db.execute("SELECT id,name,type,status,market,last_activity FROM projects")).rows;
+  const prows = (await db.execute("SELECT id,name,type,status,market,last_activity,current_phase FROM projects")).rows;
   const erows = (
     // Project value math: only CLEAN estimates count. FLAGGED (PHASE_ONLY / DUPLICATE_EXPORT)
     // would overstate or double-count a project's value. List/detail views below keep FLAGGED
@@ -81,10 +89,11 @@ export async function projectsList(): Promise<ProjectRow[]> {
       type,
       status: o?.status ?? String(p.status),
       market: (o?.market ?? (p.market as string | null)) ?? "",
-      last: (p.last_activity as string | null) ?? "",
+      last: clampActivity(p.last_activity as string | null),
       value: pyRound(projectValue(ests)),
       estimates: ests.length,
       category: categoryOf(type),
+      phase: String(p.current_phase ?? ""),
     };
   });
 
