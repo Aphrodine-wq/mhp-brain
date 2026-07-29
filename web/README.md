@@ -1,5 +1,58 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## System overview
+
+MHP Brain — the operating app for North Mississippi Home Professionals, live at
+`mhpestimate.cloud` (Next.js 16 on Vercel, Neon Postgres).
+
+```mermaid
+graph LR
+  subgraph People["Who uses it"]
+    U["Rick, Josh & crew<br/>(phone + desktop)"]
+  end
+
+  subgraph App["Next.js app — Vercel (mhpestimate.cloud)"]
+    direction TB
+    PAGES["Pages<br/>dashboard · projects · estimate builder<br/>pricing · subs · crew · integrations · settings"]
+    API["API routes<br/>auth · estimate · oauth · pricing<br/>weather · alerts · ingest"]
+    LIB["lib/<br/>queries · pricing · assemblies<br/>auth/sessions · operations"]
+    PAGES --> API --> LIB
+  end
+
+  subgraph Data["Data"]
+    NEON[("Neon Postgres<br/>projects · estimates · line_items<br/>unit_costs · users · ops tables")]
+    SQLITE[("mhp.db (SQLite)<br/>149-job pricing history — the moat")]
+  end
+
+  subgraph Sync["Data pipeline"]
+    SYNC["scripts/sync_to_pg.mjs<br/>(drop + reload core tables)"]
+    MIG["scripts/migrate.mjs<br/>(idempotent SQL migrations)"]
+    SCRAPE["Price scraper<br/>(HMAC-signed POST)"]
+  end
+
+  subgraph Outside["External services"]
+    QB["QuickBooks<br/>job costs + payments"]
+    GOOG["Google<br/>sign-in · Gmail invoices · GBP reviews"]
+    MSFT["Microsoft<br/>Teams · OneDrive · calendar"]
+    NWS["NWS weather<br/>(keyless)"]
+    RESEND["Resend<br/>estimate emails"]
+    CAI["ConstructionAI<br/>(optional scope AI)"]
+  end
+
+  U --> PAGES
+  LIB --> NEON
+  SQLITE --> SYNC --> NEON
+  MIG --> NEON
+  SCRAPE -->|/api/pricing/ingest| API
+  API --> QB
+  API --> GOOG
+  API --> MSFT
+  PAGES --> NWS
+  API --> RESEND
+  API --> CAI
+  RESEND --> U
+```
+
 ## Getting Started
 
 First, run the development server:
