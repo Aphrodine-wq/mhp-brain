@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Tree, PaintRoller, SquaresFour, House, Wall, Door, Storefront, Drop, Fan, Lightning, Package,
+} from "@phosphor-icons/react";
 import type { TrackedMaterial } from "@/lib/price-sensor";
 import { money } from "@/lib/format";
-import CollapseSection from "../_components/CollapseSection";
 
 const fmt = (n: number | null) => (n == null ? "—" : n >= 100 ? money(n) : `$${n.toFixed(2)}`);
 
@@ -23,17 +25,26 @@ const GROUPS: [RegExp, string][] = [
 ];
 const groupOf = (m: TrackedMaterial) => GROUPS.find(([re]) => re.test(m.catalogDesc))?.[1] ?? "Other";
 
-// drift of recent MHP rate vs all-time baseline — the "are we keeping up" number
-function drift(m: TrackedMaterial): number | null {
-  if (m.rateRecent == null || m.rateBaseline == null || m.rateBaseline === 0) return null;
-  return Math.round(((m.rateRecent - m.rateBaseline) / m.rateBaseline) * 100);
-}
+const GROUP_ICONS: Record<string, React.ReactNode> = {
+  "Lumber & Framing": <Tree size={22} />,
+  "Drywall, Paint & Trim": <PaintRoller size={22} />,
+  "Flooring & Tile": <SquaresFour size={22} />,
+  "Envelope & Roofing": <House size={22} />,
+  "Concrete & Masonry": <Wall size={22} />,
+  Openings: <Door size={22} />,
+  "Casework & Counters": <Storefront size={22} />,
+  Plumbing: <Drop size={22} />,
+  HVAC: <Fan size={22} />,
+  Electrical: <Lightning size={22} />,
+  Other: <Package size={22} />,
+};
 
 export default function PricingTable({ materials }: { materials: TrackedMaterial[] }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [unit, setUnit] = useState("");
   const [catalogDesc, setCatalogDesc] = useState("");
@@ -112,78 +123,77 @@ export default function PricingTable({ materials }: { materials: TrackedMaterial
           byGroup.get(g)!.push(m);
         }
         const order = [...byGroup.keys()].sort((a, b) => (a === "Other" ? 1 : b === "Other" ? -1 : a.localeCompare(b)));
-        return order.map((g) => {
-          const rows = byGroup.get(g)!;
-          const noFeed = rows.filter((m) => m.marketPrice == null).length;
-          const stale = rows.filter((m) => m.stale).length;
-          const parts = [`${rows.length} material${rows.length === 1 ? "" : "s"}`];
-          if (stale) parts.push(`${stale} stale`);
-          if (noFeed) parts.push(`${noFeed} no feed`);
+
+        // door cards first, like the estimate builder — drill into one group at a time
+        if (!openGroup) {
           return (
-            <CollapseSection key={g} title={g} summary={parts.join(" · ")}>
-        <table className="dtable">
-          <thead>
-            <tr>
-              <th>Material</th><th>Estimator line</th>
-              <th className="n">Market</th><th className="n">MHP 12-mo</th><th className="n">Baseline</th>
-              <th>Drift</th><th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((m) => {
-              const d = drift(m);
-              return (
-                <tr key={m.id}>
-                  <td>
-                    <b>{m.name}</b>
-                    <div><small className="j">per {m.unit || "unit"}</small></div>
-                  </td>
-                  <td><small className="j">{m.catalogDesc || "—"}</small></td>
-                  <td className="n">
-                    {m.marketPrice != null ? (
-                      <>
-                        {fmt(m.marketPrice)}
-                        {m.stale && (
-                          <span className="badge aging" style={{ marginLeft: 6 }}>stale</span>
-                        )}
-                        <div><small className="j">{m.marketUpdatedAt}{m.marketSource ? ` · ${m.marketSource}` : ""}</small></div>
-                      </>
-                    ) : (
-                      <span className="badge unknown">no feed</span>
-                    )}
-                    <div style={{ marginTop: 4, whiteSpace: "nowrap" }}>
-                      <input
-                        className="mk"
-                        style={{ width: 86 }}
-                        placeholder="set $"
-                        value={priceEdit[m.id] ?? ""}
-                        onChange={(e) => setPriceEdit((p) => ({ ...p, [m.id]: e.target.value }))}
-                      />{" "}
-                      <button className="btn ghost sm" disabled={busy === m.id || !priceEdit[m.id]} onClick={() => saveMarket(m.id)}>Set</button>
-                    </div>
-                  </td>
-                  <td className="n">{fmt(m.rateRecent)}</td>
-                  <td className="n">{fmt(m.rateBaseline)}</td>
-                  <td>
-                    {d == null ? (
-                      <span className="badge unknown">—</span>
-                    ) : d > 5 ? (
-                      <span className="badge active">+{d}% charging more</span>
-                    ) : d < -5 ? (
-                      <span className="badge dead">{d}% falling behind</span>
-                    ) : (
-                      <span className="badge bid">{d >= 0 ? "+" : ""}{d}% steady</span>
-                    )}
-                  </td>
-                  <td className="n"><button className="x" disabled={busy === m.id} onClick={() => remove(m.id)} title="Stop tracking">×</button></td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-            </CollapseSection>
+            <div className="type-grid" style={{ marginTop: 22 }}>
+              {order.map((g) => {
+                const rows = byGroup.get(g)!;
+                return (
+                  <button key={g} className="type-card" onClick={() => setOpenGroup(g)}>
+                    <span className="type-icon">{GROUP_ICONS[g] ?? <Package size={22} />}</span>
+                    <span>{g}</span>
+                    <span className="type-sub">{rows.length} material{rows.length === 1 ? "" : "s"}</span>
+                  </button>
+                );
+              })}
+            </div>
           );
-        });
+        }
+
+        const rows = byGroup.get(openGroup) ?? [];
+        return (
+          <div style={{ marginTop: 18 }}>
+            <button className="btn ghost sm" onClick={() => setOpenGroup(null)}>← All groups</button>
+            <h3 style={{ margin: "14px 0 4px", fontFamily: "var(--disp)", fontSize: 20 }}>{openGroup}</h3>
+            <table className="dtable">
+              <thead>
+                <tr>
+                  <th>Material</th><th>Estimator line</th>
+                  <th className="n">Market</th><th className="n">MHP 12-mo</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((m) => (
+                  <tr key={m.id}>
+                    <td>
+                      <b>{m.name}</b>
+                      <div><small className="j">per {m.unit || "unit"}</small></div>
+                    </td>
+                    <td><small className="j">{m.catalogDesc || "—"}</small></td>
+                    <td className="n">
+                      {m.marketPrice != null ? (
+                        <>
+                          {fmt(m.marketPrice)}
+                          {m.stale && (
+                            <span className="badge aging" style={{ marginLeft: 6 }}>stale</span>
+                          )}
+                          <div><small className="j">{m.marketUpdatedAt}{m.marketSource ? ` · ${m.marketSource}` : ""}</small></div>
+                        </>
+                      ) : (
+                        <span className="badge unknown">no feed</span>
+                      )}
+                      <div style={{ marginTop: 4, whiteSpace: "nowrap" }}>
+                        <input
+                          className="mk"
+                          style={{ width: 86 }}
+                          placeholder="set $"
+                          value={priceEdit[m.id] ?? ""}
+                          onChange={(e) => setPriceEdit((p) => ({ ...p, [m.id]: e.target.value }))}
+                        />{" "}
+                        <button className="btn ghost sm" disabled={busy === m.id || !priceEdit[m.id]} onClick={() => saveMarket(m.id)}>Set</button>
+                      </div>
+                    </td>
+                    <td className="n">{fmt(m.rateRecent)}</td>
+                    <td className="n"><button className="x" disabled={busy === m.id} onClick={() => remove(m.id)} title="Stop tracking">×</button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
       })()}
 
       <div className="morelink">

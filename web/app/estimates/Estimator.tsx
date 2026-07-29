@@ -11,7 +11,7 @@ import { money } from "@/lib/format";
 import { ASSEMBLY_LIST, ASSEMBLY_CATEGORIES } from "@/lib/assemblies";
 import { detailFor, divisionDetailFor, ESTIMATE_SCOPE } from "@/lib/line-detail";
 import ClientPacket, { type ClientInfo } from "./ClientPacket";
-import { insightFrom, type RealizationFactor } from "@/lib/flywheel-insight";
+import type { RealizationFactor } from "@/lib/flywheel-insight";
 
 // Category cards — step 0 of the builder. Five doors into the 35 templates.
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
@@ -85,8 +85,6 @@ export default function Estimator({
   const [client, setClient] = useState<ClientInfo>({ project: "", clientName: initialClientName, address: "", date: "", preparedBy: "MHP Construction" });
   const setC = (k: keyof ClientInfo, v: string) => setClient((c) => ({ ...c, [k]: v }));
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
-  // Bid Guard exit gate — which outbound action is awaiting explicit confirmation
-  const [confirmAction, setConfirmAction] = useState<null | "export" | "save" | "packet" | "createJob">(null);
 
   // user defaults from the Settings page (markup/contingency/display) — same localStorage
   // hydration pattern as SettingsForm: must run post-mount because this component SSRs.
@@ -205,7 +203,9 @@ export default function Estimator({
         p75: l.p75,
         kind: l.kind,
         qty: l.qty == null ? "" : String(l.qty),
-        rate: l.rate == null ? "" : String(Math.round(l.rate * factor)),
+        // 2-decimal round, not integer — sub-$1 catalog rates (staking $0.35/SF,
+        // termite $0.15/SF) must survive the finish-level factor
+        rate: l.rate == null ? "" : String(Math.round(l.rate * factor * 100) / 100),
       })),
     );
     setView("result");
@@ -257,45 +257,8 @@ export default function Estimator({
   const cont = prefs.cont ? sub * (prefs.contPct / 100) : 0;
   const bid = sub * mk;
 
-  // Flywheel calibration — how bids of this kind have historically landed vs actuals
-  // (lib/flywheel.ts). Recomputes live with the bid. On thin/noisy history it reads
-  // "not enough history yet" rather than steering the number.
-  const calib = insightFrom(realization, bid);
-
-  // Bid Guard (MARGIN_GUARD.md, Engine 2 — the slice the builder's data supports today):
-  // p25 of MHP's own job history is the baseline; any line priced under it is flagged
-  // with the exact dollars short, rolled up by division. Warns loudly, never blocks —
-  // underpricing a loyalty client is a choice, not an error.
-  const lineShort = (l: Line) => {
-    const qty = parseFloat(l.qty) || 0;
-    const rate = parseFloat(l.rate);
-    if (l.p25 == null || qty <= 0 || !Number.isFinite(rate) || rate >= l.p25) return 0;
-    return (l.p25 - rate) * qty;
-  };
-  const isUnder = (l: Line) => lineShort(l) > 0;
-  const shortByDiv = new Map<string, { count: number; short: number }>();
-  for (const l of lines) {
-    const s = lineShort(l);
-    if (s <= 0) continue;
-    const d = l.division || "Other";
-    const cur = shortByDiv.get(d) ?? { count: 0, short: 0 };
-    shortByDiv.set(d, { count: cur.count + 1, short: cur.short + s });
-  }
-  const totalShort = [...shortByDiv.values()].reduce((s, d) => s + d.short, 0);
   // markup is not margin — show what the chosen markup actually nets (on direct cost)
   const marginPct = markup > 0 ? (markup / (100 + markup)) * 100 : 0;
-
-  // The exit gate: while the guard is firing, every outbound path (export / save / packet)
-  // requires an explicit "deliberate" confirmation. Nothing underpriced leaves by accident;
-  // a chosen underprice (loyalty work) is one click — per MARGIN_GUARD.md, never a hard block.
-  const guardActive = totalShort > 0 || markup <= 0;
-  const runAction = (a: "export" | "save" | "packet" | "createJob") => {
-    if (a === "export") exportx();
-    else if (a === "save") saveProject();
-    else if (a === "createJob") createJob();
-    else setView("packet");
-  };
-  const guarded = (a: "export" | "save" | "packet" | "createJob") => (guardActive ? setConfirmAction(a) : runAction(a));
 
   // group consecutive lines by division for header rows
   const groups: { division: string; lines: Line[] }[] = [];
@@ -473,81 +436,16 @@ export default function Estimator({
     <section className="view">
       <div className="doc-bar">
         <button className="btn ghost sm" onClick={() => setView("input")}>← New</button>
-        <button className="btn ghost sm" onClick={() => guarded("export")}>Export to Excel</button>
-        <button className="btn ghost sm" onClick={() => guarded("save")} disabled={saveState === "saving"}>
+        <button className="btn ghost sm" onClick={exportx}>Export to Excel</button>
+        <button className="btn ghost sm" onClick={saveProject} disabled={saveState === "saving"}>
           {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved ✓" : saveState === "error" ? "Retry save" : "Save"}
         </button>
-        <button className="btn ghost sm" onClick={() => guarded("createJob")} disabled={jobState === "creating"}>
+        <button className="btn ghost sm" onClick={createJob} disabled={jobState === "creating"}>
           {jobState === "creating" ? "Creating…" : jobState === "error" ? "Retry job" : "Create Job →"}
         </button>
-        {totalShort > 0 && <span className="doc-bar-warn" title="Lines priced under MHP's historical baseline">{money(totalShort)} under baseline</span>}
         <div className="doc-bar-bid"><span>Bid</span><b>{money(bid)}</b></div>
-        <button className="btn sm" onClick={() => guarded("packet")}>Client Packet →</button>
+        <button className="btn sm" onClick={() => setView("packet")}>Client Packet →</button>
       </div>
-
-      {confirmAction && (
-        <div className="modal-scrim" onClick={() => setConfirmAction(null)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>This estimate loses money as priced</h3>
-            <div className="warn-row" style={{ paddingBottom: 10 }}>
-              {totalShort > 0 && (
-                <>
-                  <b style={{ color: "#9c2f23" }}>{money(totalShort)} under MHP baselines</b>
-                  {" — "}
-                  {[...shortByDiv.entries()].sort((a, b) => b[1].short - a[1].short).map(([d, v]) => `${d.replace(/^Division\s*\d+:\s*/, "")} (${money(v.short)})`).join(", ")}.
-                </>
-              )}
-              {markup <= 0 && <> Markup is {markup || 0}% — no margin on the whole bid.</>}
-              {" "}If this is deliberate — loyalty client, strategic price — go ahead. If not, fix the
-              flagged lines first.
-            </div>
-            <div className="modal-actions">
-              <button
-                className="btn ghost"
-                onClick={() => {
-                  const a = confirmAction;
-                  setConfirmAction(null);
-                  // the override is allowed but never silent — the channel hears about it
-                  void fetch("/api/alerts/bid-guard", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ project: client.project, totalShort, markup, bid, action: a }),
-                  }).catch(() => {});
-                  runAction(a);
-                }}
-              >
-                {confirmAction === "save" ? "Save anyway" : confirmAction === "export" ? "Export anyway" : "Continue anyway"} — deliberate
-              </button>
-              <button className="btn" onClick={() => setConfirmAction(null)}>Go back and fix prices</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {(totalShort > 0 || markup <= 0) && (
-        <div className="warn-panel no-print">
-          <div className="warn-h">Bid Guard — this estimate is priced to lose money</div>
-          {markup <= 0 && (
-            <div className="warn-row">
-              <b>No margin.</b> Markup is {markup || 0}% — the bid covers cost at best. Anything goes wrong, MHP pays for it.
-            </div>
-          )}
-          {totalShort > 0 && (
-            <>
-              <div className="warn-row">
-                <b>{money(totalShort)} under MHP baselines.</b> These categories are priced below the
-                lowest rate MHP has ever done this work for — raise them to stay profitable:
-              </div>
-              {[...shortByDiv.entries()].sort((a, b) => b[1].short - a[1].short).map(([d, v]) => (
-                <div className="warn-row warn-div" key={d}>
-                  <span>{d} — {v.count} line{v.count === 1 ? "" : "s"} under baseline</span>
-                  <b>raise by {money(v.short)}</b>
-                </div>
-              ))}
-            </>
-          )}
-        </div>
-      )}
 
       <div className="sheet">
         <header className="sheet-head">
@@ -602,19 +500,12 @@ export default function Estimator({
                   </span>
                   <span className="sl-rate">
                     <input
-                      className={`cell${isUnder(l) ? " low" : ""}`}
+                      className="cell"
                       type="number"
                       step="any"
                       value={l.rate}
                       onChange={(e) => update(l.key, "rate", e.target.value)}
                     />
-                    {isUnder(l) ? (
-                      <div className="rate-hint low">below ${l.p25} baseline · {l.jobs} jobs</div>
-                    ) : prefs.bands && (l.p25 != null ? (
-                      <div className="rate-hint">${l.p25}–${l.p75} · {l.jobs} jobs</div>
-                    ) : l.jobs > 0 ? (
-                      <div className="rate-hint">{l.jobs} jobs</div>
-                    ) : null)}
                   </span>
                   <b className="sl-total">{money(lineTotal(l))}</b>
                   <button className="x" onClick={() => remove(l.key)}>×</button>
@@ -644,19 +535,6 @@ export default function Estimator({
             <b>{money(bid - sub)}</b>
           </div>
           <div className="grand"><span>Bid</span><b>{money(bid)}</b></div>
-          {calib && (
-            <div className="calib" title="Learned from closed jobs' actual vs bid (the flywheel)">
-              <span>
-                Bid calibration
-                {calib.confidence === "good" || calib.confidence === "moderate" ? (
-                  <small className="j"> — expected actual {money(calib.expectedActual)} ({calib.deltaPct >= 0 ? "+" : ""}{calib.deltaPct.toFixed(0)}%)</small>
-                ) : (
-                  <small className="j"> — building history</small>
-                )}
-              </span>
-              <small className="j" style={{ textAlign: "right", maxWidth: 280 }}>{calib.note}</small>
-            </div>
-          )}
         </div>
 
         <div className="sheet-scope">

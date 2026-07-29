@@ -29,11 +29,7 @@ export default async function Home() {
     <div className="stat-grid">
       <div className="metric">
         <div className="v sm">{active.length}</div>
-        <div className="k">Active jobs</div>
-      </div>
-      <div className="metric">
-        <div className="v sm">{s.bid}</div>
-        <div className="k">Out for bid</div>
+        <div className="k">Active projects</div>
       </div>
     </div>
   );
@@ -94,8 +90,8 @@ function Greeting({ name }: { name: string }) {
   }).format(now);
   return (
     <div style={{ marginBottom: 4 }}>
-      <h2 style={{ margin: 0 }}>Good {part}, {name.split(" ")[0]}</h2>
-      <div style={{ marginTop: 6, fontSize: 18, fontWeight: 600, color: "var(--ink)", letterSpacing: "-.2px" }}>{date}</div>
+      <div style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "var(--navy)" }}>{date}</div>
+      <h2 style={{ margin: "6px 0 0" }}>Good {part}, {name.split(" ")[0]}</h2>
     </div>
   );
 }
