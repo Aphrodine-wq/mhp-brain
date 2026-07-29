@@ -515,14 +515,14 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .type-cat-group{margin-top:22px}
 .type-cat{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
 .type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0 16px;animation:rise .22s ease both}
-.type-card{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:16px;
+.type-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:12px 14px;
   background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);cursor:pointer;
-  font-family:var(--sans);font-size:13px;font-weight:600;color:var(--ink);box-shadow:var(--shadow-sm);
+  font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--ink);box-shadow:var(--shadow-sm);
   transition:border-color var(--t),box-shadow var(--t),transform var(--t),background var(--t)}
 .type-card:hover{border-color:var(--navy);box-shadow:var(--shadow);transform:translateY(-1px)}
 .type-card.active{border-color:var(--navy);background:#eef3fb;box-shadow:var(--shadow)}
 .type-icon{color:var(--navy);display:flex}
-.type-icon svg{fill:currentColor}
+.type-icon svg{fill:currentColor;width:18px;height:18px}
 .type-sub{font-size:11px;font-weight:500;color:var(--muted)}
 @media(max-width:760px){.type-grid{grid-template-columns:repeat(2,1fr)}}
 /* one-row compact stat strip (project detail top) — never wraps, scrolls on phones */
@@ -685,6 +685,13 @@ body.compact .prow{padding:9px 16px}
 .modal label input:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
 .modal-import{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;padding-top:14px;border-top:1px dashed var(--line)}
 .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+/* trade picker chips (Add Sub step 1) */
+.trade-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.trade-chip{border:1px solid var(--line);background:var(--card);color:var(--ink-2);border-radius:999px;
+  padding:6px 13px;font-family:var(--sans);font-size:12.5px;font-weight:600;cursor:pointer;
+  transition:border-color var(--t),background var(--t),color var(--t)}
+.trade-chip:hover{border-color:var(--navy);color:var(--ink)}
+.trade-chip.active{background:var(--navy);border-color:var(--navy);color:#fff}
 /* connections notices (Integrations OAuth result) */
 .conn-ok{background:#e3f1e4;border:1px solid #bfe0c2;color:#2f6b34;font-size:13px;padding:8px 12px;border-radius:var(--r-sm);margin-bottom:10px}
 .conn-err{background:#fbe9e4;border:1px solid #e6c4b8;color:var(--warn);font-size:13px;padding:8px 12px;border-radius:var(--r-sm);margin-bottom:10px}

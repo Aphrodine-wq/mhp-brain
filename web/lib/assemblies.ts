@@ -1222,10 +1222,10 @@ export function expandAssembly(key: string, rawInputs: Record<string, number>): 
 
 export const ASSEMBLY_CATEGORIES = [
   "New Builds",
-  "Additions & Conversions",
-  "Remodels & Interiors",
-  "Exterior & Outdoor",
   "Commercial",
+  "Remodels & Interiors",
+  "Additions & Conversions",
+  "Exterior & Outdoor",
 ];
 
 export const ASSEMBLY_LIST = Object.values(ASSEMBLIES).map((a) => ({

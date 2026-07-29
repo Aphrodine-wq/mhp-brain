@@ -123,17 +123,6 @@ export default function SettingsForm() {
           <div className={`toggle${packetDetail ? " on" : ""}`} onClick={() => setPacketDetail((v) => !v)} />
         </div>
       </details>
-
-      <details className="panel settings-fold" style={{ marginTop: 18 }}>
-        <summary>Appearance</summary>
-        <div className="setrow">
-          <div>
-            <div className="sl">Compact tables</div>
-            <div className="sd">Tighter rows everywhere — more estimates and projects per screen.</div>
-          </div>
-          <div className={`toggle${compact ? " on" : ""}`} onClick={() => setCompact((v) => !v)} />
-        </div>
-      </details>
     </>
   );
 }

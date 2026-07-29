@@ -1,6 +1,7 @@
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { sendAlert } from "@/lib/alerts";
+import { sendEstimateAlert } from "@/lib/email";
 import { money } from "@/lib/format";
 import { getSetting } from "@/lib/integration-settings";
 
@@ -51,5 +52,12 @@ export async function POST(req: Request) {
       { name: "By", value: user.email },
     ],
   });
+  // Email the whole crew via Resend — no-ops until RESEND_API_KEY/RESEND_FROM are set.
+  void sendEstimateAlert({
+    project: String(d.project || "Untitled Project").slice(0, 120),
+    total: money(Number(d.total) || 0),
+    createdBy: user.name,
+    url: `https://mhpestimate.cloud/estimates/${id}`,
+  }).catch(() => {});
   return Response.json({ id });
 }

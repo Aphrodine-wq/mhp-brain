@@ -3,18 +3,46 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Folder } from "@phosphor-icons/react";
+import {
+  CookingPot, Bathtub, Tree, House, Warehouse, HouseLine, Hammer, Wall, Waves,
+  PaintRoller, SquaresFour, Buildings, Storefront, Question, Folder, Package,
+} from "@phosphor-icons/react";
 import type { ProjectRow } from "@/lib/queries";
 import { money, BADGE } from "@/lib/format";
 import { post } from "@/lib/client";
 
 const STATUSES = ["Active", "Aging", "Bid", "Paused", "Likely Done", "Dead", "Unknown"];
 
-// Grouping key: the first type listed on the job ("Kitchen Remodel; Bathroom" → "Kitchen Remodel").
-// Type strings are messy imports; the primary segment is the honest read of what the job IS.
-function primaryType(p: ProjectRow): string {
+// Type keywords → group label + door icon. Used two ways: to icon the real type groups,
+// and to infer a group from the project NAME when the import left type blank/"Unclassified".
+const TYPE_RULES: [RegExp, string, React.ReactNode][] = [
+  [/kitchen/i, "Kitchen", <CookingPot size={18} />],
+  [/bath|shower/i, "Bathroom", <Bathtub size={18} />],
+  [/porch|deck|patio/i, "Porch & Deck", <Tree size={18} />],
+  [/roof/i, "Roofing", <House size={18} />],
+  [/garage|barn|barndo|shop/i, "Garage & Barn", <Warehouse size={18} />],
+  [/addition/i, "Addition", <HouseLine size={18} />],
+  [/reno|remodel/i, "Renovation", <Hammer size={18} />],
+  [/fence/i, "Fence", <Wall size={18} />],
+  [/pool/i, "Pool", <Waves size={18} />],
+  [/paint/i, "Painting", <PaintRoller size={18} />],
+  [/floor/i, "Flooring", <SquaresFour size={18} />],
+  [/new build|new construction|custom home|build project/i, "New Build", <Buildings size={18} />],
+  [/clinic|office|commercial|tenant/i, "Commercial", <Storefront size={18} />],
+  [/inquiry|lead/i, "Inquiries", <Question size={18} />],
+];
+
+function iconFor(label: string): React.ReactNode {
+  return TYPE_RULES.find(([re]) => re.test(label))?.[2] ?? <Folder size={18} />;
+}
+
+// Grouping key: the job's real type when it has one ("Kitchen Remodel; Bathroom" → first
+// segment). When the import left it blank or literally "Unclassified", infer from the name —
+// "Chance Grilling Porch Project" groups under Porch & Deck. Truly unknowable stays Unclassified.
+function groupKey(p: ProjectRow): string {
   const t = (p.type || "").split(";")[0].trim();
-  return t || "Other";
+  if (t && t !== "Unclassified") return t;
+  return TYPE_RULES.find(([re]) => re.test(p.name))?.[1] ?? "Unclassified";
 }
 
 export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) {
@@ -35,7 +63,7 @@ export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) 
 
   const byType = new Map<string, ProjectRow[]>();
   for (const p of projects) {
-    const t = primaryType(p);
+    const t = groupKey(p);
     if (!byType.has(t)) byType.set(t, []);
     byType.get(t)!.push(p);
   }
@@ -45,13 +73,18 @@ export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) 
     tail(a[0]) - tail(b[0]) || b[1].length - a[1].length || a[0].localeCompare(b[0]),
   );
 
-  // door cards first, like Pricing — drill into one type at a time
+  // door cards first, like Pricing — drill into one type (or All) at a time
   if (!openGroup) {
     return (
       <div className="type-grid" style={{ marginTop: 22 }}>
+        <button className="type-card" onClick={() => setOpenGroup("__all__")}>
+          <span className="type-icon"><Package size={18} /></span>
+          <span>All projects</span>
+          <span className="type-sub">{projects.length} total</span>
+        </button>
         {groups.map(([type, rows]) => (
           <button key={type} className="type-card" onClick={() => setOpenGroup(type)}>
-            <span className="type-icon"><Folder size={22} /></span>
+            <span className="type-icon">{iconFor(type)}</span>
             <span>{type}</span>
             <span className="type-sub">{rows.length} project{rows.length === 1 ? "" : "s"}</span>
           </button>
@@ -60,11 +93,13 @@ export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) 
     );
   }
 
-  const rows = byType.get(openGroup) ?? [];
+  const rows = openGroup === "__all__" ? projects : (byType.get(openGroup) ?? []);
   return (
     <div style={{ marginTop: 18 }}>
       <button className="btn ghost sm" onClick={() => setOpenGroup(null)}>← All types</button>
-      <h3 style={{ margin: "14px 0 4px", fontFamily: "var(--disp)", fontSize: 20 }}>{openGroup}</h3>
+      <h3 style={{ margin: "14px 0 4px", fontFamily: "var(--disp)", fontSize: 20 }}>
+        {openGroup === "__all__" ? "All projects" : openGroup}
+      </h3>
       <table className="dtable">
         <thead>
           <tr>

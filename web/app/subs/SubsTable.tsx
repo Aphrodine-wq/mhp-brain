@@ -122,6 +122,11 @@ export default function SubsTable({ subs }: { subs: SubRow[] }) {
       {/* door cards first, like Pricing — drill into one trade at a time */}
       {!openGroup && (
         <div className="type-grid" style={{ marginTop: 22 }}>
+          <button className="type-card" onClick={() => setOpenGroup("__all__")}>
+            <span className="type-icon"><Package size={18} /></span>
+            <span>All subs</span>
+            <span className="type-sub">{list.length} total</span>
+          </button>
           {order.map((g) => (
             <button key={g} className="type-card" onClick={() => setOpenGroup(g)}>
               <span className="type-icon">{TRADE_ICONS[g] ?? <Package size={22} />}</span>
@@ -135,23 +140,26 @@ export default function SubsTable({ subs }: { subs: SubRow[] }) {
       {openGroup && (
         <div style={{ marginTop: 18 }}>
           <button className="btn ghost sm" onClick={() => setOpenGroup(null)}>← All trades</button>
-          <TradeSection
-            group={openGroup}
-            rows={groups.get(openGroup)!}
-            filtering
-            editing={editing}
-            trade={trade}
-            phone={phone}
-            license={license}
-            busy={busy}
-            setTrade={setTrade}
-            setPhone={setPhone}
-            setLicense={setLicense}
-            startEdit={startEdit}
-            cancelEdit={() => setEditing(null)}
-            save={save}
-            toggleVerified={toggleVerified}
-          />
+          {(openGroup === "__all__" ? order : [openGroup]).map((g) => (
+            <TradeSection
+              key={g}
+              group={g}
+              rows={groups.get(g)!}
+              filtering
+              editing={editing}
+              trade={trade}
+              phone={phone}
+              license={license}
+              busy={busy}
+              setTrade={setTrade}
+              setPhone={setPhone}
+              setLicense={setLicense}
+              startEdit={startEdit}
+              cancelEdit={() => setEditing(null)}
+              save={save}
+              toggleVerified={toggleVerified}
+            />
+          ))}
         </div>
       )}
       {list.length === 0 && (
@@ -259,6 +267,7 @@ function parseVcf(text: string): { name: string; phone: string }[] {
 }
 
 function AddSubModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+  const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [trade, setTrade] = useState("");
   const [phone, setPhone] = useState("");
@@ -337,42 +346,69 @@ function AddSubModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
   return (
     <div className="modal-scrim" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>Add Sub</h3>
-        <label>Name<input value={name} autoFocus placeholder="Bobby Ray Concrete" onChange={(e) => setName(e.target.value)} /></label>
-        <label>
-          Trade / Service
-          <input value={trade} list="trade-options" placeholder="Plumbing" onChange={(e) => setTrade(e.target.value)} />
-          <datalist id="trade-options">
-            {TRADE_OPTIONS.map((t) => <option key={t} value={t} />)}
-          </datalist>
-        </label>
-        <label>Phone<input value={phone} placeholder="(662) 555-0100" onChange={(e) => setPhone(e.target.value)} /></label>
-
-        {error && <div className="conn-err">{error}</div>}
-        {imported && <div className="conn-ok">{imported}</div>}
-
-        <div className="modal-import">
-          {canPick && (
-            <button className="btn ghost sm" disabled={saving} onClick={pickContacts}>Import from Contacts</button>
-          )}
-          <button className="btn ghost sm" disabled={saving} onClick={() => fileRef.current?.click()}>
-            Import contacts file (.vcf)
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".vcf,text/vcard"
-            style={{ display: "none" }}
-            onChange={(e) => onVcf(e.target.files?.[0])}
-          />
+        <div className="wiz-dots" style={{ marginBottom: 14 }}>
+          <i className={step >= 1 ? "on" : ""} /><i className={step >= 2 ? "on" : ""} />
         </div>
 
-        <div className="modal-actions">
-          <button className="btn ghost" onClick={imported ? onSaved : onClose}>{imported ? "Done" : "Cancel"}</button>
-          <button className="btn" disabled={saving || !name.trim()} onClick={saveManual}>
-            {saving ? "Saving…" : "Add Sub"}
-          </button>
-        </div>
+        {step === 1 && (
+          <div style={{ animation: "rise .22s ease both" }}>
+            <h3>Add Sub — who are they?</h3>
+            <label>Name<input value={name} autoFocus placeholder="Bobby Ray Concrete" onChange={(e) => setName(e.target.value)} /></label>
+            <label>Trade / Service</label>
+            <div className="trade-chips">
+              {TRADE_OPTIONS.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  className={`trade-chip${trade === t ? " active" : ""}`}
+                  onClick={() => setTrade((cur) => (cur === t ? "" : t))}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+
+            {error && <div className="conn-err">{error}</div>}
+            {imported && <div className="conn-ok">{imported}</div>}
+
+            <div className="modal-import">
+              {canPick && (
+                <button className="btn ghost sm" disabled={saving} onClick={pickContacts}>Import from Contacts</button>
+              )}
+              <button className="btn ghost sm" disabled={saving} onClick={() => fileRef.current?.click()}>
+                Import contacts file (.vcf)
+              </button>
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".vcf,text/vcard"
+                style={{ display: "none" }}
+                onChange={(e) => onVcf(e.target.files?.[0])}
+              />
+            </div>
+
+            <div className="modal-actions">
+              <button className="btn ghost" onClick={imported ? onSaved : onClose}>{imported ? "Done" : "Cancel"}</button>
+              <button className="btn" disabled={!name.trim()} onClick={() => setStep(2)}>Next →</button>
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div style={{ animation: "rise .22s ease both" }}>
+            <h3>How do you reach them?</h3>
+            <label>Phone<input value={phone} autoFocus placeholder="(662) 555-0100" type="tel" onChange={(e) => setPhone(e.target.value)} /></label>
+
+            {error && <div className="conn-err">{error}</div>}
+
+            <div className="modal-actions">
+              <button className="btn ghost" onClick={() => setStep(1)}>← Back</button>
+              <button className="btn" disabled={saving} onClick={saveManual}>
+                {saving ? "Saving…" : "Add Sub"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

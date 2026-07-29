@@ -152,15 +152,20 @@ export default function PricingTable({ materials }: { materials: TrackedMaterial
         }
         const order = [...byGroup.keys()].sort((a, b) => (a === "Other" ? 1 : b === "Other" ? -1 : a.localeCompare(b)));
 
-        // door cards first, like the estimate builder — drill into one group at a time
+        // door cards first, like the estimate builder — drill into one group (or All) at a time
         if (!openGroup) {
           return (
             <div className="type-grid" style={{ marginTop: 22 }}>
+              <button className="type-card" onClick={() => setOpenGroup("__all__")}>
+                <span className="type-icon"><Package size={18} /></span>
+                <span>All materials</span>
+                <span className="type-sub">{materials.length} total</span>
+              </button>
               {order.map((g) => {
                 const rows = byGroup.get(g)!;
                 return (
                   <button key={g} className="type-card" onClick={() => setOpenGroup(g)}>
-                    <span className="type-icon">{GROUP_ICONS[g] ?? <Package size={22} />}</span>
+                    <span className="type-icon">{GROUP_ICONS[g] ?? <Package size={18} />}</span>
                     <span>{g}</span>
                     <span className="type-sub">{rows.length} material{rows.length === 1 ? "" : "s"}</span>
                   </button>
@@ -170,11 +175,13 @@ export default function PricingTable({ materials }: { materials: TrackedMaterial
           );
         }
 
-        const rows = byGroup.get(openGroup) ?? [];
+        const rows = openGroup === "__all__" ? materials : (byGroup.get(openGroup) ?? []);
         return (
           <div style={{ marginTop: 18 }}>
             <button className="btn ghost sm" onClick={() => setOpenGroup(null)}>← All groups</button>
-            <h3 style={{ margin: "14px 0 4px", fontFamily: "var(--disp)", fontSize: 20 }}>{openGroup}</h3>
+            <h3 style={{ margin: "14px 0 4px", fontFamily: "var(--disp)", fontSize: 20 }}>
+              {openGroup === "__all__" ? "All materials" : openGroup}
+            </h3>
             <table className="dtable">
               <thead>
                 <tr>

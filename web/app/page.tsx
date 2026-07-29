@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Plus } from "@phosphor-icons/react/dist/ssr";
 import { currentUser } from "@/lib/auth";
 import { dashboardForRole } from "@/lib/role-nav";
-import { stats, projectsList } from "@/lib/queries";
+import { projectsList } from "@/lib/queries";
 import CeoDashboard from "./_dashboards/CeoDashboard";
 import SalesDashboard from "./_dashboards/SalesDashboard";
 import WeatherBanner from "./_dashboards/WeatherBanner";
@@ -22,8 +22,7 @@ export default async function Home() {
   if (dashboard === "sales") return <SalesDashboard />;
 
   // Default dashboard (admin, editor, viewer, estimator, materials)
-  const [s, projects] = await Promise.all([stats(), projectsList()]);
-  const active = projects.filter((p) => p.status === "Active");
+  const active = (await projectsList()).filter((p) => p.status === "Active");
 
   const overview = (
     <div className="stat-grid">
@@ -35,24 +34,19 @@ export default async function Home() {
   );
 
   const jobs = (
-    <>
-      <div className="proj-cards">
-        {active.length ? (
-          active.slice(0, 6).map((x) => (
-            <Link key={x.id} href={`/projects/${x.id}`} className="pcard">
-              <div className="pc-top">
-                <div className="pc-name">{x.name}</div>
-              </div>
-            </Link>
-          ))
-        ) : (
-          <div className="sub">No active jobs right now.</div>
-        )}
-      </div>
-      <div className="morelink">
-        <Link href="/projects">View all {s.projects} projects →</Link>
-      </div>
-    </>
+    <div className="proj-cards">
+      {active.length ? (
+        active.slice(0, 6).map((x) => (
+          <Link key={x.id} href={`/projects/${x.id}`} className="pcard">
+            <div className="pc-top">
+              <div className="pc-name">{x.name}</div>
+            </div>
+          </Link>
+        ))
+      ) : (
+        <div className="sub">No active jobs right now.</div>
+      )}
+    </div>
   );
 
   return (
