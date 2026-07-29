@@ -8,7 +8,7 @@ import {
 } from "@phosphor-icons/react";
 import type { CatalogRow } from "@/lib/queries";
 import { money } from "@/lib/format";
-import { ASSEMBLY_LIST } from "@/lib/assemblies";
+import { ASSEMBLY_LIST, ASSEMBLY_CATEGORIES } from "@/lib/assemblies";
 import { detailFor, divisionDetailFor, ESTIMATE_SCOPE } from "@/lib/line-detail";
 import ClientPacket, { type ClientInfo } from "./ClientPacket";
 import { insightFrom, type RealizationFactor } from "@/lib/flywheel-insight";
@@ -303,18 +303,27 @@ export default function Estimator({
           </div>
         </div>
 
-        <div className="type-grid">
-          {ASSEMBLY_LIST.map((a) => (
-            <button
-              key={a.key}
-              className={`type-card${asmKey === a.key ? " active" : ""}`}
-              onClick={() => selectAssembly(asmKey === a.key ? "" : a.key)}
-            >
-              <span className="type-icon">{TEMPLATE_ICONS[a.key] ?? <SquaresFour size={22} />}</span>
-              <span>{a.label}</span>
-            </button>
-          ))}
-        </div>
+        {ASSEMBLY_CATEGORIES.map((cat) => {
+          const items = ASSEMBLY_LIST.filter((a) => a.category === cat);
+          if (!items.length) return null;
+          return (
+            <div key={cat} className="type-cat-group">
+              <div className="type-cat">{cat}</div>
+              <div className="type-grid">
+                {items.map((a) => (
+                  <button
+                    key={a.key}
+                    className={`type-card${asmKey === a.key ? " active" : ""}`}
+                    onClick={() => selectAssembly(asmKey === a.key ? "" : a.key)}
+                  >
+                    <span className="type-icon">{TEMPLATE_ICONS[a.key] ?? <SquaresFour size={22} />}</span>
+                    <span>{a.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
 
         {asm && (
           <div className="asm-inputs">

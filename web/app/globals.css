@@ -482,7 +482,9 @@ small.j{color:var(--muted);font-size:11px}
 .toggle.on::after{left:23px}
 main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .view-inner{max-width:1160px;margin:0 auto}
-/* builder project-type picker — 8 cards, 2 rows of 4 on desktop */
+/* builder template picker — cards grouped under category headers */
+.type-cat-group{margin-top:22px}
+.type-cat{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
 .type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0 16px}
 .type-card{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:16px;
   background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);cursor:pointer;
@@ -562,7 +564,13 @@ body.compact .sheet-line{padding:5px 0}
 body.compact .prow{padding:9px 16px}
 .empty{text-align:center;padding:70px 20px;color:var(--muted)}
 .empty .big{font-family:var(--disp);font-size:22px;color:var(--ink);margin-bottom:8px;letter-spacing:-.3px}
-.filterbar{display:flex;gap:8px;margin:18px 0;align-items:center}
+.filterbar{display:flex;gap:8px;margin:18px 0;align-items:center;flex-wrap:wrap}
+/* filter chips (estimates list) */
+.chip{border:1px solid var(--line);background:var(--card);color:var(--ink-2);border-radius:999px;
+  padding:7px 14px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;
+  transition:border-color var(--t),background var(--t),color var(--t)}
+.chip:hover{border-color:var(--navy);color:var(--ink)}
+.chip.active{background:var(--navy);border-color:var(--navy);color:#fff}
 .filterbar input{flex:1;max-width:320px;padding:9px 12px;border:1px solid var(--line);border-radius:var(--r-sm);
   font-family:var(--sans);transition:border-color var(--t),box-shadow var(--t)}
 .filterbar input:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
