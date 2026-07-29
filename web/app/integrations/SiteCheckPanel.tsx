@@ -30,7 +30,7 @@ export default function SiteCheckPanel() {
       <div className="setrow">
         <div style={{ flex: 1 }}>
           <div className="sl">Pre-bid flood lookup</div>
-          <div className="sd">Census + FEMA, no keys. Zone A or V means flood insurance and elevation — know before you bid.</div>
+          <div className="sd">Zone A or V means flood insurance — know before you bid.</div>
           {error && <div className="conn-err" style={{ marginTop: 8 }}>{error}</div>}
           {result && (
             <div className="sd" style={{ marginTop: 8 }}>

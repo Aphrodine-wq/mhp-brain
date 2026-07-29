@@ -83,17 +83,17 @@ export default function Connections({
   }, [oauthResult]);
 
   const DESCRIPTIONS: Record<string, string> = {
-    quickbooks: "Connect your QuickBooks to see real job costs, payments, and margins.",
-    gmail: "Connect a dedicated email to automatically capture invoices.",
-    microsoft: "Connect Microsoft to pull in Teams conversations, OneDrive paperwork, and the calendar.",
-    gbp: "Connect the Google Business Profile to pull reviews into the brain.",
+    quickbooks: "Real job costs, payments, and margins.",
+    gmail: "Invoices captured automatically from a dedicated mailbox.",
+    microsoft: "Teams chats, OneDrive paperwork, and the calendar.",
+    gbp: "Your Google reviews, pulled into the brain.",
   };
 
   const NOT_READY: Record<string, string> = {
-    quickbooks: "QuickBooks connection needs to be set up by your admin.",
-    gmail: "Gmail connection needs to be set up by your admin.",
-    microsoft: "Microsoft connection needs to be set up by your admin.",
-    gbp: "GBP needs GBP_CLIENT_ID / GBP_CLIENT_SECRET / GBP_REDIRECT_URI (Google also gates the API behind an access request).",
+    quickbooks: "Not set up — your admin needs to connect this.",
+    gmail: "Not set up — your admin needs to connect this.",
+    microsoft: "Not set up — your admin needs to connect this.",
+    gbp: "Not set up — your admin needs to connect this.",
   };
 
   return (

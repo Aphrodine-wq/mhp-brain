@@ -5,6 +5,7 @@ import { listDocuments } from "@/lib/documents-store";
 import { initials } from "@/lib/format";
 import EntityDocs from "../../_components/EntityDocs";
 import CrewProfile from "./CrewProfile";
+import { crewPhoto } from "../photos";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,10 @@ export default async function CrewDetailPage({ params }: { params: Promise<{ key
   return (
     <section className="view">
       <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
-        <div className="crew-av">{initials(member.name)}</div>
+        <div className="crew-av">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {crewPhoto(member.name) ? <img src={crewPhoto(member.name)!} alt={member.name} /> : initials(member.name)}
+        </div>
         <div>
           <h2 style={{ margin: 0 }}>{member.name}</h2>
           <div className="sub" style={{ margin: "2px 0 0" }}>{member.role}</div>

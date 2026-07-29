@@ -28,8 +28,8 @@ export default function SettingsPanel({ values }: { values: Record<string, Recor
   }
 
   return (
-    <div className="panel" style={{ marginTop: 18 }}>
-      <h3>Integration settings</h3>
+    <details className="panel settings-fold" style={{ marginTop: 18 }}>
+      <summary>Integration settings</summary>
       {FIELDS.map((f) => {
         const id = `${f.provider}.${f.key}`;
         const fallback = f.kind === "toggle" ? "on" : "";
@@ -61,6 +61,6 @@ export default function SettingsPanel({ values }: { values: Record<string, Recor
           </div>
         );
       })}
-    </div>
+    </details>
   );
 }

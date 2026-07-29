@@ -34,7 +34,7 @@ export default function WeatherPanel() {
           </div>
           <div>
             <div className="sl">NWS forecast (no key needed)</div>
-            <div className="sd">Seven-day outlook for the job market — rain days flagged before you schedule a pour.</div>
+            <div className="sd">Seven-day outlook — rain days flagged before you pour.</div>
             {error && <div className="sd">{error}</div>}
           </div>
         </div>
