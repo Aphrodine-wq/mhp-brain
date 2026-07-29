@@ -343,17 +343,6 @@ small.j{color:var(--muted);font-size:11px}
 .gbp-when{font-size:11.5px;color:var(--muted)}
 .gbp-text{font-size:13px;color:var(--ink-2);line-height:1.5;margin-top:4px;
   display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-/* home top — bento: a navy hero tile (active book value) anchoring two stat tiles and a wide total */
-.home-bento{display:grid;grid-template-columns:1.5fr 1fr 1fr;grid-auto-rows:1fr;gap:14px;margin:16px 0 4px}
-.home-bento .metric{margin:0;display:flex;flex-direction:column;justify-content:center}
-.home-bento .hero{grid-column:1;grid-row:1 / span 2}
-.home-bento .hero .v{font-size:40px}
-.home-bento .wide{grid-column:2 / span 2}
-@media (max-width:620px){
-  .home-bento{grid-template-columns:1fr 1fr}
-  .home-bento .hero{grid-column:1 / span 2;grid-row:auto}
-  .home-bento .wide{grid-column:1 / span 2}
-}
 .prio-panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;
   box-shadow:var(--shadow-sm);margin-bottom:26px}
 .prio-panel h3{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);
@@ -503,6 +492,19 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .ops-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:24px}
 .ops-col{display:flex;flex-direction:column;gap:22px;min-width:0}
 @media(max-width:900px){.ops-grid{grid-template-columns:1fr}}
+/* project milestones — horizontal phase stepper */
+.mstones{display:flex;align-items:flex-start;margin:28px 0 4px;max-width:720px}
+.mstone{flex:1;position:relative;text-align:center;min-width:0}
+.mstone::before{content:'';position:absolute;top:7px;left:-50%;width:100%;height:2px;background:#e4e7ec}
+.mstone:first-child::before{display:none}
+.mstone-dot{width:14px;height:14px;border-radius:50%;background:#fff;margin:0 auto;position:relative;z-index:1;
+  box-shadow:0 0 0 2px #d5dae1;transition:transform var(--t)}
+.mstone.done::before{background:var(--navy)}
+.mstone.done .mstone-dot{background:var(--navy);box-shadow:0 0 0 2px var(--navy)}
+.mstone.now .mstone-dot{transform:scale(1.3)}
+.mstone-label{font-size:11px;font-weight:600;color:var(--muted);margin-top:9px;text-transform:capitalize;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mstone.now .mstone-label{color:var(--navy)}
 /* section tiles — the menu into each tucked-away project section */
 .tile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:24px}
 .tile{display:flex;flex-direction:column;gap:4px;background:var(--card);border:1px solid var(--line);

@@ -8,7 +8,6 @@ import { recentReviews } from "@/lib/gbp";
 import { allSettings } from "@/lib/integration-settings";
 import SettingsPanel from "./SettingsPanel";
 import WeatherPanel from "./WeatherPanel";
-import SiteCheckPanel from "./SiteCheckPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +39,6 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
       <h2>Integrations</h2>
       <Connections providers={providers} oauthResult={oauth ?? null} oauthDetail={detail ?? null} />
       <WeatherPanel />
-      <SiteCheckPanel />
       <SettingsPanel values={settings} />
       {reviews.length > 0 && <ReviewsPanel reviews={reviews} />}
     </section>

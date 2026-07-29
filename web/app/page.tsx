@@ -26,17 +26,17 @@ export default async function Home() {
   const active = projects.filter((p) => p.status === "Active");
 
   const overview = (
-    <div className="home-bento">
-      <div className="metric accent hero">
-        <div className="v">{active.length}</div>
+    <div className="stat-grid">
+      <div className="metric">
+        <div className="v sm">{active.length}</div>
         <div className="k">Active jobs</div>
       </div>
-      <div className="metric wide">
-        <div className="v">{s.bid}</div>
+      <div className="metric">
+        <div className="v sm">{s.bid}</div>
         <div className="k">Out for bid</div>
       </div>
-      <div className="metric wide">
-        <div className="v">{s.projects}</div>
+      <div className="metric">
+        <div className="v sm">{s.projects}</div>
         <div className="k">Total projects</div>
       </div>
     </div>
