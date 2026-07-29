@@ -90,7 +90,7 @@ export default function LoginForm({
         <aside className="login-pitch">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="login-pitch-logo" src="/logo-light.png" alt="MHP Construction" />
-          <h1 className="login-pitch-title">Estimating and job tracking for North Mississippi Home Professionals</h1>
+          <h1 className="login-pitch-title">Estimating app for MHP</h1>
         </aside>
       <div className="login-box">
         <p className="login-subtitle">Sign in to your account</p>
@@ -148,10 +148,6 @@ export default function LoginForm({
             Quick sign in (dev only)
           </button>
         )}
-
-        <div className="login-footer">
-          North Mississippi Home Professionals
-        </div>
       </div>
       </div>
     </div>
