@@ -110,11 +110,28 @@ export default function LoginForm({
 
   return (
     <div className="login-page">
+      <div className="login-shell">
+        <aside className="login-pitch">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="login-pitch-logo" src="/logo.png" alt="MHP Construction" />
+          <h1 className="login-pitch-title">Estimates and job tracking built on 149 real jobs.</h1>
+          <p className="login-pitch-sub">
+            MHP Brain is the operating system for North Mississippi Home Professionals —
+            pricing, projects, and money in one place.
+          </p>
+          <ul className="login-pitch-list">
+            <li>Estimate from real job history, not guesses</li>
+            <li>Run every project from one cockpit</li>
+            <li>Track the money with QuickBooks</li>
+            <li>Price materials with live data</li>
+          </ul>
+          <div className="login-pitch-foot">Oxford, Mississippi</div>
+        </aside>
       <div className="login-box">
         {/* Logo — big and centered */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="login-logo" src="/logo.png" alt="MHP Construction" />
-        <h1 className="login-title">MHP Construction</h1>
+        <h2 className="login-title">MHP Construction</h2>
         <p className="login-subtitle">Sign in to your account</p>
 
         {shownError && <div className="login-err">{shownError}</div>}
@@ -184,6 +201,7 @@ export default function LoginForm({
         <div className="login-footer">
           North Mississippi Home Professionals
         </div>
+      </div>
       </div>
     </div>
   );
