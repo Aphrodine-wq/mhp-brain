@@ -3,10 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Folder } from "@phosphor-icons/react";
 import type { ProjectRow } from "@/lib/queries";
 import { money, BADGE } from "@/lib/format";
 import { post } from "@/lib/client";
-import CollapseSection from "../_components/CollapseSection";
 
 const STATUSES = ["Active", "Aging", "Bid", "Paused", "Likely Done", "Dead", "Unknown"];
 
@@ -20,6 +20,7 @@ function primaryType(p: ProjectRow): string {
 export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
 
   async function setStatus(p: ProjectRow, status: string) {
     if (status === p.status) return;
@@ -44,32 +45,26 @@ export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) 
     tail(a[0]) - tail(b[0]) || b[1].length - a[1].length || a[0].localeCompare(b[0]),
   );
 
-  return (
-    <>
-      {groups.map(([type, rows]) => (
-        <TypeSection key={type} type={type} rows={rows} busy={busy} setStatus={setStatus} />
-      ))}
-    </>
-  );
-}
+  // door cards first, like Pricing — drill into one type at a time
+  if (!openGroup) {
+    return (
+      <div className="type-grid" style={{ marginTop: 22 }}>
+        {groups.map(([type, rows]) => (
+          <button key={type} className="type-card" onClick={() => setOpenGroup(type)}>
+            <span className="type-icon"><Folder size={22} /></span>
+            <span>{type}</span>
+            <span className="type-sub">{rows.length} project{rows.length === 1 ? "" : "s"}</span>
+          </button>
+        ))}
+      </div>
+    );
+  }
 
-function TypeSection({
-  type,
-  rows,
-  busy,
-  setStatus,
-}: {
-  type: string;
-  rows: ProjectRow[];
-  busy: string | null;
-  setStatus: (p: ProjectRow, status: string) => void;
-}) {
-  const total = rows.reduce((s, p) => s + p.value, 0);
+  const rows = byType.get(openGroup) ?? [];
   return (
-    <CollapseSection
-      title={type}
-      summary={`${rows.length} project${rows.length === 1 ? "" : "s"} · ${money(total)}`}
-    >
+    <div style={{ marginTop: 18 }}>
+      <button className="btn ghost sm" onClick={() => setOpenGroup(null)}>← All types</button>
+      <h3 style={{ margin: "14px 0 4px", fontFamily: "var(--disp)", fontSize: 20 }}>{openGroup}</h3>
       <table className="dtable">
         <thead>
           <tr>
@@ -101,6 +96,6 @@ function TypeSection({
           ))}
         </tbody>
       </table>
-    </CollapseSection>
+    </div>
   );
 }

@@ -22,7 +22,10 @@ export default async function SettingsPage() {
 
   return (
     <section className="view">
-      <h2>Settings</h2>
+      <div className="row" style={{ justifyContent: "space-between", marginTop: 0, alignItems: "center" }}>
+        <h2 style={{ margin: 0 }}>Settings</h2>
+        <SignOutButton className="btn danger" />
+      </div>
 
       <SettingsForm />
 
@@ -39,7 +42,6 @@ export default async function SettingsPage() {
         <div className="setrow">
           <div className="sl">Signed in as</div>
           <div className="sd">{signedInAs}</div>
-          <div className="actions"><SignOutButton /></div>
         </div>
         <div className="setrow">
           <div className="sl">Data</div>

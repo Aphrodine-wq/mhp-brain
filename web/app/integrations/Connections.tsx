@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import WeatherPanel from "./WeatherPanel";
 
 export type ProviderState = {
   id: "quickbooks" | "gmail" | "microsoft" | "gbp";
@@ -246,6 +247,7 @@ export default function Connections({
           </div>
         </div>
       ))}
+        <WeatherPanel />
       </div>
     </div>
   );

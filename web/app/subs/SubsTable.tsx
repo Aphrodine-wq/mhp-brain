@@ -3,9 +3,28 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import {
+  Drop, Lightning, Fan, Wall, Storefront, PaintRoller, SquaresFour, House, Tree, Wrench, Package,
+} from "@phosphor-icons/react";
 import type { SubRow } from "@/lib/queries";
 import { post } from "@/lib/client";
 import CollapseSection from "../_components/CollapseSection";
+
+const TRADE_ICONS: Record<string, React.ReactNode> = {
+  Plumbing: <Drop size={22} />,
+  Electrical: <Lightning size={22} />,
+  HVAC: <Fan size={22} />,
+  "Masonry & Concrete": <Wall size={22} />,
+  "Cabinets & Millwork": <Storefront size={22} />,
+  Painting: <PaintRoller size={22} />,
+  Tile: <SquaresFour size={22} />,
+  Drywall: <Wall size={22} />,
+  Roofing: <House size={22} />,
+  Flooring: <SquaresFour size={22} />,
+  "Framing & Carpentry": <Tree size={22} />,
+  "Outdoor & Sitework": <Tree size={22} />,
+  Handyman: <Wrench size={22} />,
+};
 
 // Raw trade strings are free text ("Plumber", "Plumbing", "Dirt work/concrete"…) —
 // bucket them into canonical groups for display. First match wins; the row still
@@ -53,6 +72,7 @@ export default function SubsTable({ subs }: { subs: SubRow[] }) {
   const [license, setLicense] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
   const list = subs;
 
   const groups = new Map<string, SubRow[]>();
@@ -99,30 +119,45 @@ export default function SubsTable({ subs }: { subs: SubRow[] }) {
         <button className="btn" onClick={() => setShowAdd(true)}>+ Add Sub</button>
       </div>
 
-      {order.map((g) => (
-        <TradeSection
-          key={g}
-          group={g}
-          rows={groups.get(g)!}
-          filtering={false}
-          editing={editing}
-          trade={trade}
-          phone={phone}
-          license={license}
-          busy={busy}
-          setTrade={setTrade}
-          setPhone={setPhone}
-          setLicense={setLicense}
-          startEdit={startEdit}
-          cancelEdit={() => setEditing(null)}
-          save={save}
-          toggleVerified={toggleVerified}
-        />
-      ))}
+      {/* door cards first, like Pricing — drill into one trade at a time */}
+      {!openGroup && (
+        <div className="type-grid" style={{ marginTop: 22 }}>
+          {order.map((g) => (
+            <button key={g} className="type-card" onClick={() => setOpenGroup(g)}>
+              <span className="type-icon">{TRADE_ICONS[g] ?? <Package size={22} />}</span>
+              <span>{g}</span>
+              <span className="type-sub">{groups.get(g)!.length} sub{groups.get(g)!.length === 1 ? "" : "s"}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {openGroup && (
+        <div style={{ marginTop: 18 }}>
+          <button className="btn ghost sm" onClick={() => setOpenGroup(null)}>← All trades</button>
+          <TradeSection
+            group={openGroup}
+            rows={groups.get(openGroup)!}
+            filtering
+            editing={editing}
+            trade={trade}
+            phone={phone}
+            license={license}
+            busy={busy}
+            setTrade={setTrade}
+            setPhone={setPhone}
+            setLicense={setLicense}
+            startEdit={startEdit}
+            cancelEdit={() => setEditing(null)}
+            save={save}
+            toggleVerified={toggleVerified}
+          />
+        </div>
+      )}
       {list.length === 0 && (
         <div className="empty">
-          <div className="big">No subs match</div>
-          Try a different search, or clear the filter.
+          <div className="big">No subs yet</div>
+          Add your first sub to start building the directory.
         </div>
       )}
 

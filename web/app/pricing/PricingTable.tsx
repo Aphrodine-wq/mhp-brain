@@ -43,7 +43,8 @@ export default function PricingTable({ materials }: { materials: TrackedMaterial
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
-  const [adding, setAdding] = useState(false);
+  const [adding, setAdding] = useState<null | "cat" | "form">(null);
+  const [addCat, setAddCat] = useState("");
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [unit, setUnit] = useState("");
@@ -71,8 +72,12 @@ export default function PricingTable({ materials }: { materials: TrackedMaterial
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, unit, catalogDesc }),
     });
-    setName(""); setUnit(""); setCatalogDesc(""); setAdding(false); setBusy(null);
+    setName(""); setUnit(""); setCatalogDesc(""); setAddCat(""); setAdding(null); setBusy(null);
     router.refresh();
+  }
+
+  function closeAdd() {
+    setAdding(null); setAddCat(""); setName(""); setUnit(""); setCatalogDesc("");
   }
 
   async function saveMarket(id: string) {
@@ -102,16 +107,39 @@ export default function PricingTable({ materials }: { materials: TrackedMaterial
         <button className="btn" disabled={busy !== null} onClick={run}>
           {busy === "run" ? "Running…" : "Run — recompute MHP rates"}
         </button>
-        <button className="btn ghost" onClick={() => setAdding((a) => !a)}>+ Track material</button>
+        <button className="btn ghost" onClick={() => setAdding("cat")}>+ Track material</button>
         {result && <span className="sub" style={{ margin: 0 }}>{result}</span>}
       </div>
 
-      {adding && (
-        <div className="asm-inputs" style={{ marginBottom: 16 }}>
-          <label>Material<input type="text" style={{ width: 200 }} value={name} placeholder="Architectural shingles" onChange={(e) => setName(e.target.value)} /></label>
-          <label>Unit<input type="text" style={{ width: 110 }} value={unit} placeholder="square" onChange={(e) => setUnit(e.target.value)} /></label>
-          <label>Estimator line<input type="text" style={{ width: 240 }} value={catalogDesc} placeholder="Shingle Roofing Material" onChange={(e) => setCatalogDesc(e.target.value)} /></label>
-          <button className="btn" disabled={busy === "add" || !name.trim()} onClick={add}>Add</button>
+      {adding === "cat" && (
+        <div style={{ marginTop: 18 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div className="type-cat">What kind of material is it?</div>
+            <button className="x" onClick={closeAdd} title="Cancel">×</button>
+          </div>
+          <div className="type-grid" style={{ marginTop: 10 }}>
+            {[...GROUPS.map(([, g]) => g), "Other"].map((g) => (
+              <button key={g} className="type-card" onClick={() => { setAddCat(g); setAdding("form"); }}>
+                <span className="type-icon">{GROUP_ICONS[g] ?? <Package size={22} />}</span>
+                <span>{g}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {adding === "form" && (
+        <div style={{ marginTop: 18 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div className="type-cat">{addCat}</div>
+            <button className="x" onClick={closeAdd} title="Cancel">×</button>
+          </div>
+          <div className="asm-inputs" style={{ marginBottom: 16, marginTop: 10 }}>
+            <label>Material<input type="text" style={{ width: 200 }} value={name} placeholder="Architectural shingles" autoFocus onChange={(e) => setName(e.target.value)} /></label>
+            <label>Unit<input type="text" style={{ width: 110 }} value={unit} placeholder="square" onChange={(e) => setUnit(e.target.value)} /></label>
+            <label>Estimator line<input type="text" style={{ width: 240 }} value={catalogDesc} placeholder="Shingle Roofing Material" onChange={(e) => setCatalogDesc(e.target.value)} /></label>
+            <button className="btn" disabled={busy === "add" || !name.trim()} onClick={add}>Add</button>
+          </div>
         </div>
       )}
 
@@ -196,9 +224,6 @@ export default function PricingTable({ materials }: { materials: TrackedMaterial
         );
       })()}
 
-      <div className="morelink">
-        Market prices land automatically from the price scraper (POST /api/pricing/ingest, HMAC-signed) or get typed in here.
-      </div>
     </>
   );
 }

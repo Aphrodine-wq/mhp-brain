@@ -129,10 +129,10 @@ export default function Estimator({
     }
   }
 
-  // Win the estimate → spawn/link the job and jump to its project page. Goes through Bid Guard
-  // (guarded("createJob")) so a money-losing bid warns before it becomes a committed contract.
+  // Win the estimate → spawn/link the project and jump to its page.
   async function createJob() {
     setJobState("creating");
+    setJobError("");
     try {
       const total = lines.reduce((s, l) => s + (parseFloat(l.qty) || 0) * (parseFloat(l.rate) || 0), 0) * (1 + (markup || 0) / 100);
       const r = await fetch("/api/estimates/accept", {
@@ -150,8 +150,12 @@ export default function Estimator({
       });
       const d = await r.json();
       if (r.ok && d.projectId) router.push(`/projects/${d.projectId}`);
-      else setJobState("error");
+      else {
+        setJobError(d.error ?? "Couldn't create the project.");
+        setJobState("error");
+      }
     } catch {
+      setJobError("Couldn't reach the server.");
       setJobState("error");
     }
   }
@@ -177,6 +181,7 @@ export default function Estimator({
   const [cat, setCat] = useState<string | null>(null);
   const router = useRouter();
   const [jobState, setJobState] = useState<"idle" | "creating" | "error">("idle");
+  const [jobError, setJobError] = useState("");
   const keyRef = useRef(0);
   const nextKey = () => ++keyRef.current;
 
@@ -518,9 +523,11 @@ export default function Estimator({
         <button className="btn ghost sm" onClick={saveProject} disabled={saveState === "saving"}>
           {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved ✓" : saveState === "error" ? "Retry save" : "Save"}
         </button>
-        <button className="btn ghost sm" onClick={createJob} disabled={jobState === "creating"}>
-          {jobState === "creating" ? "Creating…" : jobState === "error" ? "Retry job" : "Create Job →"}
+        <button className="btn ghost sm" onClick={createJob} disabled={jobState === "creating" || !client.project.trim()}
+          title={!client.project.trim() ? "Name the project first" : undefined}>
+          {jobState === "creating" ? "Creating…" : jobState === "error" ? "Retry project" : "Create Project →"}
         </button>
+        {jobState === "error" && jobError && <span style={{ color: "var(--warn)", fontSize: 12 }}>{jobError}</span>}
         <div className="doc-bar-bid"><span>Bid</span><b>{money(bid)}</b></div>
         <button className="btn sm" onClick={() => setView("packet")}>Client Packet →</button>
       </div>

@@ -130,6 +130,9 @@ textarea:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
 .btn:disabled{opacity:.55;cursor:default;box-shadow:none}
 .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--line);box-shadow:var(--shadow-sm)}
 .btn.ghost:hover{border-color:var(--navy);background:var(--paper);box-shadow:none}
+.btn.danger{background:#fff;color:#9c2f23;border:1.5px solid #e0b4ab;box-shadow:var(--shadow-sm)}
+.btn.danger:hover{border-color:#9c2f23;background:#fdf3f1;box-shadow:none}
+.btn.danger svg{fill:currentColor}
 .btn.sm{padding:5px 11px;font-size:12px;border-radius:var(--r-sm);gap:5px}
 /* primary call-to-action (New Estimate) — pill shape, bolder presence */
 .btn.cta{border-radius:999px;padding:12px 22px;font-size:14px;letter-spacing:.1px;
@@ -405,7 +408,7 @@ small.j{color:var(--muted);font-size:11px}
 .sheet input::-webkit-outer-spin-button,.sheet input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .sheet input[type=number]{-moz-appearance:textfield;appearance:textfield}
 .sheet-head{display:flex;align-items:center;gap:16px;padding-bottom:16px;border-bottom:2px solid var(--navy)}
-.sheet-logo{height:44px;width:auto;object-fit:contain}
+.sheet-logo{height:64px;width:auto;object-fit:contain}
 .sheet-co{display:flex;flex-direction:column;gap:2px;min-width:0}
 .sheet-co b{font-family:var(--disp);font-size:16px}
 .sheet-co span{font-size:11px;color:var(--muted)}
@@ -474,6 +477,7 @@ small.j{color:var(--muted);font-size:11px}
 .pay-row span:first-child{flex:1}
 .pay-row .pay-pct{font-variant-numeric:tabular-nums}
 .pay-row b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600}
+.pay-row b.wx-wet{color:#b45309}
 /* settings */
 .setrow{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:16px 20px;border-bottom:1px solid var(--line-2)}
 .setrow:last-child{border-bottom:0}

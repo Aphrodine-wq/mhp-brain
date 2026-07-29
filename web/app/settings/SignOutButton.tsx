@@ -6,7 +6,7 @@ import { SignOut } from "@phosphor-icons/react";
 
 // Sign-out lives here (Settings) instead of the sidebar — it's a rare action,
 // not something to put in front of the crew every day.
-export default function SignOutButton() {
+export default function SignOutButton({ className = "btn ghost sm" }: { className?: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
 
@@ -18,7 +18,7 @@ export default function SignOutButton() {
   }
 
   return (
-    <button className="btn ghost sm" onClick={logout} disabled={busy}>
+    <button className={className} onClick={logout} disabled={busy}>
       <SignOut size={14} />
       {busy ? "Signing out…" : "Sign out"}
     </button>
