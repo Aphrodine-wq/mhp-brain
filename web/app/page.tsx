@@ -9,7 +9,6 @@ import CeoDashboard from "./_dashboards/CeoDashboard";
 import SalesDashboard from "./_dashboards/SalesDashboard";
 import WeatherBanner from "./_dashboards/WeatherBanner";
 import GbpReviews from "./_dashboards/GbpReviews";
-import SegmentedTabs from "./_components/SegmentedTabs";
 
 export const dynamic = "force-dynamic";
 
@@ -105,13 +104,12 @@ export default async function Home() {
 
       <WeatherBanner />
 
-      <SegmentedTabs
-        tabs={[
-          { key: "overview", label: "Overview", content: overview },
-          { key: "jobs", label: "Jobs", content: jobs },
-          { key: "reviews", label: "Reviews", content: <GbpReviews /> },
-        ]}
-      />
+      {overview}
+
+      <div className="sec-h">Active now</div>
+      {jobs}
+
+      <GbpReviews />
     </section>
   );
 }
