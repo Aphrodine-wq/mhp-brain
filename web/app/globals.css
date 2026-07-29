@@ -506,20 +506,13 @@ body.compact .prow{padding:9px 16px}
   background:linear-gradient(160deg, var(--ink-navy) 0%, #0d2d5e 50%, #0b3d91 100%);
   padding:24px}
 .login-shell{display:flex;align-items:center;gap:56px;width:100%;max-width:960px}
-.login-pitch{flex:1;color:#fff;min-width:0}
-.login-pitch-logo{height:56px;width:auto;margin-bottom:20px;display:block}
+.login-pitch{flex:1;color:#fff;min-width:0;text-align:center}
+.login-pitch-logo{height:64px;width:auto;margin:0 auto 20px;display:block}
 .login-pitch-title{font-family:var(--disp);font-weight:700;font-size:32px;line-height:1.2;
-  letter-spacing:-.6px;margin:0 0 14px}
-.login-pitch-sub{font-size:15px;line-height:1.6;color:rgba(255,255,255,.78);margin:0 0 24px;
-  max-width:420px}
-.login-pitch-list{list-style:none;margin:0 0 28px;padding:0;display:flex;flex-direction:column;gap:10px}
-.login-pitch-list li{font-size:14px;font-weight:600;color:rgba(255,255,255,.92);padding-left:22px;
-  position:relative}
-.login-pitch-list li::before{content:'';position:absolute;left:0;top:7px;width:8px;height:8px;
-  border-radius:2px;background:#fff}
-.login-pitch-foot{font-size:12px;text-transform:uppercase;letter-spacing:1px;
-  color:rgba(255,255,255,.45)}
-.login-box{width:100%;max-width:400px;background:#fff;border-radius:16px;padding:40px 36px;
+  letter-spacing:-.6px;margin:0 0 12px}
+.login-pitch-sub{font-size:15px;line-height:1.6;color:rgba(255,255,255,.78);margin:0 auto;
+  max-width:360px}
+.login-box{width:100%;max-width:360px;background:#fff;border-radius:16px;padding:32px 28px;
   box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center}
 .login-logo{height:72px;width:auto;margin:0 auto 16px;display:block}
 .login-title{font-family:var(--disp);font-weight:700;font-size:24px;color:var(--ink);margin:0 0 4px;letter-spacing:-.4px}
@@ -566,12 +559,10 @@ body.compact .prow{padding:9px 16px}
 .login-dev:disabled{opacity:.6;cursor:default}
 /* Tablet/narrow: stack the pitch above the card, trimmed to a compact header. */
 @media(max-width:900px){
-  .login-shell{flex-direction:column;gap:28px;max-width:400px}
-  .login-pitch{text-align:center}
-  .login-pitch-logo{margin:0 auto 12px;height:44px}
-  .login-pitch-title{font-size:22px;margin-bottom:8px}
-  .login-pitch-sub{font-size:14px;margin:0 auto;max-width:340px}
-  .login-pitch-list,.login-pitch-foot{display:none}
+  .login-shell{flex-direction:column;gap:24px;max-width:360px}
+  .login-pitch-logo{height:44px;margin-bottom:10px}
+  .login-pitch-title{font-size:22px;margin-bottom:6px}
+  .login-pitch-sub{font-size:14px}
 }
 
 /* Mobile: tighten the whole card so it fits comfortably on a phone without scrolling.
