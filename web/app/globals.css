@@ -490,7 +490,11 @@ small.j{color:var(--muted);font-size:11px}
   transition:left var(--t);box-shadow:0 1px 2px rgba(0,0,0,.2)}
 .toggle.on::after{left:23px}
 main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
-.view-inner{max-width:1080px;margin:0 auto}
+.view-inner{max-width:1160px;margin:0 auto}
+/* project detail — two-column ops layout with real air between panels */
+.ops-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:24px}
+.ops-col{display:flex;flex-direction:column;gap:22px;min-width:0}
+@media(max-width:900px){.ops-grid{grid-template-columns:1fr}}
 @media(max-width:720px){main.wrap{padding:28px 22px}}
 /* home stats */
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:24px 0 32px}
