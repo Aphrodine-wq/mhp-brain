@@ -129,6 +129,20 @@ textarea:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
 .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--line);box-shadow:var(--shadow-sm)}
 .btn.ghost:hover{border-color:var(--navy);background:var(--paper);box-shadow:none}
 .btn.sm{padding:5px 11px;font-size:12px;border-radius:var(--r-sm);gap:5px}
+/* primary call-to-action (New Estimate) — pill shape, bolder presence */
+.btn.cta{border-radius:999px;padding:12px 22px;font-size:14px;letter-spacing:.1px;
+  box-shadow:0 2px 8px rgba(11,61,145,.28)}
+.btn.cta:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(11,61,145,.32)}
+.btn.cta svg{fill:currentColor}
+/* iOS-style segmented control — gray track, white active segment */
+.seg-wrap{margin-top:2px}
+.seg{display:inline-flex;gap:2px;padding:2px;background:#e7eaef;border-radius:10px;margin-bottom:16px;
+  max-width:100%;overflow-x:auto}
+.seg-btn{border:0;background:transparent;padding:7px 20px;font-family:var(--sans);font-size:13px;
+  font-weight:600;color:var(--ink-2);border-radius:8px;cursor:pointer;white-space:nowrap;
+  transition:background .15s,color .15s,box-shadow .15s}
+.seg-btn:hover{color:var(--ink)}
+.seg-btn.active{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(16,24,40,.14)}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px}
 .spin{width:48px;height:48px;border:4px solid var(--line);border-top-color:var(--navy);
   border-radius:50%;animation:s .9s linear infinite;margin:0 auto 20px}
@@ -158,23 +172,22 @@ select:focus,input.mk:focus{outline:none;border-color:var(--navy);box-shadow:var
 small.j{color:var(--muted);font-size:11px}
 /* app shell */
 .app{display:flex;min-height:100vh}
-.sidebar{width:208px;flex-shrink:0;background:var(--ink-navy);color:#fff;display:flex;flex-direction:column;
+.sidebar{width:180px;flex-shrink:0;background:var(--ink-navy);color:#fff;display:flex;flex-direction:column;
   position:sticky;top:0;height:100vh;transition:width .2s ease}
-.brand{display:flex;align-items:center;gap:11px;padding:20px 18px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
+.brand{display:flex;align-items:center;justify-content:center;padding:22px 16px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
 .brand img{height:52px;width:auto}
 /* collapse control — its own slim row pinned above the profile */
 .collapse-row{display:flex;justify-content:flex-end;padding:6px 12px;border-top:1px solid rgba(255,255,255,.1)}
 .collapse-btn{display:flex;align-items:center;justify-content:center;background:0;border:0;
   color:rgba(255,255,255,.55);cursor:pointer;padding:4px;border-radius:var(--r-sm);transition:color var(--t),background var(--t)}
 .collapse-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
-.collapse-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
-  transition:transform var(--t)}
+.collapse-btn svg{width:18px;height:18px;fill:currentColor;transition:transform var(--t)}
 .sidebar nav{padding:14px 12px;display:flex;flex-direction:column;gap:1px;flex:1}
 .nav{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:var(--r-sm);color:rgba(255,255,255,.66);
   font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;transition:background var(--t),color var(--t)}
 .nav:hover{background:rgba(255,255,255,.06);color:#fff}
 .nav.active{background:rgba(255,255,255,.12);color:#fff;font-weight:600}
-.nav svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.nav svg{width:18px;height:18px;fill:currentColor;flex-shrink:0}
 .nav-sep{height:1px;background:rgba(255,255,255,.1);margin:9px 8px}
 .side-foot{padding:18px 20px;font-size:11px;color:rgba(255,255,255,.4);border-top:1px solid rgba(255,255,255,.1);
   line-height:1.5}
@@ -240,6 +253,15 @@ small.j{color:var(--muted);font-size:11px}
   border:1px solid var(--line-2);border-radius:var(--r-sm);background:#fff}
 .conn-icon svg{width:22px;height:22px;display:block}
 .conn-left{display:flex;align-items:center;gap:14px;min-width:0}
+/* integration cards — 2-col grid inside the Connected services panel */
+.conn-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 20px 20px}
+.conn-card{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:10px;
+  padding:16px;background:#fff;box-shadow:var(--shadow-sm)}
+.conn-card-head{display:flex;align-items:center;gap:12px}
+.conn-title{display:flex;flex-direction:column;gap:5px;align-items:flex-start;min-width:0}
+.conn-desc{flex:1}
+.conn-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:4px}
+@media(max-width:760px){.conn-grid{grid-template-columns:1fr}}
 /* dashboard */
 .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin:22px 0}
 .metric{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px;
@@ -286,12 +308,17 @@ small.j{color:var(--muted);font-size:11px}
 .banner{background:#eef3fb;border:1px solid #d6e2f4;border-radius:var(--r-lg);padding:14px 18px;margin:18px 0 6px;
   font-size:13.5px;color:var(--navy);display:flex;gap:10px;align-items:center}
 .banner b{color:var(--navy)}
-/* home weather line — deliberately quiet: a thin bordered strip, not the heavy navy banner,
-   with breathing room above/below so it doesn't crowd the title or the "Active now" header */
-.wx-banner{display:flex;align-items:center;gap:11px;margin:18px 0 22px;padding:13px 18px;
-  background:var(--paper);border:1px solid var(--line);border-radius:var(--r);
-  font-size:15px;color:var(--ink-2)}
-.wx-banner .wx-flag{color:var(--warn);font-weight:600}
+/* weather card — modern square card: icon tile, big temp, condition line, status pill */
+.wx-card{display:flex;align-items:center;gap:14px;margin:18px 0 22px;padding:14px 16px;
+  background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow-sm)}
+.wx-icon{width:44px;height:44px;border-radius:8px;background:var(--paper);border:1px solid var(--line-2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.wx-main{min-width:0;flex:1}
+.wx-temp{font-family:var(--disp);font-size:22px;font-weight:700;line-height:1.1;letter-spacing:-.4px;color:var(--ink)}
+.wx-meta{font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wx-pill{flex-shrink:0;font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;white-space:nowrap}
+.wx-pill.wet{background:#fdf3e4;color:#b45309;border:1px solid #f0ddba}
+.wx-pill.dry{background:#e9f6ec;color:#1e7d32;border:1px solid #c8e6cf}
 /* Google Business Profile widget — rating + recent review snippets */
 .gbp-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:8px}
 .gbp-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
@@ -582,7 +609,7 @@ body.compact .prow{padding:9px 16px}
 .logout{background:0;border:0;cursor:pointer;color:rgba(255,255,255,.45);padding:0 16px;display:flex;
   align-items:center;border-left:1px solid rgba(255,255,255,.08);transition:background var(--t),color var(--t)}
 .logout:hover{color:#fff;background:rgba(255,255,255,.06)}
-.logout svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.logout svg{width:18px;height:18px;fill:currentColor}
 /* modal (Add Sub) */
 .modal-scrim{position:fixed;inset:0;z-index:80;background:rgba(8,16,28,.5);display:flex;align-items:center;
   justify-content:center;padding:20px}
@@ -620,7 +647,7 @@ body.compact .prow{padding:9px 16px}
   .topbar img{height:34px;width:auto}
   .hamburger{display:flex;align-items:center;justify-content:center;background:0;border:0;
     color:#fff;cursor:pointer;padding:6px;margin:-6px 2px -6px -6px;-webkit-tap-highlight-color:transparent}
-  .hamburger svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .hamburger svg{width:24px;height:24px;fill:currentColor}
 
   /* sidebar → off-canvas drawer; the collapsed-rail toggle is meaningless here */
   .collapse-row{display:none}

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 type Day = { name: string; temp: number; rain: number; forecast: string };
 
-// Top-of-dashboard weather line. Auto-loads the NWS forecast (keyless, /api/weather) on mount and
+// Top-of-dashboard weather card. Auto-loads the NWS forecast (keyless, /api/weather) on mount and
 // flags the next rain day so the crew knows before scheduling a pour. A nicety — stays silent on
 // loading or error rather than cluttering the dashboard.
 export default function WeatherBanner() {
@@ -34,18 +34,21 @@ export default function WeatherBanner() {
   const wet = days.find((d) => d.rain >= 40);
 
   return (
-    <div className="wx-banner">
-      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden>
-        <circle cx="9" cy="9" r="4.5" fill="#FBBC04" />
-        <path d="M7 18a4.2 4.2 0 0 1 .4-8.4 5.4 5.4 0 0 1 10.4 1.5A3.5 3.5 0 0 1 17.5 18z" fill="#9bb7e6" stroke="#5b87c9" strokeWidth=".8" />
-      </svg>
-      <span>
-        {location ? `${location} · ` : ""}{today.temp}° {today.forecast}
-      </span>
+    <div className="wx-card">
+      <div className="wx-icon" aria-hidden>
+        <svg viewBox="0 0 24 24" width="26" height="26">
+          <circle cx="9" cy="9" r="4.5" fill="#FBBC04" />
+          <path d="M7 18a4.2 4.2 0 0 1 .4-8.4 5.4 5.4 0 0 1 10.4 1.5A3.5 3.5 0 0 1 17.5 18z" fill="#9bb7e6" stroke="#5b87c9" strokeWidth=".8" />
+        </svg>
+      </div>
+      <div className="wx-main">
+        <div className="wx-temp">{today.temp}°</div>
+        <div className="wx-meta">{location ? `${location} · ` : ""}{today.forecast}</div>
+      </div>
       {wet ? (
-        <span className="wx-flag">· Rain {wet.name} ({wet.rain}%) — hold the pour</span>
+        <span className="wx-pill wet">Rain {wet.name} · {wet.rain}% — hold the pour</span>
       ) : (
-        <span style={{ color: "var(--muted)" }}>· Clear stretch — good to pour</span>
+        <span className="wx-pill dry">Clear stretch — good to pour</span>
       )}
     </div>
   );

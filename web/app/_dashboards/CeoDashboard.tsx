@@ -1,38 +1,27 @@
 import Link from "next/link";
+import { NotePencil, Warning, MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
 import { db } from "@/lib/db";
-import { money } from "@/lib/format";
-import { marginBySegment } from "@/lib/margin";
 import WeatherBanner from "./WeatherBanner";
 
-// Rick's cockpit. One screen, answers four questions:
-// 1. How's the money? (cash in, cash out, margins)
-// 2. What's at risk? (overruns, stale bids, pending COs)
-// 3. What needs my decision? (approvals, exceptions)
-// 4. What happened today? (crew activity, logged events)
+// Rick's cockpit. One screen, answers three questions:
+// 1. What's at risk? (stale bids, pending COs, open callbacks)
+// 2. What needs my decision? (approvals, exceptions)
+// 3. What happened today? (crew activity, logged events)
+// Money lives in QuickBooks and the estimating section — not on this screen.
 
 export default async function CeoDashboard() {
-  // All four reads are independent, so fire them concurrently — one round-trip's worth of latency
-  // for the whole cockpit instead of four in series.
-  const [projects, recentPayments, inspections, todayEvents] = await Promise.all([
-    // Active jobs with values
+  // All three reads are independent, so fire them concurrently — one round-trip's worth of
+  // latency for the whole cockpit instead of three in series.
+  const [projects, inspections, todayEvents] = await Promise.all([
+    // Active jobs with operational counts
     db.execute(`
-      SELECT p.id, p.name, p.status, p.current_phase, p.contract_value,
-             (SELECT MAX(e.sum_sov_total) FROM estimates e WHERE e.project_id = p.id AND e.sum_sov_total > 0) AS bid_value,
-             (SELECT COALESCE(SUM(pay.amount), 0) FROM payments pay WHERE pay.project_id = p.id) AS collected,
+      SELECT p.id, p.name, p.status, p.current_phase,
              (SELECT COUNT(*) FROM change_orders co WHERE co.project_id = p.id AND co.approved = 0) AS pending_cos,
              (SELECT COUNT(*) FROM callbacks cb WHERE cb.project_id = p.id AND cb.resolved_date IS NULL) AS open_callbacks,
              (SELECT COUNT(*) FROM job_events je WHERE je.project_id = p.id AND je.event_date = CURRENT_DATE::text) AS events_today
       FROM projects p
       WHERE p.status IN ('Active', 'active', 'Aging')
-      ORDER BY COALESCE(p.contract_value, 0) DESC NULLS LAST
-    `).then((r) => r.rows),
-    // Recent payments (last 7 days)
-    db.execute(`
-      SELECT pay.amount, pay.payment_date, pay.method, pay.payment_type, p.name AS project_name
-      FROM payments pay JOIN projects p ON pay.project_id = p.id
-      WHERE pay.payment_date >= (CURRENT_DATE - INTERVAL '7 days')::text
-      ORDER BY pay.payment_date DESC
-      LIMIT 10
+      ORDER BY p.name
     `).then((r) => r.rows),
     // Upcoming inspections
     db.execute(`
@@ -52,22 +41,13 @@ export default async function CeoDashboard() {
     `).then((r) => r.rows),
   ]);
 
-  // Portfolio totals
-  const totalBid = projects.reduce((s, p) => s + Number(p.bid_value ?? 0), 0);
-  const totalCollected = projects.reduce((s, p) => s + Number(p.collected ?? 0), 0);
   const totalPendingCOs = projects.reduce((s, p) => s + Number(p.pending_cos ?? 0), 0);
   const totalOpenCallbacks = projects.reduce((s, p) => s + Number(p.open_callbacks ?? 0), 0);
   const jobsLoggedToday = projects.filter((p) => Number(p.events_today) > 0).length;
   const jobsNotLogged = projects.filter((p) => Number(p.events_today) === 0).length;
 
-  // Jobs at risk: high bid but nothing collected, or pending COs
-  const atRisk = projects.filter(
-    (p) => (Number(p.bid_value ?? 0) > 50000 && Number(p.collected ?? 0) === 0) || Number(p.pending_cos ?? 0) > 0 || Number(p.open_callbacks ?? 0) > 0,
-  );
-
-  // Estimated-margin roll-up (bid vs estimated cost from the estimate line totals — not actuals)
-  const margin = await marginBySegment().catch(() => null);
-  const mpct = (n: number | null) => (n == null ? "—" : `${Math.round(n * 100)}%`);
+  // Jobs at risk: pending COs or unresolved callbacks
+  const atRisk = projects.filter((p) => Number(p.pending_cos ?? 0) > 0 || Number(p.open_callbacks ?? 0) > 0);
 
   return (
     <section className="view">
@@ -76,70 +56,22 @@ export default async function CeoDashboard() {
 
       <WeatherBanner />
 
-      {/* Money strip */}
-      <div className="stat-strip">
-        <div>
-          <div className="sv">{money(totalBid)}</div>
-          <div className="sk">Active book value</div>
-        </div>
-        <div>
-          <div className="sv">{money(totalCollected)}</div>
-          <div className="sk">Collected</div>
-        </div>
-        <div>
-          <div className="sv">{money(totalBid - totalCollected)}</div>
-          <div className="sk">Outstanding</div>
-        </div>
-        <div>
-          <div className="sv">{projects.length}</div>
-          <div className="sk">Active jobs</div>
-        </div>
-      </div>
-
-      {/* Estimated margin — which job types/markets make money on paper */}
-      {margin && margin.byType.length > 0 && (
-        <div className="panel" style={{ marginTop: 18 }}>
-          <h3>Margin (estimated) · {mpct(margin.portfolioMarginPct)} portfolio</h3>
-          <div className="cols">
-            <div>
-              <div className="sec-h" style={{ marginTop: 0 }}>By job type</div>
-              {margin.byType.slice(0, 6).map((s) => (
-                <div className="setrow" key={s.label}>
-                  <div><div className="sl">{s.label}</div><div className="sd">{s.jobs} job{s.jobs === 1 ? "" : "s"} · {money(s.bid)} bid</div></div>
-                  <div className="actions"><span className="sd">{money(s.marginDollars)}</span><span className="badge bid">{mpct(s.marginPct)}</span></div>
-                </div>
-              ))}
-            </div>
-            <div>
-              <div className="sec-h" style={{ marginTop: 0 }}>By market</div>
-              {margin.byMarket.slice(0, 6).map((s) => (
-                <div className="setrow" key={s.label}>
-                  <div><div className="sl">{s.label}</div><div className="sd">{s.jobs} job{s.jobs === 1 ? "" : "s"} · {money(s.bid)} bid</div></div>
-                  <div className="actions"><span className="sd">{money(s.marginDollars)}</span><span className="badge bid">{mpct(s.marginPct)}</span></div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="setrow"><div className="sd">Estimated from bids (sell minus pre-markup cost) — not actual job costs.</div></div>
-        </div>
-      )}
-
       <div className="cols">
         {/* Left column: Needs attention */}
         <div>
           {/* Decisions needed */}
-          {(totalPendingCOs > 0 || totalOpenCallbacks > 0 || atRisk.length > 0) && (
+          {(totalPendingCOs > 0 || totalOpenCallbacks > 0) && (
             <div className="panel">
               <h3>Needs your attention</h3>
               {totalPendingCOs > 0 && (
                 <div className="prow">
-                  <span style={{ fontSize: 18, marginRight: 4 }}>📝</span>
+                  <NotePencil size={18} style={{ marginRight: 6, flexShrink: 0 }} />
                   <span className="pn">{totalPendingCOs} pending change order{totalPendingCOs > 1 ? "s" : ""} to approve</span>
                 </div>
               )}
               {totalOpenCallbacks > 0 && (
                 <div className="prow">
-                  <span style={{ fontSize: 18, marginRight: 4 }}>⚠️</span>
+                  <Warning size={18} style={{ marginRight: 6, flexShrink: 0 }} />
                   <span className="pn">{totalOpenCallbacks} unresolved warranty callback{totalOpenCallbacks > 1 ? "s" : ""}</span>
                 </div>
               )}
@@ -149,7 +81,6 @@ export default async function CeoDashboard() {
                   <span className="pn">{String(p.name)}</span>
                   <span className="pv" style={{ color: "#e65100" }}>
                     {Number(p.pending_cos) > 0 ? `${p.pending_cos} CO` : ""}
-                    {Number(p.collected) === 0 && Number(p.bid_value) > 0 ? " $0 collected" : ""}
                     {Number(p.open_callbacks) > 0 ? ` ${p.open_callbacks} callback` : ""}
                   </span>
                 </div>
@@ -163,7 +94,7 @@ export default async function CeoDashboard() {
               <h3>Upcoming inspections</h3>
               {inspections.map((i, idx) => (
                 <div className="prow" key={idx}>
-                  <span style={{ fontSize: 18, marginRight: 4 }}>🔍</span>
+                  <MagnifyingGlass size={18} style={{ marginRight: 6, flexShrink: 0 }} />
                   <span className="pn">{String(i.project_name)}</span>
                   <span className="pv">{String(i.permit_type)} — {String(i.inspection_date)}</span>
                 </div>
@@ -193,35 +124,16 @@ export default async function CeoDashboard() {
           </div>
         </div>
 
-        {/* Right column: Money movement */}
+        {/* Right column: Active jobs */}
         <div>
           <div className="panel">
-            <h3>Money in (last 7 days)</h3>
-            {recentPayments.length > 0 ? recentPayments.map((pay, idx) => (
-              <div className="prow" key={idx}>
-                <span className="pn">{String(pay.project_name)}</span>
-                <span className="pv" style={{ color: "#2e7d32", fontWeight: 600 }}>{money(Number(pay.amount))}</span>
-              </div>
-            )) : (
-              <div className="prow"><span className="pn" style={{ color: "#5b6470" }}>No payments this week.</span></div>
-            )}
-          </div>
-
-          {/* Active jobs summary */}
-          <div className="panel" style={{ marginTop: 16 }}>
             <h3>Active jobs</h3>
-            {projects.slice(0, 8).map((p) => {
-              const bid = Number(p.bid_value ?? 0);
-              const coll = Number(p.collected ?? 0);
-              const pct = bid > 0 ? Math.round((coll / bid) * 100) : 0;
-              return (
-                <div className="prow" key={String(p.id)}>
-                  <span className="pn">{String(p.name)}</span>
-                  <span className="pv">{money(bid)}</span>
-                  <span className="pv" style={{ width: 50, textAlign: "right" }}>{pct}%</span>
-                </div>
-              );
-            })}
+            {projects.slice(0, 8).map((p) => (
+              <div className="prow" key={String(p.id)}>
+                <span className="pn">{String(p.name)}</span>
+                <span className="pv">{String(p.current_phase ?? "").replace("_", " ") || String(p.status)}</span>
+              </div>
+            ))}
             {projects.length > 8 && (
               <div className="prow">
                 <Link href="/projects" style={{ color: "#0b3d91", fontWeight: 600, fontSize: 13 }}>

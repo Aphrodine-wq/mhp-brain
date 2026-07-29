@@ -1,5 +1,4 @@
 import { db } from "@/lib/db";
-import { money } from "@/lib/format";
 import WeatherBanner from "./WeatherBanner";
 
 // Todd's screen. Leads, follow-ups, conversion tracking.
@@ -9,10 +8,7 @@ export default async function SalesDashboard() {
   const [pipeline, recentLeads, statsRows] = await Promise.all([
     // Pipeline by phase
     db.execute(`
-      SELECT current_phase, COUNT(*) AS cnt,
-             COALESCE(SUM(contract_value), 0) + COALESCE(SUM(
-               (SELECT MAX(e.sum_sov_total) FROM estimates e WHERE e.project_id = p.id AND e.sum_sov_total > 0)
-             ), 0) AS value
+      SELECT current_phase, COUNT(*) AS cnt
       FROM projects p
       WHERE status IN ('Active', 'active', 'Aging')
       GROUP BY current_phase
@@ -23,8 +19,7 @@ export default async function SalesDashboard() {
     `).then((r) => r.rows),
     // Recent leads (newest projects)
     db.execute(`
-      SELECT id, name, type, lead_source, current_phase, client_name, client_phone,
-             (SELECT MAX(e.sum_sov_total) FROM estimates e WHERE e.project_id = p.id AND e.sum_sov_total > 0) AS bid_value
+      SELECT id, name, type, lead_source, current_phase, client_name, client_phone
       FROM projects p
       WHERE status IN ('Active', 'active', 'Aging')
       ORDER BY COALESCE(actual_start, '9999') DESC
@@ -70,7 +65,6 @@ export default async function SalesDashboard() {
               <th>Phone</th>
               <th>Source</th>
               <th>Phase</th>
-              <th className="n">Value</th>
             </tr>
           </thead>
           <tbody>
@@ -81,7 +75,6 @@ export default async function SalesDashboard() {
                 <td>{l.client_phone ? String(l.client_phone) : "—"}</td>
                 <td>{l.lead_source ? String(l.lead_source) : "—"}</td>
                 <td>{l.current_phase ? String(l.current_phase).replace("_", " ") : "—"}</td>
-                <td className="n">{l.bid_value ? money(Number(l.bid_value)) : "—"}</td>
               </tr>
             ))}
           </tbody>

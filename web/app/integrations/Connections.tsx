@@ -105,35 +105,37 @@ export default function Connections({
         </div>
       )}
 
+      <div className="conn-grid">
       {providers.map((p) => (
-        <div className="setrow" key={p.id}>
-          <div className="conn-left">
+        <div className="conn-card" key={p.id}>
+          <div className="conn-card-head">
             <div className="conn-icon">{ICONS[p.id]}</div>
-            <div>
+            <div className="conn-title">
               <div className="sl">{p.label}</div>
-              <div className="sd">
-                {!p.configured ? (
-                  NOT_READY[p.id]
-                ) : p.connection ? (
-                  <>
-                    Connected as <b>{p.connection.account}</b>
-                  </>
-                ) : (
-                  DESCRIPTIONS[p.id]
-                )}
-              </div>
-              {syncResult[p.id] ? <div className="sd">{syncResult[p.id]}</div> : null}
+              {!p.configured ? (
+                <span className="badge aging">Not set up</span>
+              ) : p.connection ? (
+                <span className="badge active">Connected</span>
+              ) : (
+                <span className="badge unknown">Not connected</span>
+              )}
             </div>
           </div>
-          <div className="actions">
-            {!p.configured ? (
-              <span className="badge aging">Not set up</span>
-            ) : p.connection ? (
-              <span className="badge active">Connected</span>
-            ) : (
-              <span className="badge unknown">Not connected</span>
-            )}
 
+          <div className="sd conn-desc">
+            {!p.configured ? (
+              NOT_READY[p.id]
+            ) : p.connection ? (
+              <>
+                Connected as <b>{p.connection.account}</b>
+              </>
+            ) : (
+              DESCRIPTIONS[p.id]
+            )}
+          </div>
+          {syncResult[p.id] ? <div className="sd">{syncResult[p.id]}</div> : null}
+
+          <div className="conn-actions">
             {p.configured && p.id === "quickbooks" && (
               <a className="btn ghost sm" href="/api/oauth/quickbooks/start">
                 {p.connection ? "Reconnect" : "Connect"}
@@ -244,6 +246,7 @@ export default function Connections({
           </div>
         </div>
       ))}
+      </div>
     </div>
   );
 }
