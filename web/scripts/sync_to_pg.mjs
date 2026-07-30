@@ -1,7 +1,12 @@
 // ETL: load the pipeline's SQLite base tables into Postgres (local dev, or Neon in prod).
-// Reads mhp.db via libSQL, recreates + bulk-loads the 8 base tables in Postgres. NEVER touches
+// Reads mhp.db via libSQL, recreates + bulk-loads the base tables in Postgres. NEVER touches
 // app-owned tables (overrides/audit_log/users/sessions/login_attempts/oauth_connections).
 // Run: node --env-file=.env.local scripts/sync_to_pg.mjs
+//
+// `projects` is the exception to the drop-and-reload rule — see PROJECT_PIPELINE_COLS below.
+// It used to be dropped like everything else, which silently destroyed every project created in
+// the app, every field typed into "Edit details", and the completion_pct column itself. The
+// pipeline only ever populates a handful of columns; it now writes just those.
 import { createClient } from "@libsql/client";
 import pg from "pg";
 
@@ -26,6 +31,29 @@ const DDL = {
   realization_factors: `CREATE TABLE realization_factors (dimension TEXT, key TEXT, factor DOUBLE PRECISION, raw_factor DOUBLE PRECISION, n_jobs INTEGER, realization_mean DOUBLE PRECISION, realization_stdev DOUBLE PRECISION, updated_at TEXT, PRIMARY KEY (dimension, key))`,
 };
 
+// The only columns the pipeline is the source of truth for. Everything else on `projects` is
+// app-owned — ops fields typed into "Edit details" (client_*, address, deposit_*, lead_source,
+// current_phase, contract_value, actual_*) and completion_pct — and must survive a sync.
+const PROJECT_PIPELINE_COLS = ["name", "type", "market", "status", "last_activity"];
+
+// Merge, don't replace: upsert the pipeline's columns by id and leave app-created rows
+// (projects added via POST /api/projects, which the pipeline has never heard of) in place.
+async function mergeProjects(rows, cols) {
+  const use = PROJECT_PIPELINE_COLS.filter((c) => cols.includes(c));
+  for (const row of rows) {
+    if (row.id == null) continue;
+    const set = use.map((c, i) => `${c} = $${i + 2}`).join(", ");
+    const args = [row.id, ...use.map((c) => (row[c] === undefined ? null : row[c]))];
+    await pool.query(
+      `INSERT INTO projects (id, ${use.join(", ")}) VALUES ($1, ${use.map((_, i) => `$${i + 2}`).join(", ")})
+       ON CONFLICT (id) DO UPDATE SET ${set}`,
+      args,
+    );
+  }
+  const kept = await pool.query("SELECT count(*)::int AS n FROM projects");
+  console.log(`projects: ${rows.length} merged, ${kept.rows[0].n} total (app-created rows kept)`);
+}
+
 for (const [t, ddl] of Object.entries(DDL)) {
   let r;
   try {
@@ -37,6 +65,10 @@ for (const [t, ddl] of Object.entries(DDL)) {
     continue;
   }
   const cols = r.columns;
+  if (t === "projects") {
+    await mergeProjects(r.rows, cols);
+    continue;
+  }
   await pool.query(`DROP TABLE IF EXISTS ${t} CASCADE`);
   await pool.query(ddl);
   const CHUNK = Math.max(1, Math.floor(60000 / cols.length));
@@ -55,5 +87,16 @@ for (const [t, ddl] of Object.entries(DDL)) {
   }
   console.log(`${t}: ${r.rows.length} rows`);
 }
+// `estimates` IS drop-and-reloaded above, so any estimate re-pointed at a different project in the
+// app would revert to whatever folder the pipeline parsed it out of. Replay those corrections from
+// the overrides table (which the pipeline never touches) so a reassignment sticks across syncs.
+const reassigned = await pool.query(
+  "SELECT entity_id, value FROM overrides WHERE entity_type='estimate' AND field='project_id' AND value IS NOT NULL",
+);
+for (const o of reassigned.rows) {
+  await pool.query("UPDATE estimates SET project_id=$1 WHERE id=$2", [o.value, o.entity_id]);
+}
+if (reassigned.rows.length) console.log(`estimates: ${reassigned.rows.length} reassignment(s) replayed from overrides`);
+
 await pool.end();
 console.log("sync done ->", process.env.DATABASE_URL);

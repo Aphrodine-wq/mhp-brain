@@ -58,6 +58,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         <div className="metric"><div className="v sm">{proj.value ? money(proj.value) : "—"}</div><div className="k">Current bid value</div></div>
         <div className="metric"><div className="v sm">{margin?.marginDollars != null ? money(margin.marginDollars) : "—"}</div><div className="k">Est. margin · {pct(margin?.marginPct ?? null)}</div></div>
         <div className="metric"><div className="v sm">{margin ? money(margin.collected) : "—"}</div><div className="k">Collected · {pct(margin?.collectedPct ?? null)}</div></div>
+        <div className="metric">
+          <div className="v sm">{ops?.completion_pct == null ? "—" : `${ops.completion_pct}%`}</div>
+          <div className="k">Work complete</div>
+        </div>
       </div>
 
       <Milestones phase={ops?.current_phase ?? null} />

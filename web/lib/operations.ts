@@ -73,18 +73,33 @@ export interface ProjectUpdate {
   contract_value?: number | null;
   deposit_amount?: number | null;
   deposit_date?: string | null;
+  completion_pct?: number | null;
 }
 
 const PROJECT_OPS_FIELDS: ReadonlySet<string> = new Set([
   "lead_source", "lost_reason", "actual_start", "actual_end", "current_phase",
   "client_name", "client_phone", "client_email", "address",
-  "contract_value", "deposit_amount", "deposit_date",
+  "contract_value", "deposit_amount", "deposit_date", "completion_pct",
 ]);
 
+// completion_pct is the one ops field with a real domain (0-100 integer). auditedUpdate hands
+// values straight to the driver, so an "85%" or a 850 would either blow up as a 500 or trip the
+// DB CHECK — normalize here, where every caller goes through.
+export function normalizeCompletion(v: unknown): number | null {
+  if (v === null || v === "") return null;
+  const n = typeof v === "number" ? v : Number(String(v).replace("%", "").trim());
+  if (!Number.isFinite(n)) throw new OpsError("completion_pct must be a number 0-100");
+  const i = Math.round(n);
+  if (i < 0 || i > 100) throw new OpsError("completion_pct must be between 0 and 100");
+  return i;
+}
+
 export async function updateProjectOps(projectId: string, updates: ProjectUpdate, actor: string): Promise<void> {
+  const clean: Record<string, unknown> = { ...updates };
+  if (clean.completion_pct !== undefined) clean.completion_pct = normalizeCompletion(clean.completion_pct);
   await auditedUpdate({
     table: "projects", entityType: "project", id: projectId,
-    updates: updates as Record<string, unknown>, allowed: PROJECT_OPS_FIELDS, actor,
+    updates: clean, allowed: PROJECT_OPS_FIELDS, actor,
   });
 }
 
@@ -92,7 +107,7 @@ export async function getProjectOps(projectId: string) {
   const row = (await db.execute({
     sql: `SELECT lead_source, lost_reason, actual_start, actual_end, current_phase,
                  client_name, client_phone, client_email, address,
-                 contract_value, deposit_amount, deposit_date
+                 contract_value, deposit_amount, deposit_date, completion_pct
           FROM projects WHERE id = ?`,
     args: [projectId],
   })).rows[0];

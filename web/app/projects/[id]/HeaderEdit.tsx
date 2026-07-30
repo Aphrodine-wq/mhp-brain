@@ -19,6 +19,7 @@ export interface ProjectOps {
   contract_value: number | null;
   actual_start: string | null;
   actual_end: string | null;
+  completion_pct: number | null;
 }
 
 export default function HeaderEdit({
@@ -45,6 +46,7 @@ export default function HeaderEdit({
     contract_value: ops?.contract_value != null ? String(ops.contract_value) : "",
     actual_start: ops?.actual_start ?? "",
     actual_end: ops?.actual_end ?? "",
+    completion_pct: ops?.completion_pct != null ? String(ops.completion_pct) : "",
   });
 
   async function setStatus(next: string) {
@@ -72,6 +74,7 @@ export default function HeaderEdit({
         contract_value: form.contract_value === "" ? null : Number(form.contract_value),
         actual_start: form.actual_start || null,
         actual_end: form.actual_end || null,
+        completion_pct: form.completion_pct === "" ? null : Number(form.completion_pct),
       });
       setOpen(false);
       router.refresh();
@@ -110,6 +113,23 @@ export default function HeaderEdit({
               <option value="">—</option>
               {PHASES.map((p) => <option key={p} value={p}>{p.replace("_", " ")}</option>)}
             </select>
+          </div>
+          <div className="setrow">
+            <div className="sl">Complete</div>
+            <div className="actions">
+              <input
+                className="mk"
+                type="number"
+                min={0}
+                max={100}
+                step={5}
+                style={{ width: 90 }}
+                placeholder="—"
+                value={form.completion_pct}
+                onChange={set("completion_pct")}
+              />
+              <span className="sd">% of the work done</span>
+            </div>
           </div>
           <div className="setrow">
             <div className="sl">Lead source</div>

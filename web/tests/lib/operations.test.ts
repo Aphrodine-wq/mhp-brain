@@ -84,6 +84,50 @@ describe("auditedUpdate contract (via updateProjectOps)", () => {
   });
 });
 
+describe("completion_pct normalization", () => {
+  it("stores a whole number and audits it like any other field", async () => {
+    const tx = fakeTx({ completion_pct: null });
+    transaction.mockResolvedValue(tx);
+
+    await updateProjectOps("p1", { completion_pct: 85 }, "Boss");
+
+    const audit = tx.execute.mock.calls.find((c) => /INSERT INTO audit_log/i.test(c[0].sql))!;
+    expect(audit[0].args[5]).toBe("completion_pct");
+    expect(audit[0].args[6]).toBeNull(); // nothing set before
+    expect(audit[0].args[7]).toBe("85");
+    expect(tx.commit).toHaveBeenCalledOnce();
+  });
+
+  it("accepts a percent-shaped string from the form and rounds to an integer", async () => {
+    const tx = fakeTx({ completion_pct: null });
+    transaction.mockResolvedValue(tx);
+
+    // @ts-expect-error — the form sends strings; normalization is the point of this test
+    await updateProjectOps("p1", { completion_pct: "85%" }, "Boss");
+
+    const update = tx.execute.mock.calls.find((c) => /^\s*UPDATE/i.test(c[0].sql))!;
+    expect(update[0].args[0]).toBe(85);
+  });
+
+  it("clears the value when given null (distinct from 0)", async () => {
+    const tx = fakeTx({ completion_pct: 40 });
+    transaction.mockResolvedValue(tx);
+
+    await updateProjectOps("p1", { completion_pct: null }, "Boss");
+
+    const update = tx.execute.mock.calls.find((c) => /^\s*UPDATE/i.test(c[0].sql))!;
+    expect(update[0].args[0]).toBeNull();
+  });
+
+  it("rejects out-of-range and non-numeric values before opening a transaction", async () => {
+    await expect(updateProjectOps("p1", { completion_pct: 140 }, "Boss")).rejects.toBeInstanceOf(OpsError);
+    await expect(updateProjectOps("p1", { completion_pct: -5 }, "Boss")).rejects.toBeInstanceOf(OpsError);
+    // @ts-expect-error — deliberately bad input from a hand-rolled request
+    await expect(updateProjectOps("p1", { completion_pct: "soon" }, "Boss")).rejects.toBeInstanceOf(OpsError);
+    expect(transaction).not.toHaveBeenCalled();
+  });
+});
+
 describe("updateUserAdmin", () => {
   it("looks up the email server-side and audits as entity 'user' with action 'user_admin'", async () => {
     execute.mockResolvedValue({ rows: [{ email: "rick@mhp.local" }] }); // email lookup

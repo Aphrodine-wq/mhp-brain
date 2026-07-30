@@ -7,6 +7,7 @@ import { projectsList } from "@/lib/queries";
 import CeoDashboard from "./_dashboards/CeoDashboard";
 import SalesDashboard from "./_dashboards/SalesDashboard";
 import WeatherBanner from "./_dashboards/WeatherBanner";
+import NewProjectButton from "./NewProjectButton";
 
 export const dynamic = "force-dynamic";
 
@@ -26,11 +27,12 @@ export default async function Home() {
   const jobs = (
     <div className="proj-cards">
       {active.length ? (
-        active.slice(0, 6).map((x) => (
+        active.map((x) => (
           <Link key={x.id} href={`/projects/${x.id}`} className="pcard">
             <div className="pc-top">
               <div className="pc-name">{x.name}</div>
             </div>
+            <CompletionBar pct={x.completion} />
           </Link>
         ))
       ) : (
@@ -48,6 +50,7 @@ export default async function Home() {
             <b>{active.length}</b>
             <span>Active projects</span>
           </div>
+          <NewProjectButton />
           <Link className="btn cta" href="/estimate-builder">
             <Plus size={16} weight="bold" />
             New Estimate
@@ -60,6 +63,19 @@ export default async function Home() {
       <div className="sec-h">Active now</div>
       {jobs}
     </section>
+  );
+}
+
+// How far along the work is, set under "Edit details" on the project. Null means nobody has put
+// a number on it yet — show the empty track rather than a misleading 0%.
+function CompletionBar({ pct }: { pct: number | null }) {
+  return (
+    <div className="pc-prog">
+      <div className="pc-prog-track">
+        <div className="pc-prog-fill" style={{ width: `${pct ?? 0}%` }} />
+      </div>
+      <span className="pc-prog-pct">{pct == null ? "—" : `${pct}%`}</span>
+    </div>
   );
 }
 

@@ -300,6 +300,11 @@ small.j{color:var(--muted);font-size:11px}
 .pcard .pc-val{font-family:var(--disp);font-size:29px;font-weight:650;color:var(--ink);line-height:1;letter-spacing:-.6px}
 .pcard .pc-meta{color:var(--muted);font-size:12.5px;margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .pcard .pc-meta .pdot{width:3px;height:3px;border-radius:50%;background:var(--muted);opacity:.5}
+/* percent complete — the office reads jobs by "how far along", not by phase name */
+.pc-prog{display:flex;align-items:center;gap:9px}
+.pc-prog-track{flex:1;height:6px;border-radius:999px;background:var(--line);overflow:hidden}
+.pc-prog-fill{height:100%;border-radius:999px;background:var(--navy);transition:width var(--t)}
+.pc-prog-pct{font-size:12.5px;font-weight:650;color:var(--muted);font-variant-numeric:tabular-nums;min-width:34px;text-align:right}
 .morelink{margin-top:26px;color:var(--muted);font-size:14px}
 .morelink a{color:var(--navy);font-weight:600;cursor:pointer;text-decoration:none}
 .morelink a:hover{text-decoration:underline}
