@@ -1,3 +1,4 @@
+import type { PdfStyles, PdfView, PdfText } from "./types";
 /**
  * Section 3: Finish Selections & Allowance Schedule (Schedule A) + Payment Schedule.
  * The finish schedule is grouped by selection category (cabinetry, counters,
@@ -12,9 +13,9 @@ interface MHPAllowancesPaymentProps {
   finishGroups: FinishGroup[];
   allowanceTotal: number;
   grandTotal: number;
-  s: any;
-  View: any;
-  Text: any;
+  s: PdfStyles;
+  View: PdfView;
+  Text: PdfText;
 }
 
 export function MHPAllowancesPayment({

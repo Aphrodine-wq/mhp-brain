@@ -1,18 +1,19 @@
+import type { PdfStyles, PdfView, PdfText } from "./types";
 /**
  * Section 5: Change Order Log
  * CO status tracking, anticipated common change orders with cost ranges,
  * blank CO form template.
  */
 import type { EstimateChangeOrder } from "./types";
-import { fmtCurrency, fmtCurrencyDec } from "./mhp-styles";
+import { fmtCurrency } from "./mhp-styles";
 
 interface MHPChangeOrdersProps {
   estimateNumber: string;
   grandTotal: number;
   changeOrders: EstimateChangeOrder[];
-  s: any;
-  View: any;
-  Text: any;
+  s: PdfStyles;
+  View: PdfView;
+  Text: PdfText;
 }
 
 /** Common change orders for construction projects */

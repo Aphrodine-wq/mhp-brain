@@ -11,6 +11,30 @@ import { createClient } from "@libsql/client";
 import pg from "pg";
 
 const SRC = process.env.MHP_DB ?? "file:/Users/jameswalton/Projects/mhp-brain/mhp.db";
+
+// SQLite is no longer the working copy — Postgres is. estimates/line_items/unit_costs/lump_costs
+// are still drop-and-reloaded below, so running this against a stale mhp.db silently replaces the
+// live catalog and every estimate with whatever that file happens to hold. The duplicate-estimate
+// removal and catalog rebuild done directly in Postgres (scripts/dedupe-and-rebuild-catalog.mjs)
+// would be undone. Require an explicit acknowledgement rather than making that a one-typo mistake.
+if (!process.argv.includes("--i-know-sqlite-is-the-source-of-truth")) {
+  console.error(`
+REFUSING TO RUN.
+
+This reloads estimates, line_items, unit_costs and lump_costs into Postgres from:
+  ${SRC}
+
+Postgres is the source of truth for those tables now. Running this would discard the
+deduplicated estimates and the rebuilt cost catalog.
+
+If mhp.db really is current and you want it to win, re-run with:
+  node --env-file=.env.local scripts/sync_to_pg.mjs --i-know-sqlite-is-the-source-of-truth
+
+Back up first:  node --env-file=.env.local scripts/backup-pg.mjs
+`);
+  process.exit(1);
+}
+
 const src = createClient({ url: SRC });
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 

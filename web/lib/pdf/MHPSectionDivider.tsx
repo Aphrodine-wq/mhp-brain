@@ -1,3 +1,4 @@
+import type { PdfStyles, PdfView, PdfText, PdfImage } from "./types";
 /**
  * MHP Section Divider Page - full-page centered section title.
  * Matches the template: MHP logo centered, large cyan title, subtitle, section number.
@@ -8,10 +9,10 @@ interface MHPSectionDividerProps {
   title: string;
   subtitle: string;
   logoSrc: string | null;
-  s: any;
-  View: any;
-  Text: any;
-  Image: any;
+  s: PdfStyles;
+  View: PdfView;
+  Text: PdfText;
+  Image: PdfImage;
 }
 
 export function MHPSectionDivider({

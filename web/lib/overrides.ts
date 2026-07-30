@@ -16,6 +16,10 @@ const ALLOWED: Record<EntityType, Record<string, Set<string> | null>> = {
   estimate: { project_id: null },
 };
 
+// Project override fields that also exist as real columns on `projects` and must be kept in sync
+// (see writeOverride). Hardcoded, never taken from a request — this set is interpolated into SQL.
+const PROJECT_BASE_COLUMNS: ReadonlySet<string> = new Set(["status", "market", "type"]);
+
 export type OverrideMap = Map<string, Record<string, string | null>>;
 
 export async function loadOverrides(entityType: EntityType): Promise<OverrideMap> {
@@ -71,6 +75,20 @@ export async function writeOverride(opts: {
             VALUES(?,?,?,?,?,?,?,?,?)`,
       args: [now, actor, entityType, entityId, opts.label ?? null, field, oldVal, value, opts.action ?? "set"],
     });
+    // Mirror project corrections onto the base column, in the same transaction.
+    //
+    // The overlay alone is not enough. projectsList() applies it, but CeoDashboard, SalesDashboard
+    // and liveData() (which feeds alerts and the live-jobs panel) all filter
+    // `WHERE status IN (...)` straight off projects.status. Nothing else in the codebase ever
+    // wrote that column, so changing a status in the UI moved the dropdown and the projects page
+    // while the CEO dashboard, the sales pipeline and the alerts kept showing the old value.
+    // The column stays pipeline-owned for import purposes; this just keeps the two in step.
+    if (entityType === "project" && PROJECT_BASE_COLUMNS.has(field)) {
+      await tx.execute({
+        sql: `UPDATE projects SET ${field} = ? WHERE id = ?`, // field is allowlisted above
+        args: [value, entityId],
+      });
+    }
     await tx.commit();
   } catch (e) {
     await tx.rollback();

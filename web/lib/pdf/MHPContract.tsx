@@ -1,3 +1,4 @@
+import type { PdfStyles, PdfView, PdfText } from "./types";
 /**
  * Section 4: Construction Contract.
  * Renders MHP's canonical contract — buildContractArticles() from lib/documents, the
@@ -13,9 +14,9 @@ interface MHPContractProps {
   client: Client | null;
   allowanceTotal: number;
   projectDesc: string;
-  s: any;
-  View: any;
-  Text: any;
+  s: PdfStyles;
+  View: PdfView;
+  Text: PdfText;
 }
 
 export function MHPContract({

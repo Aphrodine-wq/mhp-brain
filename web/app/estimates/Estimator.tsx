@@ -90,7 +90,7 @@ const divNum = (d: string) => {
 export default function Estimator({
   catalog,
   initialClientName = "",
-  realization = null,
+  realization: _realization = null,
 }: {
   catalog: CatalogRow[];
   initialDesc?: string;

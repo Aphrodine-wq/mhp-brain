@@ -118,3 +118,26 @@ export interface EstimateChangeOrder {
   signed_at: string | null;
   created_at: string;
 }
+
+// ---------------------------------------------------------------------------
+// Injected react-pdf primitives
+// ---------------------------------------------------------------------------
+// The PDF components never import @react-pdf/renderer for VALUES — it is ~1.4MB and is lazy-
+// loaded at the call site (EstimatePDF.tsx), which passes View/Text/Image and the built
+// stylesheet down as props. These props were all `any`, so every PDF component's props were
+// unchecked.
+//
+// `import type` is erased at compile time, so taking the types straight from the package costs
+// nothing at runtime and keeps the lazy-load intact. Hand-rolled structural equivalents were the
+// first attempt and did not work: react-pdf's own `render` callback takes
+// { pageNumber, subPageNumber }, so anything close-but-not-exact fails to accept the real
+// components.
+import type { View as RpView, Text as RpText, Image as RpImage } from "@react-pdf/renderer";
+
+export type PdfView = typeof RpView;
+export type PdfText = typeof RpText;
+export type PdfImage = typeof RpImage;
+
+/** The stylesheet built by createMHPStyles(), keyed by the names it defines.
+ *  react-pdf's own Styles: { [key: string]: Style } — a single Style per key, never an array. */
+export type PdfStyles = Parameters<typeof import("@react-pdf/renderer").StyleSheet.create>[0];

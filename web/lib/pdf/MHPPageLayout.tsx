@@ -1,3 +1,4 @@
+import type { PdfStyles, PdfView, PdfText, PdfImage } from "./types";
 /**
  * MHP Page Layout - shared header/footer wrapper for every page.
  *
@@ -11,10 +12,10 @@ interface MHPPageHeaderProps {
   estimateNumber: string;
   projectDesc: string;
   logoSrc: string | null;
-  s: any;
-  View: any;
-  Text: any;
-  Image: any;
+  s: PdfStyles;
+  View: PdfView;
+  Text: PdfText;
+  Image: PdfImage;
 }
 
 export function MHPPageHeader({
@@ -43,9 +44,9 @@ export function MHPPageHeader({
 
 interface MHPPageFooterProps {
   estimateNumber: string;
-  s: any;
-  View: any;
-  Text: any;
+  s: PdfStyles;
+  View: PdfView;
+  Text: PdfText;
 }
 
 export function MHPPageFooter({ estimateNumber, s, View, Text }: MHPPageFooterProps) {

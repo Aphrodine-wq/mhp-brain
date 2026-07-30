@@ -7,7 +7,6 @@ vi.mock("@/lib/db", () => ({
 import { writeOverride, OverrideError, subKey } from "@/lib/overrides";
 import { db } from "@/lib/db";
 
-const execute = db.execute as ReturnType<typeof vi.fn>;
 const transaction = db.transaction as ReturnType<typeof vi.fn>;
 
 // A fresh fake transaction per test. execute() returns no prior value by default;
@@ -87,10 +86,17 @@ describe("writeOverride — happy path & audit", () => {
     });
 
     expect(transaction).toHaveBeenCalledWith("write");
-    // 3 statements: read old, upsert override, insert audit
-    expect(tx.execute).toHaveBeenCalledTimes(3);
+    // 4 statements: read old, upsert override, insert audit, mirror onto projects.status
+    expect(tx.execute).toHaveBeenCalledTimes(4);
     expect(tx.commit).toHaveBeenCalledOnce();
     expect(tx.rollback).not.toHaveBeenCalled();
+
+    // The overlay alone left CeoDashboard / SalesDashboard / liveData() reading a stale
+    // projects.status, since they filter on the column rather than applying the overlay.
+    const mirror = tx.execute.mock.calls.find((c) => /UPDATE projects SET/i.test(c[0].sql));
+    expect(mirror).toBeTruthy();
+    expect(mirror![0].sql).toMatch(/SET status = \?/);
+    expect(mirror![0].args).toEqual(["Active", "p1"]);
 
     const auditCall = tx.execute.mock.calls.find((c) => /INSERT INTO audit_log/i.test(c[0].sql));
     expect(auditCall).toBeTruthy();
@@ -144,5 +150,34 @@ describe("writeOverride — happy path & audit", () => {
 describe("subKey", () => {
   it("normalizes a sub name the same way canon does", () => {
     expect(subKey("  Joe's   Plumbing ")).toBe("joe's plumbing");
+  });
+});
+
+describe("writeOverride — base-column mirroring", () => {
+  it("mirrors market and type onto projects too", async () => {
+    for (const field of ["market", "type"] as const) {
+      const tx = fakeTx("old");
+      transaction.mockResolvedValue(tx);
+      await writeOverride({ entityType: "project", entityId: "p1", field, value: "X", actor: "Boss" });
+      const mirror = tx.execute.mock.calls.find((c) => /UPDATE projects SET/i.test(c[0].sql));
+      expect(mirror, `${field} should mirror`).toBeTruthy();
+      expect(mirror![0].args).toEqual(["X", "p1"]);
+    }
+  });
+
+  it("does NOT touch projects for non-project entities", async () => {
+    const tx = fakeTx("old");
+    transaction.mockResolvedValue(tx);
+    await writeOverride({ entityType: "sub", entityId: "bobby-ray", field: "phone", value: "6625550100", actor: "Boss" });
+    expect(tx.execute.mock.calls.find((c) => /UPDATE projects SET/i.test(c[0].sql))).toBeUndefined();
+    expect(tx.execute).toHaveBeenCalledTimes(3);
+  });
+
+  it("does NOT invent a column for a project field that has none", async () => {
+    const tx = fakeTx("old");
+    transaction.mockResolvedValue(tx);
+    // live_flag lives only in the overrides table — there is no projects.dismissed
+    await writeOverride({ entityType: "live_flag", entityId: "p1:x", field: "dismissed", value: "true", actor: "Boss" });
+    expect(tx.execute.mock.calls.find((c) => /UPDATE projects SET/i.test(c[0].sql))).toBeUndefined();
   });
 });

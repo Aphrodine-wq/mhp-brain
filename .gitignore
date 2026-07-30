@@ -22,3 +22,4 @@ qb_data/
 
 # playwright-cli session artifacts (snapshots/console logs)
 .playwright-cli/
+.env*

@@ -1,3 +1,4 @@
+import type { PdfStyles, PdfView, PdfText, PdfImage } from "./types";
 /**
  * Section 1: Cover Page
  * MHP logo, "Construction Estimate Package", project title, estimate #, date, total, TOC.
@@ -12,10 +13,10 @@ interface MHPCoverPageProps {
   lineItemCount: number;
   divisionCount: number;
   logoSrc: string | null;
-  s: any;
-  View: any;
-  Text: any;
-  Image: any;
+  s: PdfStyles;
+  View: PdfView;
+  Text: PdfText;
+  Image: PdfImage;
 }
 
 export function MHPCoverPage({
@@ -23,7 +24,7 @@ export function MHPCoverPage({
   projectDesc,
   estimateDate,
   lineItemCount,
-  divisionCount,
+  divisionCount: _divisionCount,
   logoSrc,
   s,
   View,

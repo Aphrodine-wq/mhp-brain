@@ -108,16 +108,25 @@ def load_closed_jobs(con):
             FROM actuals WHERE closing_total > 0 GROUP BY project_id
         ) act ON act.project_id = p.id
         JOIN (
-            SELECT e.project_id, e.sum_sov_total AS bid, e.est_date
-            FROM estimates e
-            JOIN (
-                SELECT project_id, MAX(sum_sov_total) AS mx
-                FROM estimates
-                WHERE sum_sov_total > 0 AND parse_confidence = 'CLEAN'
-                GROUP BY project_id
-            ) m ON m.project_id = e.project_id AND m.mx = e.sum_sov_total
-            WHERE e.parse_confidence = 'CLEAN'
-            GROUP BY e.project_id
+            -- The FINAL bid that went out, not the biggest revision. Same rule as
+            -- projectValue() in web/lib/queries.ts and projectMargin() in web/lib/margin.ts:
+            -- latest est_date wins, id breaks the tie deterministically.
+            --
+            -- This used to take MAX(sum_sov_total). Early bids run high and get cut (DEDUP.md
+            -- says exactly this about the canonical pick), so the realization factor was
+            -- measuring actual cost against a bid the app never displays. On Jooste that was
+            -- $413,129.65 instead of $383,036.61 — a $30k gap feeding the portfolio factor that
+            -- scales every new estimate.
+            SELECT project_id, bid, est_date FROM (
+                SELECT e.project_id, e.sum_sov_total AS bid, e.est_date,
+                       ROW_NUMBER() OVER (
+                           PARTITION BY e.project_id
+                           ORDER BY (e.est_date IS NULL OR e.est_date = '') ASC,
+                                    e.est_date DESC, e.id DESC
+                       ) AS rn
+                FROM estimates e
+                WHERE e.sum_sov_total > 0 AND e.parse_confidence = 'CLEAN'
+            ) ranked WHERE rn = 1
         ) b ON b.project_id = p.id
     """).fetchall()
 

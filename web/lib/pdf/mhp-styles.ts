@@ -146,7 +146,9 @@ export function groupByDivision(lineItems: EstimateLineItem[]): DivisionGroup[] 
 /**
  * Creates the shared MHP stylesheet for the entire PDF document.
  */
-export function createMHPStyles(StyleSheet: { create: (styles: Record<string, any>) => any }) {
+import type { PdfStyles } from "./types";
+
+export function createMHPStyles(StyleSheet: { create: (styles: PdfStyles) => PdfStyles }): PdfStyles {
   return StyleSheet.create({
     /* ── Page ── */
     page: {

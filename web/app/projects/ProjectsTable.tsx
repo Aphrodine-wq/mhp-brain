@@ -15,6 +15,8 @@ const STATUSES = ["Active", "Aging", "Bid", "Paused", "Complete", "Likely Done",
 
 // Type keywords → group label + door icon. Used two ways: to icon the real type groups,
 // and to infer a group from the project NAME when the import left type blank/"Unclassified".
+/* eslint-disable react/jsx-key -- not a rendered list: this is a lookup table, read via
+   TYPE_RULES.find(...)?.[2], so exactly one of these elements is ever mounted and keys are moot. */
 const TYPE_RULES: [RegExp, string, React.ReactNode][] = [
   [/kitchen/i, "Kitchen", <CookingPot size={18} />],
   [/bath|shower/i, "Bathroom", <Bathtub size={18} />],
@@ -31,6 +33,7 @@ const TYPE_RULES: [RegExp, string, React.ReactNode][] = [
   [/clinic|office|commercial|tenant/i, "Commercial", <Storefront size={18} />],
   [/inquiry|lead/i, "Inquiries", <Question size={18} />],
 ];
+/* eslint-enable react/jsx-key */
 
 function iconFor(label: string): React.ReactNode {
   return TYPE_RULES.find(([re]) => re.test(label))?.[2] ?? <Folder size={18} />;

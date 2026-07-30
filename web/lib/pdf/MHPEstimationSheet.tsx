@@ -1,3 +1,4 @@
+import type { PdfStyles, PdfView, PdfText } from "./types";
 /**
  * Section 2: Project Estimation Sheet
  * DIV-by-DIV line items. Each division gets its own section with a table.
@@ -21,9 +22,9 @@ interface MHPEstimationSheetProps {
   // Descriptions that map to Schedule A (finish selections) — flagged inline so the
   // client can see which estimate lines they get to choose. Membership by description.
   allowanceDescriptions?: Set<string>;
-  s: any;
-  View: any;
-  Text: any;
+  s: PdfStyles;
+  View: PdfView;
+  Text: PdfText;
 }
 
 export function MHPEstimationSheet({

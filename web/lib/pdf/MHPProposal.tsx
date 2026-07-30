@@ -1,3 +1,4 @@
+import type { PdfStyles, PdfView, PdfText } from "./types";
 /**
  * Section 1: Project Proposal Estimate
  * Company info, objective/scope narrative, construction divisions, exclusions,
@@ -18,9 +19,9 @@ interface MHPProposalProps {
   projectDesc: string;
   estimateDate: string;
   divisions: DivisionGroup[];
-  s: any;
-  View: any;
-  Text: any;
+  s: PdfStyles;
+  View: PdfView;
+  Text: PdfText;
 }
 
 export function MHPProposal({
