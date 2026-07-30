@@ -56,6 +56,17 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
       <Milestones phase={ops?.current_phase ?? null} />
 
+      {/* Sections first, then the numbers. Navigation is what people come to this page to do;
+          the money reads as a summary under it rather than a wall to scroll past. */}
+      <div className="tile-grid">
+        {tiles.map((t) => (
+          <Link key={t.href} href={t.href} className="tile">
+            <span className="tile-icon">{t.icon}</span>
+            <span className="tile-name">{t.name}</span>
+          </Link>
+        ))}
+      </div>
+
       <div className="stat-row">
         <div className="metric"><div className="v sm">{proj.value ? money(proj.value) : "—"}</div><div className="k">Current bid value</div></div>
         <div className="metric"><div className="v sm">{margin?.marginDollars != null ? money(margin.marginDollars) : "—"}</div><div className="k">Est. margin · {pct(margin?.marginPct ?? null)}</div></div>
@@ -64,15 +75,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           <div className="v sm">{ops?.completion_pct == null ? "—" : `${ops.completion_pct}%`}</div>
           <div className="k">Work complete</div>
         </div>
-      </div>
-
-      <div className="tile-grid">
-        {tiles.map((t) => (
-          <Link key={t.href} href={t.href} className="tile">
-            <span className="tile-icon">{t.icon}</span>
-            <span className="tile-name">{t.name}</span>
-          </Link>
-        ))}
       </div>
     </section>
   );

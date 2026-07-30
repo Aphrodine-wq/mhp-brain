@@ -27,12 +27,19 @@ function pyRound(x: number): number {
   return floor % 2 === 0 ? floor : floor + 1;
 }
 
-type Est = { sov: number | null; date: string; id: number };
+type Est = { sov: number | null; date: string; id: string };
 
 // app.py project_value: current bid = latest-dated estimate with non-zero total (not biggest revision).
 // est_date is filename-derived and can collide/misdate, so id breaks ties deterministically —
 // the same estimate always wins instead of depending on SQL row order.
-function projectValue(ests: Est[]): number {
+//
+// The id is a TEXT slug ("rdb-working-folder-nmhp-vet-...-xlsx"), so it compares as a string. It
+// used to be coerced with Number(), which made every id NaN and every tie `NaN > NaN` — false. The
+// reduce then silently kept whichever row Postgres happened to return first, so a project with
+// several same-dated revisions showed an arbitrary one. On the vet clinic that meant the bid tile
+// read $255,777 (a cost-plus side estimate) while the margin tile, which orders by `id DESC` in
+// SQL, was computed from the $1,498,480 bid right next to it. Same order as margin.ts now.
+export function projectValue(ests: Est[]): number {
   const priced = ests.filter((e) => e.sov && e.sov > 0).map((e) => ({ sov: e.sov as number, d: e.date || "", id: e.id }));
   if (priced.length === 0) return 0;
   const dated = priced.filter((x) => x.d);
@@ -83,7 +90,7 @@ export const projectsList = cache(async function projectsList(): Promise<Project
   for (const e of erows) {
     const pid = String(e.project_id);
     if (!estByProject.has(pid)) estByProject.set(pid, []);
-    estByProject.get(pid)!.push({ sov: e.sum_sov_total as number | null, date: (e.est_date as string | null) ?? "", id: Number(e.id) });
+    estByProject.get(pid)!.push({ sov: e.sum_sov_total as number | null, date: (e.est_date as string | null) ?? "", id: String(e.id) });
   }
 
   const out: ProjectRow[] = prows.map((p) => {
@@ -681,7 +688,7 @@ export async function projectDetail(id: string): Promise<ProjectDetail | null> {
       value: pyRound(projectValue(
         erows
           .filter((e) => e.parse_confidence === "CLEAN")
-          .map((e) => ({ sov: e.sum_sov_total as number | null, date: ((e.est_date as string | null) ?? ""), id: Number(e.id) })),
+          .map((e) => ({ sov: e.sum_sov_total as number | null, date: ((e.est_date as string | null) ?? ""), id: String(e.id) })),
       )),
       estimates: ests,
     };
