@@ -292,7 +292,10 @@ small.j{color:var(--muted);font-size:11px}
 .stat-strip .sk{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px;margin-top:7px}
 .sec-h{font-family:var(--disp);font-size:15px;font-weight:600;margin:18px 0 0;letter-spacing:-.2px}
 .proj-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(212px,100%),1fr));gap:10px;margin-top:12px}
-.pcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:9px 10px;cursor:pointer;
+/* column so the progress bar can sit on the floor of the card no matter how long the name wraps —
+   the bars then line up across the row instead of stair-stepping. */
+.pcard{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);
+  border-radius:var(--r-lg);padding:9px 10px;cursor:pointer;
   box-shadow:var(--shadow-sm);transition:border-color var(--t),box-shadow var(--t),transform var(--t)}
 .pcard:hover{border-color:#c2cede;box-shadow:var(--shadow-lg);transform:translateY(-2px)}
 .pcard .pc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:9px}
@@ -301,11 +304,11 @@ small.j{color:var(--muted);font-size:11px}
 .pcard .pc-meta{color:var(--muted);font-size:12.5px;margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .pcard .pc-meta .pdot{width:3px;height:3px;border-radius:50%;background:var(--muted);opacity:.5}
 /* percent complete — the office reads jobs by "how far along", not by phase name */
-.pc-prog{display:flex;align-items:center;gap:7px}
+.pc-prog{display:flex;align-items:center;gap:7px;margin-top:8px}
 .pc-prog-track{flex:1;height:4px;border-radius:999px;background:var(--line);overflow:hidden}
 .pc-prog-fill{height:100%;border-radius:999px;background:var(--navy);transition:width var(--t)}
 .pc-prog-pct{font-size:11px;font-weight:650;color:var(--muted);font-variant-numeric:tabular-nums;min-width:29px;text-align:right}
-.pc-open{display:block;color:inherit;text-decoration:none}
+.pc-open{display:block;color:inherit;text-decoration:none;flex:1}
 /* outbound chips — where the job also lives (Trello board, QuickBooks customer) */
 .pc-links{display:flex;gap:5px;margin-top:8px;padding-top:7px;border-top:1px solid var(--line)}
 .pc-link{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:650;letter-spacing:.1px;
@@ -322,11 +325,12 @@ small.j{color:var(--muted);font-size:11px}
 .banner{background:#eef3fb;border:1px solid #d6e2f4;border-radius:var(--r-lg);padding:14px 18px;margin:18px 0 6px;
   font-size:13.5px;color:var(--navy);display:flex;gap:10px;align-items:center}
 .banner b{color:var(--navy)}
-/* dashboard header stat chip — sits beside the New Estimate CTA */
-.stat-chip{display:flex;align-items:baseline;gap:8px;background:var(--navy);color:#fff;
-  border-radius:999px;padding:10px 18px;box-shadow:0 2px 8px rgba(11,61,145,.28)}
-.stat-chip b{font-family:var(--disp);font-size:18px;font-weight:700;letter-spacing:-.3px}
-.stat-chip span{font-size:12px;font-weight:600;color:rgba(255,255,255,.75)}
+/* dashboard header stat count — sits beside the New Estimate CTA. Deliberately unstyled: it is a
+   readout, not an action, and a navy pill competed with the two real buttons next to it. */
+.stat-chip{display:flex;align-items:baseline;gap:7px;background:none;color:var(--ink);
+  border:0;border-radius:0;padding:0 4px;box-shadow:none}
+.stat-chip b{font-family:var(--disp);font-size:17px;font-weight:700;letter-spacing:-.3px;color:var(--ink)}
+.stat-chip span{font-size:12px;font-weight:600;color:var(--muted)}
 /* Google Business Profile panel on the dashboard */
 .gmb-panel{margin:16px 0 4px;border:1px solid var(--line);border-radius:var(--r-lg);
   box-shadow:var(--shadow-sm);background:var(--card);padding:18px 20px}
@@ -569,19 +573,18 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .ops-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:24px}
 .ops-col{display:flex;flex-direction:column;gap:22px;min-width:0}
 @media(max-width:900px){.ops-grid{grid-template-columns:1fr}}
-/* project milestones — horizontal phase stepper */
-.mstones{display:flex;align-items:flex-start;margin:28px 0 4px;max-width:720px}
-.mstone{flex:1;position:relative;text-align:center;min-width:0}
-.mstone::before{content:'';position:absolute;top:7px;left:-50%;width:100%;height:2px;background:#e4e7ec}
-.mstone:first-child::before{display:none}
-.mstone-dot{width:14px;height:14px;border-radius:50%;background:#fff;margin:0 auto;position:relative;z-index:1;
-  box-shadow:0 0 0 2px #d5dae1;transition:transform var(--t)}
-.mstone.done::before{background:var(--navy)}
-.mstone.done .mstone-dot{background:var(--navy);box-shadow:0 0 0 2px var(--navy)}
-.mstone.now .mstone-dot{transform:scale(1.3)}
-.mstone-label{font-size:11px;font-weight:600;color:var(--muted);margin-top:9px;text-transform:capitalize;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mstone.now .mstone-label{color:var(--navy)}
+/* project milestones — segmented phase track, directly under the project name.
+   Segments instead of dots-on-a-line: the filled run reads as "how far in" at a glance, and the
+   current stage is a labelled navy pill rather than a slightly bigger dot. */
+.mtrack{display:flex;gap:4px;margin:12px 0 2px;max-width:640px}
+.mstep{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.mstep-bar{display:block;height:4px;border-radius:999px;background:#e4e7ec;transition:background var(--t)}
+.mstep-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:capitalize;
+  letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mstep.done .mstep-bar{background:#9fb6d9}
+.mstep.done .mstep-label{color:var(--muted)}
+.mstep.now .mstep-bar{background:var(--navy)}
+.mstep.now .mstep-label{color:var(--navy);font-weight:700}
 /* section tiles — one row, scrolls sideways on narrow screens */
 .tile-grid{display:flex;gap:7px;margin-top:16px}
 .tile{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;background:var(--card);border:1px solid var(--line);
@@ -823,7 +826,7 @@ body.compact .prow{padding:9px 16px}
   .stat-grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
 
   /* milestone labels tighten for narrow screens */
-  .mstone-label{font-size:10px}
+  .mstep-label{font-size:9px}
 
   /* file picker never overflows its card */
   .upload input[type=file]{max-width:100%}

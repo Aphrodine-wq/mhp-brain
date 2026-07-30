@@ -36,9 +36,9 @@ export default async function Home() {
               <div className="pc-top">
                 <div className="pc-name">{x.name}</div>
               </div>
-              <CompletionBar pct={x.completion} />
             </Link>
             <ProjectLinks trello={x.trelloUrl} quickbooks={x.quickbooksUrl} />
+            <CompletionBar pct={x.completion} />
           </div>
         ))
       ) : (

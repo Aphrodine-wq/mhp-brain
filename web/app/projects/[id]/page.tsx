@@ -54,6 +54,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         )}
       </div>
 
+      <Milestones phase={ops?.current_phase ?? null} />
+
       <div className="stat-row">
         <div className="metric"><div className="v sm">{proj.value ? money(proj.value) : "—"}</div><div className="k">Current bid value</div></div>
         <div className="metric"><div className="v sm">{margin?.marginDollars != null ? money(margin.marginDollars) : "—"}</div><div className="k">Est. margin · {pct(margin?.marginPct ?? null)}</div></div>
@@ -63,8 +65,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           <div className="k">Work complete</div>
         </div>
       </div>
-
-      <Milestones phase={ops?.current_phase ?? null} />
 
       <div className="tile-grid">
         {tiles.map((t) => (
@@ -78,18 +78,26 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   );
 }
 
-// Project progress as milestones — driven by the phase set under "Edit details".
+// Project progress as milestones — driven by the phase set under "Edit details". Sits directly
+// under the project name: it is the first thing anyone wants off this page.
 // Nothing set yet: shows the track with no step reached, so the crew knows to set it.
+//
+// Drawn as connected segments rather than the old dots-on-a-line. At a glance the filled run
+// reads as "how far in", and the current stage is a labelled navy pill instead of a slightly
+// larger dot you had to hunt for.
 const MILESTONES = ["lead", "quoted", "scheduled", "in_progress", "complete"] as const;
 
 function Milestones({ phase }: { phase: string | null }) {
   const reached = phase ? MILESTONES.indexOf(phase as (typeof MILESTONES)[number]) : -1;
   return (
-    <div className="mstones">
+    <div className="mtrack">
       {MILESTONES.map((m, i) => (
-        <div key={m} className={`mstone${i <= reached ? " done" : ""}${i === reached ? " now" : ""}`}>
-          <div className="mstone-dot" />
-          <div className="mstone-label">{m.replace("_", " ")}</div>
+        <div
+          key={m}
+          className={`mstep${i < reached ? " done" : ""}${i === reached ? " now" : ""}`}
+        >
+          <span className="mstep-bar" />
+          <span className="mstep-label">{m.replace("_", " ")}</span>
         </div>
       ))}
     </div>
