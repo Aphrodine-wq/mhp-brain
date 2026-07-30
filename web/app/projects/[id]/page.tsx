@@ -72,17 +72,70 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         <OutboundTile url={ops?.quickbooks_url ?? null} label="QuickBooks" mark={<QuickBooksMark size={18} />} />
       </div>
 
-      <div className="stat-row">
-        <div className="metric"><div className="v sm">{proj.value ? money(proj.value) : "—"}</div><div className="k">Current bid value</div></div>
-        <div className="metric"><div className="v sm">{margin?.marginDollars != null ? money(margin.marginDollars) : "—"}</div><div className="k">Est. margin · {pct(margin?.marginPct ?? null)}</div></div>
-        <div className="metric"><div className="v sm">{margin ? money(margin.collected) : "—"}</div><div className="k">Collected · {pct(margin?.collectedPct ?? null)}</div></div>
-        <div className="metric">
-          <div className="v sm">{ops?.completion_pct == null ? "—" : `${ops.completion_pct}%`}</div>
-          <div className="k">Work complete</div>
+      {/* Four bare numbers in identical boxes made you do the arithmetic yourself. The money now
+          reads left to right as one sentence — what the job is worth, what is left after cost,
+          what has actually come in — with the two ratios drawn as bars instead of parenthetical
+          percentages. Work complete sits apart on the right: it is the only figure here that is
+          someone's judgement rather than a number the books produced. */}
+      <div className="jstats">
+        <div className="jstat">
+          <div className="jstat-k">Current bid value</div>
+          <div className="jstat-v">{proj.value ? money(proj.value) : "—"}</div>
+          <div className="jstat-sub">
+            {margin?.estimatedCost != null ? `${money(margin.estimatedCost)} est. cost` : "no clean estimate"}
+          </div>
+        </div>
+
+        <div className="jstat">
+          <div className="jstat-k">Est. margin</div>
+          <div className="jstat-v">{margin?.marginDollars != null ? money(margin.marginDollars) : "—"}</div>
+          <Meter value={margin?.marginPct ?? null} tone={marginTone(margin?.marginPct ?? null)} />
+          <div className="jstat-sub">{pct(margin?.marginPct ?? null)} of the bid</div>
+        </div>
+
+        <div className="jstat">
+          <div className="jstat-k">Collected</div>
+          <div className="jstat-v">{margin ? money(margin.collected) : "—"}</div>
+          <Meter value={margin?.collectedPct ?? null} tone="navy" />
+          <div className="jstat-sub">
+            {margin && margin.collected > 0 && proj.value
+              ? `${money(Math.max(0, proj.value - margin.collected))} outstanding`
+              : "nothing invoiced yet"}
+          </div>
+        </div>
+
+        <div className="jstat jstat-done">
+          <div className="jstat-k">Work complete</div>
+          <div className="jstat-v">{ops?.completion_pct == null ? "—" : `${ops.completion_pct}%`}</div>
+          <Meter value={ops?.completion_pct == null ? null : ops.completion_pct / 100} tone="green" />
+          <div className="jstat-sub">
+            {ops?.completion_pct == null ? "not set" : ops.current_phase ? ops.current_phase.replace("_", " ") : "phase not set"}
+          </div>
         </div>
       </div>
     </section>
   );
+}
+
+// A ratio as a bar. null renders the empty track rather than a zero-width fill, so "we don't
+// know" and "none of it" stay visually distinct.
+function Meter({ value, tone }: { value: number | null; tone: "navy" | "green" | "amber" | "red" }) {
+  const w = value == null ? 0 : Math.max(0, Math.min(1, value)) * 100;
+  return (
+    <div className={`jmeter ${tone}${value == null ? " empty" : ""}`}>
+      <div className="jmeter-fill" style={{ width: `${w}%` }} />
+    </div>
+  );
+}
+
+// Margin is the one figure here worth colouring: thin margin is the thing that sinks a job.
+// Thresholds are deliberately blunt — under 10% reads red, under 18% amber (MHP's default
+// markup in the estimate builder is 18%), at or above that green.
+function marginTone(p: number | null): "navy" | "green" | "amber" | "red" {
+  if (p == null) return "navy";
+  if (p < 0.1) return "red";
+  if (p < 0.18) return "amber";
+  return "green";
 }
 
 // Trello / QuickBooks as tiles in the section row. Unset renders dimmed and non-clickable rather

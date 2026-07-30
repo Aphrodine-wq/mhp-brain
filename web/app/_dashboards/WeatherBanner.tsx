@@ -53,11 +53,17 @@ export default function WeatherBanner() {
         </div>
       </div>
       <div className="wx-days">
+        {/* Percentages are gone from the face of the card — day and temp is what gets read at a
+            glance. A wet day still tints amber, so a pour-blocking forecast is not lost; the
+            exact chance rides in the tooltip. */}
         {days.slice(1, 6).map((d) => (
-          <div className={`wx-day${d.rain >= 40 ? " wet" : ""}`} key={d.name}>
+          <div
+            className={`wx-day${d.rain >= 40 ? " wet" : ""}`}
+            key={d.name}
+            title={`${d.name}: ${d.temp}°, ${d.rain}% chance of rain — ${d.forecast}`}
+          >
             <div className="wx-day-name">{d.name}</div>
             <div className="wx-day-temp">{d.temp}°</div>
-            <div className="wx-day-rain">{d.rain}%</div>
           </div>
         ))}
       </div>

@@ -408,6 +408,26 @@ small.j{color:var(--muted);font-size:11px}
 .crew-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:10px 11px;
   box-shadow:var(--shadow-sm);transition:border-color var(--t),box-shadow var(--t),transform var(--t)}
 .crew-card:hover{border-color:#c2cede;box-shadow:var(--shadow);transform:translateY(-1px)}
+/* crew card internals — the card is a plain div now so tel:/mailto: links can live inside it
+   without nesting anchors; .crew-open is the part that navigates to the profile. */
+.crew-open{display:block;color:inherit;text-decoration:none}
+.crew-cred{display:inline-flex;align-items:center;gap:4px;margin-top:7px;padding:2px 7px;
+  border-radius:999px;background:#e3f1e4;color:#256b4d;font-size:10px;font-weight:700;letter-spacing:.2px}
+.crew-cred svg{fill:currentColor;flex-shrink:0}
+.crew-contact{display:flex;flex-direction:column;gap:3px;margin-top:9px}
+.crew-line{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);
+  text-decoration:none;transition:color var(--t);min-width:0}
+.crew-line svg{fill:currentColor;flex-shrink:0}
+.crew-line>*:last-child,.crew-line{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+a.crew-line:hover{color:var(--navy)}
+.crew-line.off{opacity:.45}
+.crew-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  margin-top:9px;padding-top:8px;border-top:1px solid var(--line-2)}
+.crew-rate{font-size:11.5px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.crew-missing{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:650;
+  color:#946a18;text-decoration:none;white-space:nowrap}
+.crew-missing svg{fill:currentColor}
+.crew-missing:hover{text-decoration:underline}
 .crew-top{display:flex;align-items:center;gap:10px;margin-bottom:9px}
 .crew-av{width:36px;height:36px;border-radius:50%;background:var(--navy);color:#fff;display:flex;
   align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0;overflow:hidden}
@@ -573,6 +593,26 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .ops-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:24px}
 .ops-col{display:flex;flex-direction:column;gap:22px;min-width:0}
 @media(max-width:900px){.ops-grid{grid-template-columns:1fr}}
+/* project money row — bid -> margin -> collected reads as one sentence, with the ratios drawn
+   rather than written. Work complete is pulled to the right and separated by a rule: it is the
+   only figure on the row that is a human's judgement rather than something the books produced. */
+.jstats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin:16px 0 4px;
+  background:var(--line);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+.jstat{background:var(--card);padding:11px 13px;min-width:0}
+.jstat-k{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.jstat-v{font-family:var(--disp);font-size:21px;font-weight:650;letter-spacing:-.6px;line-height:1.15;
+  margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jstat-sub{font-size:10.5px;color:var(--muted);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jstat-done{background:var(--paper)}
+.jmeter{height:3px;border-radius:999px;background:var(--line);overflow:hidden;margin-top:8px}
+.jmeter-fill{height:100%;border-radius:999px;transition:width var(--t)}
+.jmeter.navy  .jmeter-fill{background:var(--navy)}
+.jmeter.green .jmeter-fill{background:#2f9e44}
+.jmeter.amber .jmeter-fill{background:#d99a2b}
+.jmeter.red   .jmeter-fill{background:#c0392b}
+.jmeter.empty{opacity:.45}
+@media(max-width:820px){.jstats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:460px){.jstats{grid-template-columns:1fr}}
 /* project milestones — segmented phase track, directly under the project name.
    Segments instead of dots-on-a-line: the filled run reads as "how far in" at a glance, and the
    current stage is a labelled navy pill rather than a slightly bigger dot. */
