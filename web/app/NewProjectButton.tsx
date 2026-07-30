@@ -31,6 +31,7 @@ export default function NewProjectButton() {
 
 function NewProjectModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
+  const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [types, setTypes] = useState<string[]>([]);
   const [market, setMarket] = useState("Oxford");
@@ -71,101 +72,119 @@ function NewProjectModal({ onClose }: { onClose: () => void }) {
     }
   }
 
+  // Two steps with the same wiz-dots / label / modal-actions shape as Add Sub (SubsTable.tsx) —
+  // one long scrolling form was the odd one out among this app's modals.
   return (
     <div className="modal-scrim" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <div style={{ animation: "rise .22s ease both" }}>
-          <h3>New project</h3>
+        <div className="wiz-dots" style={{ marginBottom: 14 }}>
+          <i className={step >= 1 ? "on" : ""} /><i className={step >= 2 ? "on" : ""} />
+        </div>
 
-          <label>
-            Project name
-            <input
-              value={name}
-              autoFocus
-              placeholder="Lou Johnson - Bathroom Remodel"
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && name.trim() && !saving) save(); }}
-            />
-          </label>
-
-          <label>Work type</label>
-          <div className="trade-chips">
-            {TYPE_OPTIONS.map((t) => (
-              <button
-                key={t}
-                type="button"
-                className={`trade-chip${types.includes(t) ? " active" : ""}`}
-                onClick={() => setTypes((cur) => (cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t]))}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-
-          <div className="setrow">
-            <div className="sl">Market</div>
-            <select value={market} onChange={(e) => setMarket(e.target.value)}>
-              {MARKETS.map((m) => <option key={m} value={m}>{m}</option>)}
-            </select>
-          </div>
-
-          <div className="setrow">
-            <div className="sl">Status</div>
-            <select value={status} onChange={(e) => setStatus(e.target.value)}>
-              {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
-
-          <div className="setrow">
-            <div className="sl">Complete</div>
-            <div className="actions">
+        {step === 1 && (
+          <div style={{ animation: "rise .22s ease both" }}>
+            <h3>New project — what is it?</h3>
+            <label>
+              Project name
               <input
-                className="mk"
+                value={name}
+                autoFocus
+                placeholder="Lou Johnson - Bathroom Remodel"
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && name.trim()) setStep(2); }}
+              />
+            </label>
+
+            <label>Work type</label>
+            <div className="trade-chips">
+              {TYPE_OPTIONS.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  className={`trade-chip${types.includes(t) ? " active" : ""}`}
+                  onClick={() => setTypes((cur) => (cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t]))}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+
+            <div className="modal-row">
+              <label>
+                Market
+                <select value={market} onChange={(e) => setMarket(e.target.value)}>
+                  {MARKETS.map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </label>
+              <label>
+                Status
+                <select value={status} onChange={(e) => setStatus(e.target.value)}>
+                  {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </label>
+            </div>
+
+            <div className="modal-actions">
+              <button className="btn ghost" onClick={onClose}>Cancel</button>
+              <button className="btn" disabled={!name.trim()} onClick={() => setStep(2)}>Next →</button>
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div style={{ animation: "rise .22s ease both" }}>
+            <h3>Where does it stand?</h3>
+
+            <label>
+              Percent complete
+              <input
                 type="number"
                 min={0}
                 max={100}
                 step={5}
-                style={{ width: 90 }}
-                placeholder="—"
+                autoFocus
+                placeholder="Leave blank if it hasn't started"
                 value={completion}
                 onChange={(e) => setCompletion(e.target.value)}
               />
-              <span className="sd">% — leave blank if it hasn&apos;t started</span>
+            </label>
+
+            <div className="modal-row">
+              <label>
+                Client
+                <input placeholder="Name" value={clientName} onChange={(e) => setClientName(e.target.value)} />
+              </label>
+              <label>
+                Phone
+                <input type="tel" placeholder="(662) 555-0100" value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} />
+              </label>
+            </div>
+
+            <label>
+              Address
+              <input placeholder="Job address" value={address} onChange={(e) => setAddress(e.target.value)} />
+            </label>
+
+            <label>
+              Trello board
+              <input placeholder="https://trello.com/b/… (optional)" value={trelloUrl} onChange={(e) => setTrelloUrl(e.target.value)} />
+            </label>
+
+            <label>
+              QuickBooks
+              <input placeholder="https://app.qbo.intuit.com/… (optional)" value={quickbooksUrl} onChange={(e) => setQuickbooksUrl(e.target.value)} />
+            </label>
+
+            {error && <div className="conn-err">{error}</div>}
+
+            <div className="modal-actions">
+              <button className="btn ghost" onClick={() => setStep(1)}>← Back</button>
+              <button className="btn" disabled={saving} onClick={save}>
+                {saving ? "Creating…" : "Create project"}
+              </button>
             </div>
           </div>
-
-          <div className="setrow">
-            <div className="sl">Client</div>
-            <div className="actions">
-              <input className="mk" placeholder="Name" value={clientName} onChange={(e) => setClientName(e.target.value)} />
-              <input className="mk" placeholder="Phone" type="tel" value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} />
-            </div>
-          </div>
-
-          <div className="setrow">
-            <div className="sl">Address</div>
-            <input className="mk" style={{ width: 320 }} placeholder="Job address" value={address} onChange={(e) => setAddress(e.target.value)} />
-          </div>
-
-          <div className="setrow">
-            <div className="sl">Trello board</div>
-            <input className="mk" style={{ width: 320 }} placeholder="https://trello.com/b/… (optional)" value={trelloUrl} onChange={(e) => setTrelloUrl(e.target.value)} />
-          </div>
-
-          <div className="setrow">
-            <div className="sl">QuickBooks</div>
-            <input className="mk" style={{ width: 320 }} placeholder="https://app.qbo.intuit.com/… (optional)" value={quickbooksUrl} onChange={(e) => setQuickbooksUrl(e.target.value)} />
-          </div>
-
-          {error && <div className="conn-err">{error}</div>}
-
-          <div className="modal-actions">
-            <button className="btn ghost" onClick={onClose}>Cancel</button>
-            <button className="btn" disabled={!name.trim() || saving} onClick={save}>
-              {saving ? "Creating…" : "Create project"}
-            </button>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import CeoDashboard from "./_dashboards/CeoDashboard";
 import SalesDashboard from "./_dashboards/SalesDashboard";
 import WeatherBanner from "./_dashboards/WeatherBanner";
 import NewProjectButton from "./NewProjectButton";
+import { TrelloMark, QuickBooksMark } from "./BrandMarks";
 
 export const dynamic = "force-dynamic";
 
@@ -73,17 +74,31 @@ export default async function Home() {
 
 // Where else the job lives. Nothing renders until a link is set, so cards stay clean for the
 // jobs that don't have a board or a customer record yet.
+// Both buttons always show. An unlinked one renders dimmed and non-clickable rather than being
+// hidden — a missing board is worth seeing on the board itself, and it says where to fix it.
 function ProjectLinks({ trello, quickbooks }: { trello: string | null; quickbooks: string | null }) {
-  if (!trello && !quickbooks) return null;
   return (
     <div className="pc-links">
-      {trello && (
-        <a className="pc-link trello" href={trello} target="_blank" rel="noopener noreferrer">Trello</a>
-      )}
-      {quickbooks && (
-        <a className="pc-link qb" href={quickbooks} target="_blank" rel="noopener noreferrer">QuickBooks</a>
-      )}
+      <LinkChip url={trello} label="Trello" mark={<TrelloMark />} />
+      <LinkChip url={quickbooks} label="QuickBooks" mark={<QuickBooksMark />} />
     </div>
+  );
+}
+
+function LinkChip({ url, label, mark }: { url: string | null; label: string; mark: React.ReactNode }) {
+  if (!url) {
+    return (
+      <span className="pc-link off" title={`No ${label} link yet — add one under Edit details`}>
+        {mark}
+        {label}
+      </span>
+    );
+  }
+  return (
+    <a className="pc-link" href={url} target="_blank" rel="noopener noreferrer" title={`Open in ${label}`}>
+      {mark}
+      {label}
+    </a>
   );
 }
 

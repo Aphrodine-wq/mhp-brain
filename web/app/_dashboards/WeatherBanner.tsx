@@ -8,10 +8,10 @@ type Day = { name: string; temp: number; rain: number; forecast: string };
 // Pick one monochrome icon from today's forecast text — no cartoon suns.
 function wxIcon(forecast: string, rain: number) {
   const f = forecast.toLowerCase();
-  if (rain >= 40 || /rain|shower|storm|drizzle/.test(f)) return <CloudRain size={24} />;
-  if (/cloud|overcast/.test(f)) return /partly|mostly sunny|few/.test(f) ? <CloudSun size={24} /> : <Cloud size={24} />;
-  if (/sun|clear|fair/.test(f)) return <Sun size={24} />;
-  return <CloudSun size={24} />;
+  if (rain >= 40 || /rain|shower|storm|drizzle/.test(f)) return <CloudRain size={18} />;
+  if (/cloud|overcast/.test(f)) return /partly|mostly sunny|few/.test(f) ? <CloudSun size={18} /> : <Cloud size={18} />;
+  if (/sun|clear|fair/.test(f)) return <Sun size={18} />;
+  return <CloudSun size={18} />;
 }
 
 // Top-of-dashboard weather card. Auto-loads the NWS forecast (keyless, /api/weather) on mount and
