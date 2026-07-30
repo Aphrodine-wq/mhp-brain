@@ -74,9 +74,12 @@ export function providerConfig(id: ProviderId): ProviderConfig {
         extraAuthParams: { access_type: "offline", prompt: "consent" },
       };
     case "microsoft": {
-      // Microsoft Graph — read-only Teams + OneDrive. Tenant can be "common" for multi-tenant or
-      // a specific tenant ID for single-tenant (MHP's own M365). Read MS_TENANT_ID from env,
+      // Microsoft Graph — read-only OneDrive + calendar. Tenant can be "common" for multi-tenant
+      // or a specific tenant ID for single-tenant (MHP's own M365). Read MS_TENANT_ID from env,
       // default to "common" so the consent screen handles it.
+      // The Teams scopes (Chat.Read, ChannelMessage.Read.All, Team.ReadBasic.All,
+      // Channel.ReadBasic.All) were dropped with the Teams sync — asking for chat-history consent
+      // for a feature that no longer exists is a consent screen nobody should have to accept.
       const tenant = process.env.MS_TENANT_ID ?? "common";
       return {
         id,
@@ -85,11 +88,7 @@ export function providerConfig(id: ProviderId): ProviderConfig {
         scopes: [
           "offline_access",           // durable refresh token
           "User.Read",                // basic profile (match to brain users)
-          "Chat.Read",                // 1:1 and group chats
-          "ChannelMessage.Read.All",  // team channel messages
-          "Team.ReadBasic.All",       // list teams
-          "Channel.ReadBasic.All",    // list channels
-          "Files.Read.All",           // files shared in Teams / OneDrive
+          "Files.Read.All",           // OneDrive paperwork
           "Calendars.Read",           // upcoming events — inspections, crew schedule
         ],
         clientId: need("MS_CLIENT_ID"),

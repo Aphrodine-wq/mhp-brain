@@ -27,7 +27,7 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
   const providers: ProviderState[] = [
     { id: "quickbooks", label: "QuickBooks", configured: isConfigured("quickbooks"), connection: conn("quickbooks") },
     { id: "gmail", label: "Gmail (Invoice Capture)", configured: isConfigured("gmail"), connection: conn("gmail") },
-    { id: "microsoft", label: "Microsoft Teams + OneDrive", configured: isConfigured("microsoft"), connection: conn("microsoft") },
+    { id: "microsoft", label: "Microsoft OneDrive", configured: isConfigured("microsoft"), connection: conn("microsoft") },
     { id: "gbp", label: "Google Business Profile", configured: isConfigured("gbp"), connection: conn("gbp") },
   ];
   const reviews = await recentReviews(8).catch(() => []);

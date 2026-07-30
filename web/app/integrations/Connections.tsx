@@ -89,7 +89,7 @@ export default function Connections({
   const DESCRIPTIONS: Record<string, string> = {
     quickbooks: "Real job costs, payments, and margins.",
     gmail: "Invoices captured automatically from a dedicated mailbox.",
-    microsoft: "Teams chats, OneDrive paperwork, and the calendar.",
+    microsoft: "OneDrive paperwork and the calendar.",
     gbp: "Your Google reviews, pulled into the brain.",
   };
 
@@ -173,21 +173,6 @@ export default function Connections({
                 </a>
                 {p.connection && (
                   <>
-                    <button
-                      className="btn ghost sm"
-                      disabled={syncing !== null}
-                      onClick={() =>
-                        runSync("microsoft", async () => {
-                          await fetch("/api/teams/discover");
-                          const data = await (await fetch("/api/teams/sync", { method: "POST" })).json();
-                          if (!data.ok) return "Sync had a problem. Try again.";
-                          const total = data.channels.synced + data.chats.synced;
-                          return `Pulled ${total} message${total !== 1 ? "s" : ""}, linked ${data.matched} to jobs.`;
-                        })
-                      }
-                    >
-                      {syncing === "microsoft" ? "Pulling…" : "Pull Teams"}
-                    </button>
                     <button
                       className="btn ghost sm"
                       disabled={syncing !== null}

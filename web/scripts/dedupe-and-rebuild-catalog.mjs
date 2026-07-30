@@ -63,7 +63,11 @@ try {
   // Snapshot the catalog before touching anything, so the report is a real diff.
   // item_no is part of the key: (canon_desc, unit) is NOT unique — "floor tile labor / sqft"
   // exists under two item numbers — and joining without it cross-joins into invented movements.
-  await c.query(`CREATE TEMP TABLE before_unit AS
+  // ON COMMIT DROP, and dropped up front: Neon pools connections, so a temp table from an earlier
+  // run can still be attached to the backend session this run is handed. Without this the second
+  // invocation dies on "relation before_unit already exists" and rolls the whole rebuild back.
+  await c.query(`DROP TABLE IF EXISTS before_unit`);
+  await c.query(`CREATE TEMP TABLE before_unit ON COMMIT DROP AS
                  SELECT item_no, canon_desc, unit, median_unit_price FROM unit_costs`);
 
   // ---- 1. find duplicates: identical content, not merely identical totals -------------------
