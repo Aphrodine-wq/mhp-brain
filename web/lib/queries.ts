@@ -55,6 +55,9 @@ export interface ProjectRow {
   phase: string;
   /** 0-100, or null when nobody has put a number on it yet (distinct from 0 = not started). */
   completion: number | null;
+  /** Where else this job lives — rendered as outbound chips on the cards. */
+  trelloUrl: string | null;
+  quickbooksUrl: string | null;
 }
 
 // Future-dated activity is always dirty import data (we've seen 2027/2028 rows) — clamp it away
@@ -66,7 +69,9 @@ function clampActivity(la: string | null): string {
 
 export const projectsList = cache(async function projectsList(): Promise<ProjectRow[]> {
   const ov = await loadOverrides("project");
-  const prows = (await db.execute("SELECT id,name,type,status,market,last_activity,current_phase,completion_pct FROM projects")).rows;
+  const prows = (await db.execute(
+    "SELECT id,name,type,status,market,last_activity,current_phase,completion_pct,trello_url,quickbooks_url FROM projects",
+  )).rows;
   const erows = (
     // Project value math: only CLEAN estimates count. FLAGGED (PHASE_ONLY / DUPLICATE_EXPORT)
     // would overstate or double-count a project's value. List/detail views below keep FLAGGED
@@ -98,6 +103,8 @@ export const projectsList = cache(async function projectsList(): Promise<Project
       category: categoryOf(type),
       phase: String(p.current_phase ?? ""),
       completion: p.completion_pct == null ? null : Number(p.completion_pct),
+      trelloUrl: (p.trello_url as string | null) || null,
+      quickbooksUrl: (p.quickbooks_url as string | null) || null,
     };
   });
 

@@ -20,6 +20,8 @@ export interface ProjectOps {
   actual_start: string | null;
   actual_end: string | null;
   completion_pct: number | null;
+  trello_url: string | null;
+  quickbooks_url: string | null;
 }
 
 export default function HeaderEdit({
@@ -36,6 +38,7 @@ export default function HeaderEdit({
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     current_phase: ops?.current_phase ?? "",
     lead_source: ops?.lead_source ?? "",
@@ -47,6 +50,8 @@ export default function HeaderEdit({
     actual_start: ops?.actual_start ?? "",
     actual_end: ops?.actual_end ?? "",
     completion_pct: ops?.completion_pct != null ? String(ops.completion_pct) : "",
+    trello_url: ops?.trello_url ?? "",
+    quickbooks_url: ops?.quickbooks_url ?? "",
   });
 
   async function setStatus(next: string) {
@@ -62,6 +67,7 @@ export default function HeaderEdit({
 
   async function saveDetails() {
     setBusy(true);
+    setError(null);
     try {
       await patch("/api/jobs/details", {
         project_id: projectId,
@@ -75,9 +81,15 @@ export default function HeaderEdit({
         actual_start: form.actual_start || null,
         actual_end: form.actual_end || null,
         completion_pct: form.completion_pct === "" ? null : Number(form.completion_pct),
+        trello_url: form.trello_url || null,
+        quickbooks_url: form.quickbooks_url || null,
       });
       setOpen(false);
       router.refresh();
+    } catch (e) {
+      // A rejected URL or out-of-range percentage used to fail silently here — the panel just
+      // closed and the value was gone. Show what the server said instead.
+      setError(e instanceof Error ? e.message : "Could not save.");
     } finally {
       setBusy(false);
     }
@@ -161,6 +173,17 @@ export default function HeaderEdit({
               <input className="mk" type="date" value={form.actual_end} onChange={set("actual_end")} />
             </div>
           </div>
+          <div className="setrow">
+            <div className="sl">Trello board</div>
+            <input className="mk" style={{ width: 320 }} placeholder="https://trello.com/b/…" value={form.trello_url} onChange={set("trello_url")} />
+          </div>
+          <div className="setrow">
+            <div className="sl">QuickBooks</div>
+            <input className="mk" style={{ width: 320 }} placeholder="https://app.qbo.intuit.com/app/customerdetail?nameId=…" value={form.quickbooks_url} onChange={set("quickbooks_url")} />
+          </div>
+
+          {error && <div className="conn-err">{error}</div>}
+
           <div className="setrow">
             <div className="sd">Changes are logged to the audit trail.</div>
             <button className="btn sm" disabled={busy} onClick={saveDetails}>

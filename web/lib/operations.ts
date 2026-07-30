@@ -74,13 +74,34 @@ export interface ProjectUpdate {
   deposit_amount?: number | null;
   deposit_date?: string | null;
   completion_pct?: number | null;
+  trello_url?: string | null;
+  quickbooks_url?: string | null;
 }
 
 const PROJECT_OPS_FIELDS: ReadonlySet<string> = new Set([
   "lead_source", "lost_reason", "actual_start", "actual_end", "current_phase",
   "client_name", "client_phone", "client_email", "address",
   "contract_value", "deposit_amount", "deposit_date", "completion_pct",
+  "trello_url", "quickbooks_url",
 ]);
+
+// These get rendered as target="_blank" anchors, so anything but http(s) is a stored-XSS vector
+// (javascript: / data:). Reject at the write, not the read — a bad value should never land.
+const LINK_FIELDS = ["trello_url", "quickbooks_url"] as const;
+
+export function normalizeLink(v: unknown, field: string): string | null {
+  if (v == null || String(v).trim() === "") return null;
+  const s = String(v).trim();
+  let u: URL;
+  try {
+    u = new URL(s);
+  } catch {
+    throw new OpsError(`${field} must be a full URL (https://…)`);
+  }
+  if (u.protocol !== "https:" && u.protocol !== "http:") throw new OpsError(`${field} must be http or https`);
+  if (s.length > 500) throw new OpsError(`${field} is too long`);
+  return u.toString();
+}
 
 // completion_pct is the one ops field with a real domain (0-100 integer). auditedUpdate hands
 // values straight to the driver, so an "85%" or a 850 would either blow up as a 500 or trip the
@@ -97,6 +118,9 @@ export function normalizeCompletion(v: unknown): number | null {
 export async function updateProjectOps(projectId: string, updates: ProjectUpdate, actor: string): Promise<void> {
   const clean: Record<string, unknown> = { ...updates };
   if (clean.completion_pct !== undefined) clean.completion_pct = normalizeCompletion(clean.completion_pct);
+  for (const f of LINK_FIELDS) {
+    if (clean[f] !== undefined) clean[f] = normalizeLink(clean[f], f);
+  }
   await auditedUpdate({
     table: "projects", entityType: "project", id: projectId,
     updates: clean, allowed: PROJECT_OPS_FIELDS, actor,
@@ -107,7 +131,8 @@ export async function getProjectOps(projectId: string) {
   const row = (await db.execute({
     sql: `SELECT lead_source, lost_reason, actual_start, actual_end, current_phase,
                  client_name, client_phone, client_email, address,
-                 contract_value, deposit_amount, deposit_date, completion_pct
+                 contract_value, deposit_amount, deposit_date, completion_pct,
+                 trello_url, quickbooks_url
           FROM projects WHERE id = ?`,
     args: [projectId],
   })).rows[0];

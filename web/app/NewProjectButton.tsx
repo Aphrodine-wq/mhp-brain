@@ -39,6 +39,8 @@ function NewProjectModal({ onClose }: { onClose: () => void }) {
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [trelloUrl, setTrelloUrl] = useState("");
+  const [quickbooksUrl, setQuickbooksUrl] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,6 +57,8 @@ function NewProjectModal({ onClose }: { onClose: () => void }) {
         client_name: clientName,
         client_phone: clientPhone,
         address,
+        trello_url: trelloUrl,
+        quickbooks_url: quickbooksUrl,
       });
       onClose();
       router.refresh();
@@ -141,6 +145,16 @@ function NewProjectModal({ onClose }: { onClose: () => void }) {
           <div className="setrow">
             <div className="sl">Address</div>
             <input className="mk" style={{ width: 320 }} placeholder="Job address" value={address} onChange={(e) => setAddress(e.target.value)} />
+          </div>
+
+          <div className="setrow">
+            <div className="sl">Trello board</div>
+            <input className="mk" style={{ width: 320 }} placeholder="https://trello.com/b/… (optional)" value={trelloUrl} onChange={(e) => setTrelloUrl(e.target.value)} />
+          </div>
+
+          <div className="setrow">
+            <div className="sl">QuickBooks</div>
+            <input className="mk" style={{ width: 320 }} placeholder="https://app.qbo.intuit.com/… (optional)" value={quickbooksUrl} onChange={(e) => setQuickbooksUrl(e.target.value)} />
           </div>
 
           {error && <div className="conn-err">{error}</div>}

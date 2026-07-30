@@ -28,12 +28,17 @@ export default async function Home() {
     <div className="proj-cards">
       {active.length ? (
         active.map((x) => (
-          <Link key={x.id} href={`/projects/${x.id}`} className="pcard">
-            <div className="pc-top">
-              <div className="pc-name">{x.name}</div>
-            </div>
-            <CompletionBar pct={x.completion} />
-          </Link>
+          // Not a <Link> wrapping the whole card any more — the Trello/QuickBooks anchors would
+          // be nested inside it, which is invalid HTML and swallows the outbound click.
+          <div key={x.id} className="pcard">
+            <Link href={`/projects/${x.id}`} className="pc-open">
+              <div className="pc-top">
+                <div className="pc-name">{x.name}</div>
+              </div>
+              <CompletionBar pct={x.completion} />
+            </Link>
+            <ProjectLinks trello={x.trelloUrl} quickbooks={x.quickbooksUrl} />
+          </div>
         ))
       ) : (
         <div className="sub">No active jobs right now.</div>
@@ -63,6 +68,22 @@ export default async function Home() {
       <div className="sec-h">Active now</div>
       {jobs}
     </section>
+  );
+}
+
+// Where else the job lives. Nothing renders until a link is set, so cards stay clean for the
+// jobs that don't have a board or a customer record yet.
+function ProjectLinks({ trello, quickbooks }: { trello: string | null; quickbooks: string | null }) {
+  if (!trello && !quickbooks) return null;
+  return (
+    <div className="pc-links">
+      {trello && (
+        <a className="pc-link trello" href={trello} target="_blank" rel="noopener noreferrer">Trello</a>
+      )}
+      {quickbooks && (
+        <a className="pc-link qb" href={quickbooks} target="_blank" rel="noopener noreferrer">QuickBooks</a>
+      )}
+    </div>
   );
 }
 

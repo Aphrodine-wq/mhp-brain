@@ -1,7 +1,7 @@
 import { requireRole, requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { projectsList } from "@/lib/queries";
-import { updateProjectOps, normalizeCompletion, OpsError } from "@/lib/operations";
+import { updateProjectOps, normalizeCompletion, normalizeLink, OpsError } from "@/lib/operations";
 
 export async function GET() {
   if (!(await requireUser())) return Response.json({ error: "unauthorized" }, { status: 401 });
@@ -32,13 +32,17 @@ export async function POST(req: Request) {
   const type: string = String(d.type ?? "").trim() || "Unclassified";
   const market: string = String(d.market ?? "").trim() || "Oxford";
 
-  // Validate before anything is written — a bad percentage should reject the whole request, not
-  // leave a half-made project behind.
+  // Validate before anything is written — a bad percentage or URL should reject the whole
+  // request, not leave a half-made project behind.
   let completion: number | null;
+  let trello: string | null;
+  let quickbooks: string | null;
   try {
     completion = d.completion_pct === "" || d.completion_pct == null ? null : normalizeCompletion(d.completion_pct);
+    trello = normalizeLink(d.trello_url, "trello_url");
+    quickbooks = normalizeLink(d.quickbooks_url, "quickbooks_url");
   } catch (e) {
-    return Response.json({ error: e instanceof OpsError ? e.message : "bad completion_pct" }, { status: 400 });
+    return Response.json({ error: e instanceof OpsError ? e.message : "bad field" }, { status: 400 });
   }
 
   // Bare slug first so hand-made ids stay readable (davis-ross, lou-johnson). Only fall back to a
@@ -75,6 +79,8 @@ export async function POST(req: Request) {
       client_phone: String(d.client_phone ?? "").trim() || undefined,
       address: String(d.address ?? "").trim() || undefined,
       completion_pct: completion ?? undefined,
+      trello_url: trello ?? undefined,
+      quickbooks_url: quickbooks ?? undefined,
     },
     user.name,
   );
