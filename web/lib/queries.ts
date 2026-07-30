@@ -12,9 +12,10 @@ const STATUS_RANK: Record<string, number> = {
   Aging: 1,
   Bid: 2,
   Paused: 3,
-  "Likely Done": 4,
-  Unknown: 5,
-  Dead: 6,
+  Complete: 4,
+  "Likely Done": 5,
+  Unknown: 6,
+  Dead: 7,
 };
 
 // Python's round() is round-half-to-even (banker's). Replicate it so aggregate dollars match

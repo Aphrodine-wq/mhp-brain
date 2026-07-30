@@ -8,6 +8,7 @@ export const BADGE: Record<string, string> = {
   Aging: "aging",
   Bid: "bid",
   Paused: "paused",
+  Complete: "complete",
   "Likely Done": "done",
   Dead: "dead",
   Unknown: "unknown",

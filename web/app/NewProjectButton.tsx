@@ -14,7 +14,7 @@ const TYPE_OPTIONS = [
   "Storage / Commercial", "Commercial (Bank)", "Commercial (Vet Clinic)",
 ];
 const MARKETS = ["Oxford", "Pickwick"];
-const STATUSES = ["Active", "Bid", "Paused", "Aging", "Unknown"];
+const STATUSES = ["Active", "Bid", "Paused", "Aging", "Complete", "Unknown"];
 
 export default function NewProjectButton() {
   const [open, setOpen] = useState(false);

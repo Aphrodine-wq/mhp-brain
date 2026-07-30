@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { post, patch } from "@/lib/client";
 import { BADGE } from "@/lib/format";
 
-const STATUSES = ["Active", "Aging", "Bid", "Paused", "Likely Done", "Dead", "Unknown"];
+const STATUSES = ["Active", "Aging", "Bid", "Paused", "Complete", "Likely Done", "Dead", "Unknown"];
 const PHASES = ["lead", "quoted", "scheduled", "in_progress", "complete", "paid", "warranty"];
 const LEAD_SOURCES = ["referral", "google", "facebook", "repeat", "nextdoor", "yard_sign", "other"];
 

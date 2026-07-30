@@ -11,7 +11,7 @@ import type { ProjectRow } from "@/lib/queries";
 import { money, BADGE } from "@/lib/format";
 import { post } from "@/lib/client";
 
-const STATUSES = ["Active", "Aging", "Bid", "Paused", "Likely Done", "Dead", "Unknown"];
+const STATUSES = ["Active", "Aging", "Bid", "Paused", "Complete", "Likely Done", "Dead", "Unknown"];
 
 // Type keywords → group label + door icon. Used two ways: to icon the real type groups,
 // and to infer a group from the project NAME when the import left type blank/"Unclassified".

@@ -627,6 +627,7 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .badge.aging{background:#fbf0d9;color:#946a18}
 .badge.bid{background:#e3ecfa;color:var(--navy)}
 .badge.paused{background:#ece9e4;color:#6b6457}
+.badge.complete{background:#e3f1e4;color:#256b4d}
 .badge.done{background:#eef0f2;color:#5b6470}
 .badge.dead{background:#efe9e6;color:#8a6a5a}
 .badge.unknown{background:#eef0f2;color:#8a8f96}
