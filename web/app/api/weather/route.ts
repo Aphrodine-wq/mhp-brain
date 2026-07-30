@@ -4,6 +4,9 @@ import { getSetting } from "@/lib/integration-settings";
 
 // GET — 7-day NWS forecast for the configured job-market coordinates (default Oxford, MS).
 // Keyless government API; the schedule-a-pour integration.
+// Forecasts move slowly — cache 30 min at the edge instead of calling weather.gov per load.
+export const revalidate = 1800;
+
 export async function GET() {
   if (!(await requireUser())) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   try {

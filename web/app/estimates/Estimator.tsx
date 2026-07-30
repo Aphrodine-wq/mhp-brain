@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import {
   CookingPot, Bathtub, PaintRoller, SquaresFour, Bed, HouseLine, Garage,
   Buildings, Warehouse, Tree, House, Wall,
@@ -10,8 +11,19 @@ import type { CatalogRow } from "@/lib/queries";
 import { money } from "@/lib/format";
 import { ASSEMBLY_LIST, ASSEMBLY_CATEGORIES } from "@/lib/assemblies";
 import { detailFor, divisionDetailFor, ESTIMATE_SCOPE } from "@/lib/line-detail";
-import ClientPacket, { type ClientInfo } from "./ClientPacket";
+import type { ClientInfo } from "./ClientPacket";
 import type { RealizationFactor } from "@/lib/flywheel-insight";
+
+// The packet pulls in @react-pdf (~1.4MB) — it only downloads when "Client Packet →" opens.
+const ClientPacket = dynamic(() => import("./ClientPacket"), {
+  ssr: false,
+  loading: () => (
+    <div style={{ textAlign: "center", padding: 80 }}>
+      <div className="spin" />
+      <div style={{ fontFamily: "var(--disp)", fontSize: 18, color: "var(--muted)" }}>Preparing your packet…</div>
+    </div>
+  ),
+});
 
 // Category cards — step 0 of the builder. Five doors into the 35 templates.
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {

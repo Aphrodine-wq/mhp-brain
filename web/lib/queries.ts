@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { db } from "./db";
 import { loadCatalog, loadNJobs } from "./catalog";
 import { loadOverrides, subKey } from "./overrides";
@@ -61,7 +62,7 @@ function clampActivity(la: string | null): string {
   return la > new Date().toISOString().slice(0, 7) ? "" : la;
 }
 
-export async function projectsList(): Promise<ProjectRow[]> {
+export const projectsList = cache(async function projectsList(): Promise<ProjectRow[]> {
   const ov = await loadOverrides("project");
   const prows = (await db.execute("SELECT id,name,type,status,market,last_activity,current_phase FROM projects")).rows;
   const erows = (
@@ -99,7 +100,7 @@ export async function projectsList(): Promise<ProjectRow[]> {
 
   out.sort((a, b) => (STATUS_RANK[a.status] ?? 9) - (STATUS_RANK[b.status] ?? 9) || b.value - a.value);
   return out;
-}
+});
 
 export interface SubRow {
   name: string;
@@ -113,7 +114,7 @@ export interface SubRow {
   verified: boolean;
 }
 
-export async function subsList(): Promise<SubRow[]> {
+export const subsList = cache(async function subsList(): Promise<SubRow[]> {
   const ov = await loadOverrides("sub");
   let rows;
   try {
@@ -137,7 +138,7 @@ export async function subsList(): Promise<SubRow[]> {
       verified: o.verified === "true",
     };
   });
-}
+});
 
 export interface CrewRow {
   name: string;
@@ -154,7 +155,7 @@ export interface CrewRow {
   notes: string;
 }
 
-export async function crewList(): Promise<CrewRow[]> {
+export const crewList = cache(async function crewList(): Promise<CrewRow[]> {
   let rows;
   let ov;
   try {
@@ -181,7 +182,7 @@ export async function crewList(): Promise<CrewRow[]> {
       notes: o.notes ?? "",
     };
   });
-}
+});
 
 export interface CatalogRow {
   description: string;
@@ -192,7 +193,7 @@ export interface CatalogRow {
   jobs: number;
 }
 
-export async function catalogList(): Promise<CatalogRow[]> {
+export const catalogList = cache(async function catalogList(): Promise<CatalogRow[]> {
   const { unit, lump } = await loadCatalog();
 
   // display description from the catalog tables (unit wins via setdefault order)
@@ -222,7 +223,7 @@ export async function catalogList(): Promise<CatalogRow[]> {
   }
   rows.sort((a, b) => b.jobs - a.jobs);
   return rows;
-}
+});
 
 function canonKey(s: string): string {
   return String(s ?? "").replace(/\s+/g, " ").trim().toLowerCase();
@@ -240,7 +241,7 @@ export interface Stats {
   crew: number;
 }
 
-export async function stats(): Promise<Stats> {
+export const stats = cache(async function stats(): Promise<Stats> {
   const pl = await projectsList();
   const counts: Record<string, number> = {};
   for (const p of pl) counts[p.status] = (counts[p.status] ?? 0) + 1;
@@ -263,7 +264,7 @@ export async function stats(): Promise<Stats> {
     subs: (await has("subs")) ? await g("SELECT COUNT(*) AS n FROM subs") : 0,
     crew: (await has("crew")) ? await g("SELECT COUNT(*) AS n FROM crew") : 0,
   };
-}
+});
 
 const MED_MK = 1.178;
 
@@ -559,7 +560,7 @@ function mapEstimateRow(r: Record<string, unknown>, typeOverride?: string): Esti
 }
 
 // Every parsed estimate on file, newest first — the index behind the Estimates tab.
-export async function estimatesList(): Promise<EstimateRow[]> {
+export const estimatesList = cache(async function estimatesList(): Promise<EstimateRow[]> {
   let rows;
   let ov;
   try {
@@ -573,7 +574,7 @@ export async function estimatesList(): Promise<EstimateRow[]> {
     return [];
   }
   return rows.map((r) => mapEstimateRow(r, ov.get(String(r.project_id))?.type ?? undefined));
-}
+});
 
 export interface EstimateLineItem {
   division: string;
