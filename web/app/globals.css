@@ -585,12 +585,17 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .mstep.done .mstep-label{color:var(--muted)}
 .mstep.now .mstep-bar{background:var(--navy)}
 .mstep.now .mstep-label{color:var(--navy);font-weight:700}
-/* section tiles — one row, scrolls sideways on narrow screens */
-.tile-grid{display:flex;gap:7px;margin-top:16px}
-.tile{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;background:var(--card);border:1px solid var(--line);
-  border-radius:var(--r);padding:7px 9px;text-decoration:none;color:var(--ink);
-  box-shadow:var(--shadow-sm);transition:border-color var(--t),box-shadow var(--t),transform var(--t)}
-.tile:hover{border-color:var(--navy);box-shadow:var(--shadow);transform:translateY(-1px)}
+/* section tiles — one row, scrolls sideways on narrow screens.
+   Sits flat on the page: no card fill, no border, no shadow. Seven boxed tiles in a row read as
+   seven competing cards; unstyled they read as what they are, a row of links. The surface only
+   appears on hover, where it signals the target. */
+.tile-grid{display:flex;gap:2px;margin-top:14px}
+.tile{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;background:none;border:1px solid transparent;
+  border-radius:var(--r);padding:7px 9px;text-decoration:none;color:var(--muted);
+  box-shadow:none;transition:background var(--t),color var(--t),border-color var(--t)}
+.tile:hover{background:var(--hover);border-color:var(--line);color:var(--ink);box-shadow:none;transform:none}
+.tile.off{opacity:.4;cursor:default}
+.tile.off:hover{background:none;border-color:transparent;color:var(--muted)}
 .tile-icon{color:var(--navy);display:flex}
 .tile-icon svg{fill:currentColor;width:16px;height:16px}
 .tile-name{font-weight:600;font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

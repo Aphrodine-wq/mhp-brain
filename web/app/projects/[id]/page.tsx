@@ -11,6 +11,7 @@ import { hasActiveShareLink } from "@/lib/share";
 import { money, BADGE } from "@/lib/format";
 import HeaderEdit, { type ProjectOps } from "./HeaderEdit";
 import ShareLink from "./ShareLink";
+import { TrelloMark, QuickBooksMark } from "../../BrandMarks";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +58,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       <Milestones phase={ops?.current_phase ?? null} />
 
       {/* Sections first, then the numbers. Navigation is what people come to this page to do;
-          the money reads as a summary under it rather than a wall to scroll past. */}
+          the money reads as a summary under it rather than a wall to scroll past.
+          Trello and QuickBooks ride along at the end — they are the same "take me there" action
+          as the rest of the row, just leaving the app. */}
       <div className="tile-grid">
         {tiles.map((t) => (
           <Link key={t.href} href={t.href} className="tile">
@@ -65,6 +68,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <span className="tile-name">{t.name}</span>
           </Link>
         ))}
+        <OutboundTile url={ops?.trello_url ?? null} label="Trello" mark={<TrelloMark size={18} />} />
+        <OutboundTile url={ops?.quickbooks_url ?? null} label="QuickBooks" mark={<QuickBooksMark size={18} />} />
       </div>
 
       <div className="stat-row">
@@ -77,6 +82,25 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         </div>
       </div>
     </section>
+  );
+}
+
+// Trello / QuickBooks as tiles in the section row. Unset renders dimmed and non-clickable rather
+// than vanishing, so a job with no board is visible as a gap — same rule as the dashboard cards.
+function OutboundTile({ url, label, mark }: { url: string | null; label: string; mark: React.ReactNode }) {
+  if (!url) {
+    return (
+      <span className="tile off" title={`No ${label} link yet — add one under Edit details`}>
+        <span className="tile-icon">{mark}</span>
+        <span className="tile-name">{label}</span>
+      </span>
+    );
+  }
+  return (
+    <a className="tile" href={url} target="_blank" rel="noopener noreferrer" title={`Open in ${label}`}>
+      <span className="tile-icon">{mark}</span>
+      <span className="tile-name">{label}</span>
+    </a>
   );
 }
 
