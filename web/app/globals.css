@@ -294,11 +294,11 @@ small.j{color:var(--muted);font-size:11px}
 .proj-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(212px,100%),1fr));gap:10px;margin-top:12px}
 /* column so the progress bar can sit on the floor of the card no matter how long the name wraps —
    the bars then line up across the row instead of stair-stepping. */
-.pcard{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);
+.pcard{display:flex;flex-direction:column;text-align:center;background:var(--card);border:1px solid var(--line);
   border-radius:var(--r-lg);padding:9px 10px;cursor:pointer;
   box-shadow:var(--shadow-sm);transition:border-color var(--t),box-shadow var(--t),transform var(--t)}
 .pcard:hover{border-color:#c2cede;box-shadow:var(--shadow-lg);transform:translateY(-2px)}
-.pcard .pc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:9px}
+.pcard .pc-top{display:flex;justify-content:center;align-items:flex-start;gap:8px;margin-bottom:9px}
 .pcard .pc-name{font-weight:600;font-size:13px;line-height:1.25}
 .pcard .pc-val{font-family:var(--disp);font-size:29px;font-weight:650;color:var(--ink);line-height:1;letter-spacing:-.6px}
 .pcard .pc-meta{color:var(--muted);font-size:12.5px;margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -307,10 +307,10 @@ small.j{color:var(--muted);font-size:11px}
 .pc-prog{display:flex;align-items:center;gap:7px;margin-top:8px}
 .pc-prog-track{flex:1;height:4px;border-radius:999px;background:var(--line);overflow:hidden}
 .pc-prog-fill{height:100%;border-radius:999px;background:var(--navy);transition:width var(--t)}
-.pc-prog-pct{font-size:11px;font-weight:650;color:var(--muted);font-variant-numeric:tabular-nums;min-width:29px;text-align:right}
+.pc-prog-pct{font-size:11px;font-weight:650;color:var(--muted);font-variant-numeric:tabular-nums;min-width:29px;text-align:left}
 .pc-open{display:block;color:inherit;text-decoration:none;flex:1}
 /* outbound chips — where the job also lives (Trello board, QuickBooks customer) */
-.pc-links{display:flex;gap:5px;margin-top:8px;padding-top:7px;border-top:1px solid var(--line)}
+.pc-links{display:flex;justify-content:center;gap:5px;margin-top:9px}
 .pc-link{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:650;letter-spacing:.1px;
   padding:2px 7px 2px 4px;border-radius:999px;text-decoration:none;border:1px solid var(--line);
   color:var(--muted);background:var(--card);transition:border-color var(--t),color var(--t)}
