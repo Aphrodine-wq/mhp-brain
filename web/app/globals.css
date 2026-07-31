@@ -295,8 +295,7 @@ small.j{color:var(--muted);font-size:11px}
   border-bottom:1px solid var(--line)}
 .stat-strip .sv{font-family:var(--disp);font-size:27px;font-weight:650;line-height:1;letter-spacing:-.6px}
 .stat-strip .sk{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px;margin-top:7px}
-.sec-h{font-family:var(--disp);font-size:17px;font-weight:600;margin:18px 0 0;letter-spacing:-.2px}
-.proj-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(246px,100%),1fr));gap:13px;margin-top:14px}
+.proj-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(246px,100%),1fr));gap:13px;margin-top:18px}
 /* column so the progress bar can sit on the floor of the card no matter how long the name wraps —
    the bars then line up across the row instead of stair-stepping. */
 .pcard{display:flex;flex-direction:column;text-align:center;background:var(--card);border:1px solid var(--line);

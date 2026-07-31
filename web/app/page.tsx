@@ -76,7 +76,6 @@ export default async function Home() {
         <WeatherBanner />
       </div>
 
-      <div className="sec-h">Active now</div>
       {jobs}
     </section>
   );
