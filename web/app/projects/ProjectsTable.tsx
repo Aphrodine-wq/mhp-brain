@@ -10,6 +10,7 @@ import {
 import type { ProjectRow } from "@/lib/queries";
 import { money, BADGE } from "@/lib/format";
 import { post } from "@/lib/client";
+import { TrelloMark, QuickBooksMark } from "../BrandMarks";
 
 const STATUSES = ["Active", "Aging", "Bid", "Paused", "Complete", "Likely Done", "Dead", "Unknown"];
 
@@ -107,7 +108,7 @@ export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) 
         <thead>
           <tr>
             <th>Project</th><th>Market</th><th>Status</th><th>Last activity</th>
-            <th className="n">Est. Value</th><th className="n">Bids</th>
+            <th className="n">Est. Value</th><th className="n">Bids</th><th>Links</th>
           </tr>
         </thead>
         <tbody>
@@ -130,10 +131,35 @@ export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) 
                 <td>{p.last || "—"}</td>
                 <td className="n">{p.value ? money(p.value) : "—"}</td>
                 <td className="n">{p.estimates}</td>
+                <td>
+                  <div className="row-links">
+                    <RowLink url={p.trelloUrl} label="Trello" mark={<TrelloMark size={14} />} />
+                    <RowLink url={p.quickbooksUrl} label="QuickBooks" mark={<QuickBooksMark size={14} />} />
+                  </div>
+                </td>
               </tr>
           ))}
         </tbody>
       </table>
     </div>
+  );
+}
+
+// Icon-only in the table — the label would triple the column width for something you recognise
+// by its logo. Unset renders dimmed rather than blank, so a missing board is visible while
+// scanning the list rather than only on the job's own page.
+function RowLink({ url, label, mark }: { url: string | null; label: string; mark: React.ReactNode }) {
+  if (!url) return <span className="row-link off" title={`No ${label} link`}>{mark}</span>;
+  return (
+    <a
+      className="row-link"
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={`Open in ${label}`}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {mark}
+    </a>
   );
 }

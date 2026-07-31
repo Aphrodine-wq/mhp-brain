@@ -26,7 +26,9 @@ export async function setSetting(provider: string, key: string, value: string): 
   await db.execute({
     sql: `INSERT INTO integration_settings (provider, key, value) VALUES (?, ?, ?)
           ON CONFLICT(provider, key) DO UPDATE SET value = excluded.value`,
-    args: [provider, key, value.slice(0, 200)],
+    // 2000, not 200: deep links carry ids and query strings. The Teams team URL is 206
+    // characters and silently lost its tenantId under the old cap.
+    args: [provider, key, value.slice(0, 2000)],
   });
 }
 

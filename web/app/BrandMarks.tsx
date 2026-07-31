@@ -30,3 +30,15 @@ export function QuickBooksMark({ size = 15 }: { size?: number }) {
     </svg>
   );
 }
+
+export function TeamsMark({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      {/* the lighter roundel behind, then the dark tile carrying the T */}
+      <circle cx="17.3" cy="6.2" r="3.1" fill="#7B83EB" />
+      <path d="M17.3 10.4h4.2a1 1 0 0 1 1 1v4.3a3.9 3.9 0 0 1-3.9 3.9 4 4 0 0 1-1.3-.2v-9Z" fill="#5059C9" />
+      <rect x="2" y="4.6" width="13.4" height="14.8" rx="1.6" fill="#4B53BC" />
+      <path d="M6 8.3h5.4v1.6H9.6v5.9H7.8V9.9H6V8.3Z" fill="#fff" />
+    </svg>
+  );
+}

@@ -325,6 +325,12 @@ small.j{color:var(--muted);font-size:11px}
 .banner{background:#eef3fb;border:1px solid #d6e2f4;border-radius:var(--r-lg);padding:14px 18px;margin:18px 0 6px;
   font-size:13.5px;color:var(--navy);display:flex;gap:10px;align-items:center}
 .banner b{color:var(--navy)}
+/* project table outbound links — icon-only, dimmed when the job has no board on file */
+.row-links{display:flex;align-items:center;gap:6px}
+.row-link{display:inline-flex;line-height:0;border-radius:3px;transition:opacity var(--t)}
+.row-link:hover{opacity:.7}
+.row-link.off{opacity:.25;cursor:default}
+.row-link.off:hover{opacity:.25}
 /* dashboard header — greeting + actions on one line, ambient status on the next.
    Previously the active count sat between the greeting and the buttons, where it read as a
    third button, and the weather was a separate card floating underneath. */
@@ -357,9 +363,6 @@ small.j{color:var(--muted);font-size:11px}
 /* weather card — modern square card: today temp + 5-day rain/temp strip */
 .wx-inline{display:flex;align-items:center;gap:10px;min-width:0;margin-left:auto}
 .wx-today{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
-.wx-icon{width:26px;height:26px;border-radius:6px;background:var(--paper);border:1px solid var(--line-2);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--navy)}
-.wx-icon svg{width:16px;height:16px;fill:currentColor}
 .wx-temp{font-family:var(--disp);font-size:14px;font-weight:700;line-height:1.1;letter-spacing:-.3px;color:var(--ink)}
 .wx-city{font-size:9.5px;color:var(--muted);margin-top:0}
 .wx-days{display:flex;gap:1px;flex-shrink:0;overflow-x:auto}
