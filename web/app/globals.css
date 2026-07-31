@@ -134,43 +134,15 @@ textarea:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
 .btn.danger:hover{border-color:#9c2f23;background:#fdf3f1;box-shadow:none}
 .btn.danger svg{fill:currentColor}
 .btn.sm{padding:5px 11px;font-size:12px;border-radius:var(--r-sm);gap:5px}
-/* Split control: one button carrying two actions. New Estimate is the frequent one and stays a
-   single click on the main segment; New Project sits behind the caret. Two equally-weighted CTAs
-   side by side read as one control cut in half, which is what this replaces. */
-.split{position:relative;display:inline-flex;align-items:stretch;border-radius:var(--r);
-  background:var(--ink-navy);box-shadow:var(--shadow-sm);transition:box-shadow var(--t)}
-.split:hover{box-shadow:var(--shadow)}
-.split-main{display:inline-flex;align-items:center;gap:8px;padding:12px 18px;color:#fff;
-  font-size:14px;font-weight:650;letter-spacing:.1px;text-decoration:none;
-  border-radius:var(--r) 0 0 var(--r);transition:background var(--t)}
-.split-main:hover{background:#0e1b2c}
-.split-main svg{fill:currentColor}
-.split-more{display:inline-flex;align-items:center;justify-content:center;width:34px;padding:0;
-  background:none;border:0;border-left:1px solid rgba(255,255,255,.18);color:#fff;cursor:pointer;
-  border-radius:0 var(--r) var(--r) 0;transition:background var(--t)}
-.split-more:hover{background:#0e1b2c}
-.split-more svg{fill:currentColor}
-.split-main:focus-visible,.split-more:focus-visible{outline:none;box-shadow:var(--ring)}
-.split-menu{position:absolute;top:calc(100% + 6px);right:0;z-index:40;min-width:186px;
-  background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-lg);
-  padding:5px;animation:rise .16s ease both}
-.split-menu button{display:flex;align-items:center;gap:8px;width:100%;padding:9px 11px;
-  background:none;border:0;border-radius:var(--r-sm);cursor:pointer;text-align:left;
-  font-family:var(--sans);font-size:13.5px;font-weight:600;color:var(--ink)}
-.split-menu button:hover{background:var(--hover)}
-.split-menu button svg{fill:currentColor;color:var(--muted)}
 /* The dashboard's two calls to action. Square, not pills — the pill shape read as decorative
    next to a page of square-cornered cards and tables. Colour comes off --ink-navy rather than
    the bright --navy: at this size a saturated blue button is the loudest thing on the screen,
-   which is not what a "new estimate" button should be. New Estimate is filled, New Project is
-   the outlined twin — same weight and size, one clearly the primary. */
+   which is not what a "new estimate" button should be. Both carry the same dark fill — the
+   outlined-secondary variant and the split-with-a-caret version were both tried and rejected. */
 .btn.cta{border-radius:var(--r);padding:12px 20px;font-size:14px;font-weight:650;letter-spacing:.1px;
   background:var(--ink-navy);box-shadow:var(--shadow-sm)}
 .btn.cta:hover{background:#0e1b2c;box-shadow:var(--shadow)}
 .btn.cta svg{fill:currentColor}
-.btn.cta.alt{background:#fff;color:var(--ink-navy);border:1.5px solid var(--ink-navy);box-shadow:none}
-.btn.cta.alt:hover{background:var(--ink-navy);color:#fff;border-color:var(--ink-navy);box-shadow:var(--shadow)}
-.btn.cta.alt:focus-visible{box-shadow:var(--ring)}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px}
 .spin{width:48px;height:48px;border:4px solid var(--line);border-top-color:var(--navy);
   border-radius:50%;animation:s .9s linear infinite;margin:0 auto 20px}
@@ -281,14 +253,15 @@ small.j{color:var(--muted);font-size:11px}
 .conn-icon svg{width:22px;height:22px;display:block}
 .conn-left{display:flex;align-items:center;gap:14px;min-width:0}
 /* integration cards — 2-col grid inside the Connected services panel */
-.conn-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 18px 18px}
+/* single column: these are rows of status, not tiles to compare side by side, and the
+   right-hand card always sat half-empty next to a longer one on the left */
+.conn-grid{display:grid;grid-template-columns:1fr;gap:10px;padding:12px 18px 18px}
 .conn-card{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:8px;
   padding:9px 11px;background:#fff;box-shadow:var(--shadow-sm)}
 .conn-card-head{display:flex;align-items:center;gap:12px}
 .conn-title{display:flex;flex-direction:column;gap:5px;align-items:flex-start;min-width:0}
 .conn-desc{flex:1}
 .conn-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:4px}
-@media(max-width:760px){.conn-grid{grid-template-columns:1fr}}
 /* dashboard */
 .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(136px,1fr));gap:9px;margin:15px 0}
 .metric{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:8px 11px;
@@ -344,7 +317,7 @@ small.j{color:var(--muted);font-size:11px}
 /* outbound chips — where the job also lives (Trello board, QuickBooks customer) */
 .pc-links{display:flex;justify-content:center;gap:5px;margin-top:9px}
 .pc-link{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:650;letter-spacing:.1px;
-  padding:4px 10px 4px 6px;border-radius:999px;text-decoration:none;border:1px solid var(--line);
+  padding:4px 10px 4px 6px;border-radius:var(--r-sm);text-decoration:none;border:1px solid var(--line);
   color:var(--muted);background:var(--card);transition:border-color var(--t),color var(--t)}
 .pc-link svg{flex-shrink:0;display:block}
 .pc-link:hover{border-color:#c2cede;color:var(--ink)}

@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Plus, CaretDown } from "@phosphor-icons/react";
+import { Plus } from "@phosphor-icons/react";
 import { post } from "@/lib/client";
 
 // The trades that actually show up in the project table. Multi-trade jobs are the norm
@@ -17,43 +16,17 @@ const TYPE_OPTIONS = [
 const MARKETS = ["Oxford", "Pickwick"];
 const STATUSES = ["Active", "Bid", "Paused", "Aging", "Complete", "Unknown"];
 
-// One control, not two. New Estimate is the frequent action so it stays a single click on the
-// main segment; New Project lives behind the caret beside it, sharing the same dark button
-// rather than competing with it as a second equally-weighted CTA.
-export default function NewButton() {
-  const [modal, setModal] = useState(false);
-  const [menu, setMenu] = useState(false);
-
+// A plain button. This was briefly a split control with New Project behind a caret; a dropdown
+// on the most-used action on the page is friction nobody asked for, so both are buttons again.
+export default function NewProjectButton() {
+  const [open, setOpen] = useState(false);
   return (
     <>
-      <div className="split" onMouseLeave={() => setMenu(false)}>
-        <Link className="split-main" href="/estimate-builder">
-          <Plus size={16} weight="bold" />
-          New Estimate
-        </Link>
-        <button
-          className="split-more"
-          aria-label="More new items"
-          aria-expanded={menu}
-          aria-haspopup="menu"
-          onClick={() => setMenu((v) => !v)}
-        >
-          <CaretDown size={13} weight="bold" />
-        </button>
-
-        {menu && (
-          <div className="split-menu" role="menu">
-            <button
-              role="menuitem"
-              onClick={() => { setMenu(false); setModal(true); }}
-            >
-              <Plus size={13} weight="bold" />
-              New project
-            </button>
-          </div>
-        )}
-      </div>
-      {modal && <NewProjectModal onClose={() => setModal(false)} />}
+      <button className="btn cta" onClick={() => setOpen(true)}>
+        <Plus size={16} weight="bold" />
+        New Project
+      </button>
+      {open && <NewProjectModal onClose={() => setOpen(false)} />}
     </>
   );
 }

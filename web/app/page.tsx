@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Plus } from "@phosphor-icons/react/dist/ssr";
 import { currentUser } from "@/lib/auth";
 import { dashboardForRole } from "@/lib/role-nav";
 import { projectsList } from "@/lib/queries";
 import CeoDashboard from "./_dashboards/CeoDashboard";
 import SalesDashboard from "./_dashboards/SalesDashboard";
 import WeatherBanner from "./_dashboards/WeatherBanner";
-import NewButton from "./NewProjectButton";
+import NewProjectButton from "./NewProjectButton";
 import { TrelloMark, QuickBooksMark } from "./BrandMarks";
 
 export const dynamic = "force-dynamic";
@@ -59,7 +60,11 @@ export default async function Home() {
           <div className="dash-date">{today()}</div>
         </div>
         <div className="dash-actions">
-          <NewButton />
+          <NewProjectButton />
+          <Link className="btn cta" href="/estimate-builder">
+            <Plus size={16} weight="bold" />
+            New Estimate
+          </Link>
         </div>
       </div>
 
