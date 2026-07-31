@@ -107,8 +107,8 @@ export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) 
       <table className="dtable">
         <thead>
           <tr>
-            <th>Project</th><th>Market</th><th>Status</th><th>Last activity</th>
-            <th className="n">Est. Value</th><th className="n">Bids</th><th>Links</th>
+            <th>Project</th><th>Market</th><th>Status</th>
+            <th className="n">Est. Value</th><th>Links</th>
           </tr>
         </thead>
         <tbody>
@@ -128,9 +128,7 @@ export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) 
                     {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </td>
-                <td>{p.last || "—"}</td>
                 <td className="n">{p.value ? money(p.value) : "—"}</td>
-                <td className="n">{p.estimates}</td>
                 <td>
                   <div className="row-links">
                     <RowLink url={p.trelloUrl} label="Trello" mark={<TrelloMark size={14} />} />

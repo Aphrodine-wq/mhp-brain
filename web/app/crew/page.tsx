@@ -18,8 +18,8 @@ function splitRole(role: string): { title: string; credential: string | null } {
 }
 
 // What the office still has to collect. Every one of these is editable on the member's own page,
-// so the count is a to-do rather than a complaint — today only one of seven has a rate on file
-// and none have a hire date or emergency contact.
+// so the count is a to-do rather than a complaint — nobody has a hire date, emergency contact or
+// certifications on file. Rate stays in this list: naming it as missing is a task, not a wage.
 const PROFILE_FIELDS: { key: keyof CrewRow; label: string }[] = [
   { key: "phone", label: "phone" },
   { key: "email", label: "email" },
@@ -102,9 +102,10 @@ export default async function CrewPage() {
                 )}
               </div>
 
-              <div className="crew-foot">
-                {m.rate ? <span className="crew-rate">{m.rate}</span> : <span />}
-                {missing.length > 0 && (
+              {/* Pay is deliberately not on this screen — the crew list is a contact sheet and
+                  gets read over someone's shoulder. Rate still lives on the member's own page. */}
+              {missing.length > 0 && (
+                <div className="crew-foot">
                   <Link
                     href={`/crew/${encodeURIComponent(m.key)}`}
                     className="crew-missing"
@@ -113,8 +114,8 @@ export default async function CrewPage() {
                     <WarningCircle size={12} />
                     {missing.length} to add
                   </Link>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           );
         })}

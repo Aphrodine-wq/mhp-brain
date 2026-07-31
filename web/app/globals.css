@@ -43,7 +43,7 @@ textarea:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
   border:1px solid var(--line);border-left:3px solid #b9cae9;border-radius:var(--r);background:var(--card);cursor:pointer;
   font-family:var(--sans);box-shadow:var(--shadow-sm);
   transition:border-color var(--t),box-shadow var(--t),background var(--t),transform var(--t)}
-.asm-card:hover{border-color:var(--navy);border-left-color:var(--navy);box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.asm-card:hover{border-color:var(--navy);border-left-color:var(--navy);box-shadow:var(--shadow-lg)}
 .asm-card.active{border-color:var(--navy);border-left-color:var(--navy);box-shadow:var(--ring);background:#fff}
 .asm-card b{font-size:15px;color:var(--navy)}
 .asm-inputs{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-top:16px;padding:16px 20px;
@@ -137,7 +137,7 @@ textarea:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
 /* primary call-to-action (New Estimate) — pill shape, bolder presence */
 .btn.cta{border-radius:999px;padding:12px 22px;font-size:14px;letter-spacing:.1px;
   box-shadow:0 2px 8px rgba(11,61,145,.28)}
-.btn.cta:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(11,61,145,.32)}
+.btn.cta:hover{box-shadow:0 4px 12px rgba(11,61,145,.28)}
 .btn.cta svg{fill:currentColor}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px}
 .spin{width:48px;height:48px;border:4px solid var(--line);border-top-color:var(--navy);
@@ -218,7 +218,7 @@ small.j{color:var(--muted);font-size:11px}
   background:var(--card);border:1px solid var(--line);border-left:3px solid #b9cae9;
   border-radius:var(--r-lg);cursor:pointer;font-family:var(--sans);box-shadow:var(--shadow-sm);
   transition:border-color var(--t),box-shadow var(--t),border-radius var(--t),transform var(--t)}
-.csec-h:hover{border-color:var(--navy);border-left-color:var(--navy);box-shadow:var(--shadow-lg);transform:translateY(-1px)}
+.csec-h:hover{border-color:var(--navy);border-left-color:var(--navy);box-shadow:var(--shadow-lg)}
 .csec-h:focus-visible{outline:none;box-shadow:var(--ring)}
 /* chevron sits in a small paper coin so the affordance reads at a glance */
 .csec-h svg{width:24px;height:24px;padding:5px;border-radius:50%;background:var(--paper);border:1px solid var(--line-2);
@@ -297,7 +297,7 @@ small.j{color:var(--muted);font-size:11px}
 .pcard{display:flex;flex-direction:column;text-align:center;background:var(--card);border:1px solid var(--line);
   border-radius:var(--r-lg);padding:9px 10px;cursor:pointer;
   box-shadow:var(--shadow-sm);transition:border-color var(--t),box-shadow var(--t),transform var(--t)}
-.pcard:hover{border-color:#c2cede;box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.pcard:hover{border-color:#c2cede;box-shadow:var(--shadow-lg)}
 .pcard .pc-top{display:flex;justify-content:center;align-items:flex-start;gap:8px;margin-bottom:9px}
 .pcard .pc-name{font-weight:600;font-size:13px;line-height:1.25}
 .pcard .pc-val{font-family:var(--disp);font-size:29px;font-weight:650;color:var(--ink);line-height:1;letter-spacing:-.6px}
@@ -342,8 +342,8 @@ small.j{color:var(--muted);font-size:11px}
 .dash-strip{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:14px;padding:9px 0;
   border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .dash-count{display:flex;align-items:baseline;gap:7px;white-space:nowrap}
-.dash-count b{font-family:var(--disp);font-size:19px;font-weight:700;letter-spacing:-.3px;color:var(--ink)}
-.dash-count span{font-size:12px;font-weight:600;color:var(--muted)}
+.dash-count b{font-family:var(--disp);font-size:30px;font-weight:700;letter-spacing:-.7px;color:var(--ink);line-height:1}
+.dash-count span{font-size:13px;font-weight:600;color:var(--muted)}
 @media(max-width:620px){
   .dash-strip{gap:10px}
   .wx-inline{margin-left:0}
@@ -420,7 +420,7 @@ small.j{color:var(--muted);font-size:11px}
 .crew-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:16px;margin-top:22px}
 .crew-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:10px 11px;
   box-shadow:var(--shadow-sm);transition:border-color var(--t),box-shadow var(--t),transform var(--t)}
-.crew-card:hover{border-color:#c2cede;box-shadow:var(--shadow);transform:translateY(-1px)}
+.crew-card:hover{border-color:#c2cede;box-shadow:var(--shadow)}
 /* crew card internals — the card is a plain div now so tel:/mailto: links can live inside it
    without nesting anchors; .crew-open is the part that navigates to the profile. */
 .crew-open{display:block;color:inherit;text-decoration:none}
@@ -436,7 +436,6 @@ a.crew-line:hover{color:var(--navy)}
 .crew-line.off{opacity:.45}
 .crew-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;
   margin-top:9px;padding-top:8px;border-top:1px solid var(--line-2)}
-.crew-rate{font-size:11.5px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
 .crew-missing{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:650;
   color:#946a18;text-decoration:none;white-space:nowrap}
 .crew-missing svg{fill:currentColor}
@@ -450,8 +449,6 @@ a.crew-line:hover{color:var(--navy)}
 .crew-meta{font-size:13px;color:var(--ink)}
 .crew-meta div{padding:4px 0;border-top:1px solid var(--line-2);color:var(--muted)}
 .crew-meta a{color:var(--navy);text-decoration:none}
-.crew-rate{display:inline-block;margin-top:10px;padding:4px 12px;background:var(--paper);border:1px solid var(--line);
-  border-radius:var(--r-pill);font-weight:700;font-size:13px;color:var(--ink)}
 /* ── working estimate as a live document ──
    The sheet IS the estimate: letterhead, division sections, and totals on one piece of
    paper; numbers look printed until hovered/focused, then edit in place. Actions and
@@ -590,7 +587,7 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
   background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);cursor:pointer;
   font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--ink);box-shadow:var(--shadow-sm);
   transition:border-color var(--t),box-shadow var(--t),transform var(--t),background var(--t)}
-.type-card:hover{border-color:var(--navy);box-shadow:var(--shadow);transform:translateY(-1px)}
+.type-card:hover{border-color:var(--navy);box-shadow:var(--shadow)}
 .type-card.active{border-color:var(--navy);background:#eef3fb;box-shadow:var(--shadow)}
 .type-icon{color:var(--navy);display:flex}
 .type-icon svg{fill:currentColor;width:18px;height:18px}
@@ -733,7 +730,7 @@ body.compact .prow{padding:9px 16px}
   padding:13px 18px;border:1.5px solid var(--line);border-radius:var(--r);background:#fff;color:var(--ink);
   font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;
   box-shadow:var(--shadow-sm);transition:all var(--t)}
-.login-oauth-btn:hover{border-color:#b0b8c4;box-shadow:var(--shadow);background:#fafbfc;transform:translateY(-1px)}
+.login-oauth-btn:hover{border-color:#b0b8c4;box-shadow:var(--shadow);background:#fafbfc}
 .login-divider{display:flex;align-items:center;gap:14px;margin:22px 0;color:var(--muted);font-size:12px;
   text-transform:uppercase;letter-spacing:.5px}
 .login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--line)}
