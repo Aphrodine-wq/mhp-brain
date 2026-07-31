@@ -4,12 +4,11 @@ import { Plus } from "@phosphor-icons/react/dist/ssr";
 import { currentUser } from "@/lib/auth";
 import { dashboardForRole } from "@/lib/role-nav";
 import { projectsList } from "@/lib/queries";
-import { getSetting } from "@/lib/integration-settings";
 import CeoDashboard from "./_dashboards/CeoDashboard";
 import SalesDashboard from "./_dashboards/SalesDashboard";
 import WeatherBanner from "./_dashboards/WeatherBanner";
 import NewProjectButton from "./NewProjectButton";
-import { TrelloMark, QuickBooksMark, TeamsMark } from "./BrandMarks";
+import { TrelloMark, QuickBooksMark } from "./BrandMarks";
 
 export const dynamic = "force-dynamic";
 
@@ -25,10 +24,6 @@ export default async function Home() {
 
   // Default dashboard (admin, editor, viewer, estimator, materials)
   const active = (await projectsList()).filter((p) => p.status === "Active");
-
-  // Stored rather than hardcoded: a Teams deep link carries a tenant and group id, so it is
-  // installation-specific. Empty string means "not set" and the button simply does not render.
-  const teamsUrl = await getSetting("teams", "team_url", "").catch(() => "");
 
   const jobs = (
     <div className="proj-cards">
@@ -65,12 +60,6 @@ export default async function Home() {
           <div className="dash-date">{today()}</div>
         </div>
         <div className="dash-actions">
-          {teamsUrl && (
-            <a className="btn ghost" href={teamsUrl} target="_blank" rel="noopener noreferrer" title="Open the MHP team in Microsoft Teams">
-              <TeamsMark size={15} />
-              Teams
-            </a>
-          )}
           <NewProjectButton />
           <Link className="btn cta" href="/estimate-builder">
             <Plus size={16} weight="bold" />
