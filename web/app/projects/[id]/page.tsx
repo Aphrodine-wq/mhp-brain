@@ -12,6 +12,7 @@ import { money, BADGE } from "@/lib/format";
 import HeaderEdit, { type ProjectOps } from "./HeaderEdit";
 import ShareLink from "./ShareLink";
 import Closeout, { type CloseoutState } from "./Closeout";
+import PhaseTrack from "./PhaseTrack";
 import { TrelloMark, QuickBooksMark } from "../../BrandMarks";
 
 export const dynamic = "force-dynamic";
@@ -57,7 +58,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         )}
       </div>
 
-      <Milestones phase={ops?.current_phase ?? null} />
+      <PhaseTrack projectId={id} phase={ops?.current_phase ?? null} canWrite={canWrite} />
 
       {/* Sections first, then the numbers. Navigation is what people come to this page to do;
           the money reads as a summary under it rather than a wall to scroll past.
@@ -164,28 +165,3 @@ function OutboundTile({ url, label, mark }: { url: string | null; label: string;
   );
 }
 
-// Project progress as milestones — driven by the phase set under "Edit details". Sits directly
-// under the project name: it is the first thing anyone wants off this page.
-// Nothing set yet: shows the track with no step reached, so the crew knows to set it.
-//
-// Drawn as connected segments rather than the old dots-on-a-line. At a glance the filled run
-// reads as "how far in", and the current stage is a labelled navy pill instead of a slightly
-// larger dot you had to hunt for.
-const MILESTONES = ["lead", "quoted", "scheduled", "in_progress", "complete"] as const;
-
-function Milestones({ phase }: { phase: string | null }) {
-  const reached = phase ? MILESTONES.indexOf(phase as (typeof MILESTONES)[number]) : -1;
-  return (
-    <div className="mtrack">
-      {MILESTONES.map((m, i) => (
-        <div
-          key={m}
-          className={`mstep${i < reached ? " done" : ""}${i === reached ? " now" : ""}`}
-        >
-          <span className="mstep-bar" />
-          <span className="mstep-label">{m.replace("_", " ")}</span>
-        </div>
-      ))}
-    </div>
-  );
-}

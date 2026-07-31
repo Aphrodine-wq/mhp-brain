@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Plus } from "@phosphor-icons/react/dist/ssr";
 import { currentUser } from "@/lib/auth";
 import { dashboardForRole } from "@/lib/role-nav";
 import { projectsList } from "@/lib/queries";
 import CeoDashboard from "./_dashboards/CeoDashboard";
 import SalesDashboard from "./_dashboards/SalesDashboard";
 import WeatherBanner from "./_dashboards/WeatherBanner";
-import NewProjectButton from "./NewProjectButton";
+import NewButton from "./NewProjectButton";
 import { TrelloMark, QuickBooksMark } from "./BrandMarks";
 
 export const dynamic = "force-dynamic";
@@ -60,11 +59,7 @@ export default async function Home() {
           <div className="dash-date">{today()}</div>
         </div>
         <div className="dash-actions">
-          <NewProjectButton />
-          <Link className="btn cta" href="/estimate-builder">
-            <Plus size={16} weight="bold" />
-            New Estimate
-          </Link>
+          <NewButton />
         </div>
       </div>
 
@@ -89,8 +84,8 @@ export default async function Home() {
 function ProjectLinks({ trello, quickbooks }: { trello: string | null; quickbooks: string | null }) {
   return (
     <div className="pc-links">
-      <LinkChip url={trello} label="Trello" mark={<TrelloMark />} />
-      <LinkChip url={quickbooks} label="QuickBooks" mark={<QuickBooksMark />} />
+      <LinkChip url={trello} label="Trello" mark={<TrelloMark size={17} />} />
+      <LinkChip url={quickbooks} label="QuickBooks" mark={<QuickBooksMark size={17} />} />
     </div>
   );
 }
