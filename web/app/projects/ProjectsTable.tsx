@@ -104,18 +104,17 @@ export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) 
       <h3 style={{ margin: "14px 0 4px", fontFamily: "var(--disp)", fontSize: 20 }}>
         {openGroup === "__all__" ? "All projects" : openGroup}
       </h3>
+      <div className="dtable-wrap">
       <table className="dtable">
         <thead>
           <tr>
-            <th>Project</th><th>Market</th><th>Status</th>
-            <th className="n">Est. Value</th><th>Links</th>
+            <th>Status</th><th>Project</th>
+            <th className="n">Est. Value</th><th>Links</th><th>Market</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((p) => (
               <tr key={p.id}>
-                <td><Link href={`/projects/${p.id}`} className="cell-link">{p.name}</Link></td>
-                <td>{p.market || "—"}</td>
                 <td>
                   <select
                     className={`badge ${BADGE[p.status] || "unknown"}`}
@@ -128,6 +127,7 @@ export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) 
                     {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </td>
+                <td><Link href={`/projects/${p.id}`} className="cell-link">{p.name}</Link></td>
                 <td className="n">{p.value ? money(p.value) : "—"}</td>
                 <td>
                   <div className="row-links">
@@ -135,10 +135,12 @@ export default function ProjectsTable({ projects }: { projects: ProjectRow[] }) 
                     <RowLink url={p.quickbooksUrl} label="QuickBooks" mark={<QuickBooksMark size={14} />} />
                   </div>
                 </td>
+                <td className="col-market">{p.market || "—"}</td>
               </tr>
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

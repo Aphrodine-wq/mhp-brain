@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export default async function ProjectsPage() {
   const projects = await projectsList();
   return (
-    <section className="view">
+    <section className="view text-110">
       <h2>Projects</h2>
       <ProjectsTable projects={projects} />
     </section>

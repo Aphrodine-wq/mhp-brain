@@ -134,11 +134,17 @@ textarea:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
 .btn.danger:hover{border-color:#9c2f23;background:#fdf3f1;box-shadow:none}
 .btn.danger svg{fill:currentColor}
 .btn.sm{padding:5px 11px;font-size:12px;border-radius:var(--r-sm);gap:5px}
-/* primary call-to-action (New Estimate) — pill shape, bolder presence */
-.btn.cta{border-radius:999px;padding:12px 22px;font-size:14px;letter-spacing:.1px;
+/* The dashboard's two calls to action. They were identical navy pills sitting side by side,
+   so neither read as the primary and the pair looked like one control cut in half. Same pill
+   family now, but New Estimate carries the fill and New Project is the tonal secondary — the
+   thing you do many times a day versus the thing you do when a job comes in. */
+.btn.cta{border-radius:999px;padding:12px 22px;font-size:14px;font-weight:650;letter-spacing:.1px;
   box-shadow:0 2px 8px rgba(11,61,145,.28)}
 .btn.cta:hover{box-shadow:0 4px 12px rgba(11,61,145,.28)}
 .btn.cta svg{fill:currentColor}
+.btn.cta.alt{background:#eaf0fa;color:var(--navy);border:1px solid #cddcf2;box-shadow:none}
+.btn.cta.alt:hover{background:#dfe9f8;border-color:var(--navy);box-shadow:none}
+.btn.cta.alt:focus-visible{box-shadow:var(--ring)}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px}
 .spin{width:48px;height:48px;border:4px solid var(--line);border-top-color:var(--navy);
   border-radius:50%;animation:s .9s linear infinite;margin:0 auto 20px}
@@ -331,6 +337,19 @@ small.j{color:var(--muted);font-size:11px}
 .row-link:hover{opacity:.7}
 .row-link.off{opacity:.25;cursor:default}
 .row-link.off:hover{opacity:.25}
+/* Page-scoped text scaling.
+   The stylesheet is px-based throughout, so a container font-size would not cascade into any of
+   it. `zoom` scales the rendered box instead — text and the padding around it together, which is
+   what keeps a 10% bump from crowding cells against their borders. Applied to the section rather
+   than the body so the nav and chrome stay put.
+   Note: zoom does not scale a fixed-position element's viewport anchoring, and nothing inside
+   these two sections is fixed. */
+.view.text-110{zoom:1.1}
+.view.text-120{zoom:1.2}
+/* the table is the widest thing on the projects page — let it scroll rather than push the page */
+.view.text-110 .dtable-wrap{overflow-x:auto}
+/* market drops to the end of the row as a quiet reference column, not a heading you scan */
+.dtable td.col-market{color:var(--muted);font-size:12.5px}
 /* dashboard header — greeting + actions on one line, ambient status on the next.
    Previously the active count sat between the greeting and the buttons, where it read as a
    third button, and the weather was a separate card floating underneath. */

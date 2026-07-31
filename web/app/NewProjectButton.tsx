@@ -20,7 +20,7 @@ export default function NewProjectButton() {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button className="btn cta" onClick={() => setOpen(true)}>
+      <button className="btn cta alt" onClick={() => setOpen(true)}>
         <Plus size={16} weight="bold" />
         New Project
       </button>

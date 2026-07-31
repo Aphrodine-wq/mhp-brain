@@ -42,7 +42,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   ];
 
   return (
-    <section className="view">
+    <section className="view text-120">
       <div className="row" style={{ marginTop: 0, justifyContent: "space-between" }}>
         <Link className="btn ghost" href="/projects">← All projects</Link>
         {canWrite && <ShareLink projectId={id} hasActive={shareActive} />}
