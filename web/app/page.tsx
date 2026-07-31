@@ -49,13 +49,17 @@ export default async function Home() {
 
   return (
     <section className="view">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-        <Greeting name={user.name} />
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div className="stat-chip">
-            <b>{active.length}</b>
-            <span>Active projects</span>
-          </div>
+      {/* Greeting and the two actions on top; everything ambient — how many jobs are live, what
+          the weather is doing — collapsed into one status strip beneath. The count used to sit
+          wedged between the greeting and the buttons, reading like a third button, and the
+          weather was an orphan card floating below the whole thing. They are the same kind of
+          information, so they now share a line. */}
+      <div className="dash-head">
+        <div className="dash-hello">
+          <h2>{greeting(user.name)}</h2>
+          <div className="dash-date">{today()}</div>
+        </div>
+        <div className="dash-actions">
           <NewProjectButton />
           <Link className="btn cta" href="/estimate-builder">
             <Plus size={16} weight="bold" />
@@ -64,7 +68,13 @@ export default async function Home() {
         </div>
       </div>
 
-      <WeatherBanner />
+      <div className="dash-strip">
+        <div className="dash-count">
+          <b>{active.length}</b>
+          <span>Active {active.length === 1 ? "project" : "projects"}</span>
+        </div>
+        <WeatherBanner />
+      </div>
 
       <div className="sec-h">Active now</div>
       {jobs}
@@ -115,21 +125,18 @@ function CompletionBar({ pct }: { pct: number | null }) {
   );
 }
 
-// "Good morning, Rick — Wednesday, July 29, 2026" — time-aware greeting in the
-// company's own timezone (the server may be UTC).
-function Greeting({ name }: { name: string }) {
-  const now = new Date();
+// Both in the company's own timezone — the server may be UTC, and "good evening" at 9am
+// because a box in Virginia rolled over is the kind of small wrongness people notice.
+function greeting(name: string): string {
   const hour = Number(
-    new Intl.DateTimeFormat("en-US", { hour: "numeric", hour12: false, timeZone: "America/Chicago" }).format(now),
+    new Intl.DateTimeFormat("en-US", { hour: "numeric", hour12: false, timeZone: "America/Chicago" }).format(new Date()),
   );
   const part = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
-  const date = new Intl.DateTimeFormat("en-US", {
+  return `Good ${part}, ${name.split(" ")[0]}`;
+}
+
+function today(): string {
+  return new Intl.DateTimeFormat("en-US", {
     weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "America/Chicago",
-  }).format(now);
-  return (
-    <div style={{ marginBottom: 4 }}>
-      <div style={{ fontSize: 15, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "var(--navy)" }}>{date}</div>
-      <h2 style={{ margin: "6px 0 0", fontSize: 34 }}>Good {part}, {name.split(" ")[0]}</h2>
-    </div>
-  );
+  }).format(new Date());
 }

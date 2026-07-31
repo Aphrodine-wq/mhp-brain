@@ -325,12 +325,23 @@ small.j{color:var(--muted);font-size:11px}
 .banner{background:#eef3fb;border:1px solid #d6e2f4;border-radius:var(--r-lg);padding:14px 18px;margin:18px 0 6px;
   font-size:13.5px;color:var(--navy);display:flex;gap:10px;align-items:center}
 .banner b{color:var(--navy)}
-/* dashboard header stat count — sits beside the New Estimate CTA. Deliberately unstyled: it is a
-   readout, not an action, and a navy pill competed with the two real buttons next to it. */
-.stat-chip{display:flex;align-items:baseline;gap:7px;background:none;color:var(--ink);
-  border:0;border-radius:0;padding:0 4px;box-shadow:none}
-.stat-chip b{font-family:var(--disp);font-size:17px;font-weight:700;letter-spacing:-.3px;color:var(--ink)}
-.stat-chip span{font-size:12px;font-weight:600;color:var(--muted)}
+/* dashboard header — greeting + actions on one line, ambient status on the next.
+   Previously the active count sat between the greeting and the buttons, where it read as a
+   third button, and the weather was a separate card floating underneath. */
+.dash-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.dash-hello h2{margin:0;font-size:28px;letter-spacing:-.6px;line-height:1.1}
+.dash-date{margin-top:4px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.2px}
+.dash-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+/* one line of ambient context: how many jobs are live, and what the sky is doing */
+.dash-strip{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:14px;padding:9px 0;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.dash-count{display:flex;align-items:baseline;gap:7px;white-space:nowrap}
+.dash-count b{font-family:var(--disp);font-size:19px;font-weight:700;letter-spacing:-.3px;color:var(--ink)}
+.dash-count span{font-size:12px;font-weight:600;color:var(--muted)}
+@media(max-width:620px){
+  .dash-strip{gap:10px}
+  .wx-inline{margin-left:0}
+}
 /* Google Business Profile panel on the dashboard */
 .gmb-panel{margin:16px 0 4px;border:1px solid var(--line);border-radius:var(--r-lg);
   box-shadow:var(--shadow-sm);background:var(--card);padding:18px 20px}
@@ -344,8 +355,7 @@ small.j{color:var(--muted);font-size:11px}
 .gmb-num{font-family:var(--disp);font-size:22px;font-weight:700;color:var(--ink)}
 .gmb-count{font-size:12.5px;color:var(--muted)}
 /* weather card — modern square card: today temp + 5-day rain/temp strip */
-.wx-card{display:flex;align-items:center;gap:10px;margin:6px 0 10px;padding:6px 10px;max-width:520px;
-  background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow-sm)}
+.wx-inline{display:flex;align-items:center;gap:10px;min-width:0;margin-left:auto}
 .wx-today{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
 .wx-icon{width:26px;height:26px;border-radius:6px;background:var(--paper);border:1px solid var(--line-2);
   display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--navy)}
@@ -360,7 +370,7 @@ small.j{color:var(--muted);font-size:11px}
 .wx-day.wet{background:#fdf3e4}
 .wx-day.wet .wx-day-rain{color:#b45309;font-weight:700}
 @media(max-width:640px){
-  .wx-card{flex-direction:column;align-items:stretch;gap:12px}
+  .wx-inline{width:100%;justify-content:space-between}
   .wx-days{justify-content:space-between}
 }
 /* Google Business Profile widget — rating + recent review snippets */
@@ -899,7 +909,5 @@ body.compact .prow{padding:9px 16px}
   /* file picker never overflows its card */
   .upload input[type=file]{max-width:100%}
 
-  /* weather card spans the phone — the 720px cap is a desktop nicety */
-  .wx-card{max-width:none}
 
 }

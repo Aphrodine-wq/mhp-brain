@@ -41,8 +41,10 @@ export default function WeatherBanner() {
 
   const today = days[0];
 
+  // Renders inline inside the dashboard status strip rather than as its own card — it is
+  // ambient context, the same as the active-project count sitting beside it.
   return (
-    <div className="wx-card">
+    <div className="wx-inline">
       <div className="wx-today">
         <div className="wx-icon" aria-hidden>
           {wxIcon(today.forecast, today.rain)}
