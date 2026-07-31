@@ -8,6 +8,7 @@ import {
   approveChangeOrder,
   createChangeOrder,
   createPayment,
+  recordActual,
   OpsError,
 } from "@/lib/operations";
 import { db } from "@/lib/db";
@@ -179,5 +180,65 @@ describe("change orders & payments", () => {
   it("createPayment returns the new id", async () => {
     execute.mockResolvedValue({ rows: [{ id: 99 }] });
     expect(await createPayment({ project_id: "p1", amount: 1000, payment_date: "2026-01-01" })).toBe(99);
+  });
+});
+
+describe("recordActual — the flywheel's training data", () => {
+  it("upserts a manual closeout and audits it", async () => {
+    const tx = fakeTx({ name: "Jooste Project" });
+    transaction.mockResolvedValue(tx);
+
+    await recordActual({ projectId: "jooste", closingTotal: 375000, note: "QB job P&L" }, "Boss");
+
+    const ins = tx.execute.mock.calls.find((c) => /INSERT INTO actuals/i.test(c[0].sql))!;
+    expect(ins[0].sql).toMatch(/source = 'manual'/); // scoped so parsed rows are never clobbered
+    expect(ins[0].args[0]).toBe("jooste");
+    expect(ins[0].args[1]).toBe(375000);
+    expect(ins[0].args[2]).toBe("Boss"); // actor is server-side
+
+    // entity_type and field are SQL literals in this statement, so the bound args are
+    // [ts, actor, entity_id, entity_label, old_value, new_value, action]
+    const audit = tx.execute.mock.calls.find((c) => /INSERT INTO audit_log/i.test(c[0].sql))!;
+    expect(audit[0].sql).toMatch(/'closing_total'/);
+    expect(audit[0].args[1]).toBe("Boss");
+    expect(audit[0].args[2]).toBe("jooste");
+    expect(audit[0].args[5]).toBe("375000");
+    expect(audit[0].args[6]).toBe("set");
+    expect(tx.commit).toHaveBeenCalledOnce();
+  });
+
+  it("clears the manual closeout when given null, without touching parsed rows", async () => {
+    const tx = fakeTx({ name: "Jooste Project" });
+    transaction.mockResolvedValue(tx);
+
+    await recordActual({ projectId: "jooste", closingTotal: null }, "Boss");
+
+    const del = tx.execute.mock.calls.find((c) => /DELETE FROM actuals/i.test(c[0].sql))!;
+    expect(del[0].sql).toMatch(/source = 'manual'/);
+    const audit = tx.execute.mock.calls.find((c) => /INSERT INTO audit_log/i.test(c[0].sql))!;
+    expect(audit[0].args[5]).toBeNull();  // new_value
+    expect(audit[0].args[6]).toBe("clear");
+  });
+
+  it("rejects zero — the flywheel filters on > 0, so it would never train", async () => {
+    const tx = fakeTx({ name: "X" });
+    transaction.mockResolvedValue(tx);
+    await expect(recordActual({ projectId: "p1", closingTotal: 0 }, "Boss")).rejects.toBeInstanceOf(OpsError);
+  });
+
+  it("rejects negative and non-numeric closeouts", async () => {
+    const tx = fakeTx({ name: "X" });
+    transaction.mockResolvedValue(tx);
+    await expect(recordActual({ projectId: "p1", closingTotal: -5 }, "Boss")).rejects.toBeInstanceOf(OpsError);
+    // @ts-expect-error — deliberately bad input from a hand-rolled request
+    await expect(recordActual({ projectId: "p1", closingTotal: "soon" }, "Boss")).rejects.toBeInstanceOf(OpsError);
+  });
+
+  it("rolls back when the project does not exist", async () => {
+    const tx = fakeTx(null);
+    transaction.mockResolvedValue(tx);
+    await expect(recordActual({ projectId: "ghost", closingTotal: 100 }, "Boss")).rejects.toBeInstanceOf(OpsError);
+    expect(tx.rollback).toHaveBeenCalledOnce();
+    expect(tx.commit).not.toHaveBeenCalled();
   });
 });

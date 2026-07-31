@@ -667,3 +667,87 @@ export async function getInvoiceTotal(projectId: string) {
   })).rows[0];
   return { total: Number(row?.total ?? 0), count: Number(row?.count ?? 0) };
 }
+
+// ---------------------------------------------------------------------------
+// Job closeout (actuals) — the flywheel's training data
+// ---------------------------------------------------------------------------
+// One confirmed closing cost per job. flywheel.py pairs it with that job's final bid to learn
+// how much of a bid the work actually realizes, and every new estimate is scaled by the result.
+// Until now only extract.py could write here, so the training set was whatever happened to have
+// a parseable closeout spreadsheet — 4 jobs. This is the office's way in.
+
+export interface ActualInput {
+  projectId: string;
+  closingTotal: number | null; // null clears the recorded closeout
+  note?: string | null;
+}
+
+export async function recordActual(input: ActualInput, actor: string): Promise<void> {
+  const { projectId } = input;
+  if (!projectId) throw new OpsError("project required");
+
+  let total: number | null = null;
+  if (input.closingTotal != null && String(input.closingTotal) !== "") {
+    const n = Number(input.closingTotal);
+    if (!Number.isFinite(n)) throw new OpsError("closing total must be a number");
+    if (n < 0) throw new OpsError("closing total cannot be negative");
+    // A closeout of 0 is indistinguishable from "not known" to the flywheel, which filters on
+    // closing_total > 0. Reject it rather than silently record something that never trains.
+    if (n === 0) throw new OpsError("closing total must be greater than 0");
+    total = n;
+  }
+
+  const now = new Date().toISOString();
+  const tx = await db.transaction("write");
+  try {
+    const cur = await tx.execute({
+      sql: "SELECT name FROM projects WHERE id = ?",
+      args: [projectId],
+    });
+    if (cur.rows.length === 0) throw new OpsError(`project ${projectId} not found`);
+    const label = String(cur.rows[0].name);
+
+    const prev = await tx.execute({
+      sql: "SELECT closing_total FROM actuals WHERE project_id = ? AND source = 'manual'",
+      args: [projectId],
+    });
+    const old = prev.rows.length ? prev.rows[0].closing_total : null;
+
+    if (total == null) {
+      await tx.execute({ sql: "DELETE FROM actuals WHERE project_id = ? AND source = 'manual'", args: [projectId] });
+    } else {
+      // ux_actuals_manual_project keeps this to one row per job; parsed rows are untouched.
+      await tx.execute({
+        sql: `INSERT INTO actuals (project_id, source_file, closing_total, source, recorded_by, recorded_at, note)
+              VALUES (?, NULL, ?, 'manual', ?, ?, ?)
+              ON CONFLICT (project_id) WHERE source = 'manual'
+              DO UPDATE SET closing_total = excluded.closing_total, recorded_by = excluded.recorded_by,
+                            recorded_at = excluded.recorded_at, note = excluded.note`,
+        args: [projectId, total, actor, now, input.note?.trim() || null],
+      });
+    }
+
+    await tx.execute({
+      sql: `INSERT INTO audit_log (ts, actor, entity_type, entity_id, entity_label, field, old_value, new_value, action)
+            VALUES (?, ?, 'project', ?, ?, 'closing_total', ?, ?, ?)`,
+      args: [now, actor, projectId, label,
+             old == null ? null : String(old), total == null ? null : String(total),
+             total == null ? "clear" : "set"],
+    });
+    await tx.commit();
+  } catch (e) {
+    await tx.rollback();
+    throw e;
+  }
+}
+
+/** The recorded closeout for a job, if any, plus where it came from. */
+export async function getActual(projectId: string) {
+  const row = (await db.execute({
+    sql: `SELECT closing_total, source, recorded_by, recorded_at, note, source_file
+            FROM actuals WHERE project_id = ? AND closing_total IS NOT NULL
+           ORDER BY (source = 'manual') DESC, closing_total DESC LIMIT 1`,
+    args: [projectId],
+  })).rows[0];
+  return row ?? null;
+}

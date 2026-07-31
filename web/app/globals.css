@@ -593,6 +593,28 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .ops-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:24px}
 .ops-col{display:flex;flex-direction:column;gap:22px;min-width:0}
 @media(max-width:900px){.ops-grid{grid-template-columns:1fr}}
+/* job closeout — bid vs what it actually cost. The estimator learns from exactly this pair, so
+   the empty state says so rather than showing a bare dash nobody acts on. */
+.closeout{margin:10px 0 4px;border:1px solid var(--line);border-radius:var(--r-lg);
+  background:var(--card);padding:11px 13px;box-shadow:var(--shadow-sm)}
+.closeout-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.closeout-k{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.closeout-v{font-family:var(--disp);font-size:21px;font-weight:650;letter-spacing:-.6px;margin-top:4px}
+.closeout-real{display:flex;flex-direction:column;padding:4px 11px;border-radius:var(--r);background:var(--paper);
+  border:1px solid var(--line-2)}
+.closeout-real b{font-family:var(--disp);font-size:17px;font-weight:700;line-height:1.1}
+.closeout-real span{font-size:10px;color:var(--muted);margin-top:2px}
+.closeout-real.under b{color:#2f9e44}
+.closeout-real.over b{color:#c0392b}
+.closeout-note{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.45}
+.closeout-form{margin-top:11px;padding-top:11px;border-top:1px solid var(--line-2)}
+.closeout-form label{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;
+  font-size:11.5px;font-weight:600;color:var(--ink)}
+.closeout-form label .sd{font-weight:500}
+.closeout-form input{padding:8px 10px;border:1px solid var(--line);border-radius:var(--r-sm);
+  font-family:var(--sans);font-size:13px;color:var(--ink);background:#fff}
+.closeout-form input:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
+.closeout-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
 /* project money row — bid -> margin -> collected reads as one sentence, with the ratios drawn
    rather than written. Work complete is pulled to the right and separated by a rule: it is the
    only figure on the row that is a human's judgement rather than something the books produced. */

@@ -4,13 +4,14 @@ import {
   NotePencil, Receipt, CreditCard, Buildings, FolderOpen, FileText, Invoice,
 } from "@phosphor-icons/react/dist/ssr";
 import { projectDetail } from "@/lib/queries";
-import { getProjectOps } from "@/lib/operations";
+import { getProjectOps, getActual } from "@/lib/operations";
 import { requireRole } from "@/lib/auth";
 import { projectMargin } from "@/lib/margin";
 import { hasActiveShareLink } from "@/lib/share";
 import { money, BADGE } from "@/lib/format";
 import HeaderEdit, { type ProjectOps } from "./HeaderEdit";
 import ShareLink from "./ShareLink";
+import Closeout, { type CloseoutState } from "./Closeout";
 import { TrelloMark, QuickBooksMark } from "../../BrandMarks";
 
 export const dynamic = "force-dynamic";
@@ -22,10 +23,11 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
   const canWrite = !!(await requireRole("editor"));
   // Overview only — the records themselves live on each section's own page.
-  const [ops, margin, shareActive] = await Promise.all([
+  const [ops, margin, shareActive, actual] = await Promise.all([
     getProjectOps(id).catch(() => null) as Promise<ProjectOps | null>,
     projectMargin(id).catch(() => null),
     canWrite ? hasActiveShareLink(id).catch(() => false) : Promise.resolve(false),
+    getActual(id).catch(() => null) as Promise<CloseoutState | null>,
   ]);
   const pct = (n: number | null) => (n == null ? "—" : `${Math.round(n * 100)}%`);
 
@@ -113,6 +115,11 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
       </div>
+
+      {/* Same conversation as the row above, one step later in the job's life: what it was bid
+          at versus what it actually cost. This is the only place the estimator's training set
+          can grow — see lib/operations.ts recordActual(). */}
+      <Closeout projectId={id} bid={proj.value || null} actual={actual} canWrite={canWrite} />
     </section>
   );
 }
