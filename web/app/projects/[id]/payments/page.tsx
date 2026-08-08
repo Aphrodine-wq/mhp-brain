@@ -4,7 +4,7 @@ import { projectDetail } from "@/lib/queries";
 import { getProjectOps, getPayments } from "@/lib/operations";
 import { requireRole } from "@/lib/auth";
 import PaymentForm, { type Payment } from "../PaymentForm";
-import type { ProjectOps } from "../HeaderEdit";
+import type { ProjectOps } from "../ProjectHeader";
 
 export const dynamic = "force-dynamic";
 

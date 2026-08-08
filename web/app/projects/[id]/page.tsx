@@ -8,8 +8,8 @@ import { getProjectOps, getActual } from "@/lib/operations";
 import { requireRole } from "@/lib/auth";
 import { projectMargin } from "@/lib/margin";
 import { hasActiveShareLink } from "@/lib/share";
-import { money, BADGE } from "@/lib/format";
-import HeaderEdit, { type ProjectOps } from "./HeaderEdit";
+import { money } from "@/lib/format";
+import ProjectHeader, { type ProjectOps } from "./ProjectHeader";
 import ShareLink from "./ShareLink";
 import Closeout, { type CloseoutState } from "./Closeout";
 import PhaseTrack from "./PhaseTrack";
@@ -33,47 +33,44 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const pct = (n: number | null) => (n == null ? "—" : `${Math.round(n * 100)}%`);
 
   const tiles = [
-    { href: `/projects/${id}/change-orders`, icon: <Receipt size={18} />, name: "Change orders" },
-    { href: `/projects/${id}/log`, icon: <NotePencil size={18} />, name: "Job log" },
-    { href: `/projects/${id}/documents`, icon: <FolderOpen size={18} />, name: "Documents" },
-    { href: `/projects/${id}/estimates`, icon: <FileText size={18} />, name: "Estimates" },
-    { href: `/projects/${id}/permits`, icon: <Buildings size={18} />, name: "Permits" },
-    { href: `/projects/${id}/payments`, icon: <CreditCard size={18} />, name: "Payments" },
-    { href: `/projects/${id}/invoices`, icon: <Invoice size={18} />, name: "Invoices" },
+    { href: `/projects/${id}/change-orders`, icon: <Receipt size={16} />, name: "Change orders" },
+    { href: `/projects/${id}/log`, icon: <NotePencil size={16} />, name: "Job log" },
+    { href: `/projects/${id}/documents`, icon: <FolderOpen size={16} />, name: "Documents" },
+    { href: `/projects/${id}/estimates`, icon: <FileText size={16} />, name: "Estimates" },
+    { href: `/projects/${id}/permits`, icon: <Buildings size={16} />, name: "Permits" },
+    { href: `/projects/${id}/payments`, icon: <CreditCard size={16} />, name: "Payments" },
+    { href: `/projects/${id}/invoices`, icon: <Invoice size={16} />, name: "Invoices" },
   ];
 
   return (
     <section className="view text-120">
-      <div className="row" style={{ marginTop: 0, justifyContent: "space-between" }}>
-        <Link className="btn ghost" href="/projects">← All projects</Link>
-        {canWrite && <ShareLink projectId={id} hasActive={shareActive} />}
-      </div>
-
-      <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginTop: 22 }}>
-        <h2 style={{ margin: 0 }}>{proj.name}</h2>
-        {canWrite ? (
-          <HeaderEdit projectId={id} projectName={proj.name} status={proj.status} ops={ops} />
-        ) : (
-          <span className={`badge ${BADGE[proj.status] || "unknown"}`}>{proj.status}</span>
-        )}
-      </div>
-
-      <PhaseTrack projectId={id} phase={ops?.current_phase ?? null} canWrite={canWrite} />
+      <ProjectHeader
+        projectId={id}
+        projectName={proj.name}
+        status={proj.status}
+        ops={ops}
+        canWrite={canWrite}
+        share={canWrite ? <ShareLink projectId={id} hasActive={shareActive} /> : null}
+      >
+        <PhaseTrack projectId={id} phase={ops?.current_phase ?? null} canWrite={canWrite} />
+      </ProjectHeader>
 
       {/* Sections first, then the numbers. Navigation is what people come to this page to do;
           the money reads as a summary under it rather than a wall to scroll past.
-          Trello and QuickBooks ride along at the end — they are the same "take me there" action
-          as the rest of the row, just leaving the app. */}
-      <div className="tile-grid">
+          Nine stacked icon-over-label tiles took a whole band of the page for what is a row of
+          links; they read inline now — one line, icon beside label — so the numbers below sit
+          above the fold. Trello and QuickBooks ride along at the end: the same "take me there"
+          action as the rest of the row, just leaving the app. */}
+      <nav className="tile-grid" aria-label="Job sections">
         {tiles.map((t) => (
           <Link key={t.href} href={t.href} className="tile">
             <span className="tile-icon">{t.icon}</span>
             <span className="tile-name">{t.name}</span>
           </Link>
         ))}
-        <OutboundTile url={ops?.trello_url ?? null} label="Trello" mark={<TrelloMark size={18} />} />
-        <OutboundTile url={ops?.quickbooks_url ?? null} label="QuickBooks" mark={<QuickBooksMark size={18} />} />
-      </div>
+        <OutboundTile url={ops?.trello_url ?? null} label="Trello" mark={<TrelloMark size={16} />} />
+        <OutboundTile url={ops?.quickbooks_url ?? null} label="QuickBooks" mark={<QuickBooksMark size={16} />} />
+      </nav>
 
       {/* Four bare numbers in identical boxes made you do the arithmetic yourself. The money now
           reads left to right as one sentence — what the job is worth, what is left after cost,

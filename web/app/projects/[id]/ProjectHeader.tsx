@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { post, patch } from "@/lib/client";
 import { BADGE } from "@/lib/format";
@@ -24,16 +25,27 @@ export interface ProjectOps {
   quickbooks_url: string | null;
 }
 
-export default function HeaderEdit({
+// The whole top of the job page: back link, the two owner actions, the name, and the state
+// badges. It owns the edit panel's open state, which is why "Edit details" — an action, not a
+// property of the title — can sit in the action bar beside "Share with client" instead of
+// trailing the project name. `share` is the ShareLink element, passed in from the server
+// component; `children` is the phase track, which reads under the name.
+export default function ProjectHeader({
   projectId,
   projectName,
   status,
   ops,
+  canWrite,
+  share,
+  children,
 }: {
   projectId: string;
   projectName: string;
   status: string;
   ops: ProjectOps | null;
+  canWrite: boolean;
+  share?: React.ReactNode;
+  children?: React.ReactNode;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -99,25 +111,45 @@ export default function HeaderEdit({
     setForm({ ...form, [k]: e.target.value });
 
   return (
-    <>
-      <select
-        className={`badge ${BADGE[status] || "unknown"}`}
-        value={status}
-        disabled={busy}
-        onChange={(e) => setStatus(e.target.value)}
-        style={{ cursor: "pointer" }}
-      >
-        {STATUSES.map((s) => (
-          <option key={s} value={s}>{s}</option>
-        ))}
-      </select>
-      {ops?.current_phase && <span className="badge bid">{ops.current_phase.replace("_", " ")}</span>}
-      <button className="btn ghost sm" onClick={() => setOpen(!open)}>
-        {open ? "Close" : "Edit details"}
-      </button>
+    <header className="jhead">
+      <div className="jhead-bar">
+        <Link className="btn ghost sm" href="/projects">← All projects</Link>
+        {canWrite && (
+          <div className="jhead-actions">
+            <button className="btn ghost sm" onClick={() => setOpen(!open)}>
+              {open ? "Close" : "Edit details"}
+            </button>
+            {share}
+          </div>
+        )}
+      </div>
+
+      <div className="jhead-title">
+        <h2>{projectName}</h2>
+        <div className="jhead-badges">
+          {canWrite ? (
+            <select
+              className={`badge ${BADGE[status] || "unknown"}`}
+              value={status}
+              disabled={busy}
+              onChange={(e) => setStatus(e.target.value)}
+              style={{ cursor: "pointer" }}
+            >
+              {STATUSES.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          ) : (
+            <span className={`badge ${BADGE[status] || "unknown"}`}>{status}</span>
+          )}
+          {ops?.current_phase && <span className="badge bid">{ops.current_phase.replace("_", " ")}</span>}
+        </div>
+      </div>
+
+      {children}
 
       {open && (
-        <div className="panel" style={{ marginTop: 14, flexBasis: "100%" }}>
+        <div className="panel" style={{ marginTop: 14 }}>
           <h3>Job details</h3>
           <div className="setrow">
             <div className="sl">Phase</div>
@@ -192,6 +224,6 @@ export default function HeaderEdit({
           </div>
         </div>
       )}
-    </>
+    </header>
   );
 }

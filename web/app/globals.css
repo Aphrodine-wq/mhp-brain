@@ -642,6 +642,21 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
   font-family:var(--sans);font-size:13px;color:var(--ink);background:#fff}
 .closeout-form input:focus{outline:none;border-color:var(--navy);box-shadow:var(--ring)}
 .closeout-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+/* job page header — the back link and the two owner actions share one utility bar; the name and
+   its state badges sit under it. "Edit details" used to trail the project name, which put a verb
+   in the middle of a title and left it nowhere near "Share with client" — the other thing an
+   owner comes to the top of this page to do. They are one cluster now. */
+.jhead-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px}
+.jhead-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}
+.jhead-title{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:18px}
+.jhead-title h2{margin:0;min-width:0}
+.jhead-badges{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* Squared off rather than pill-shaped. Down a table column the pill is right — it reads as one
+   token in a list. Beside a 29px title, two lozenges look like buttons, and only one of them is
+   pressable. As flat tags they read as what they are: the job's state. */
+.jhead-badges .badge{border-radius:var(--r-sm)}
+/* the action bar is the page's own toolbar, so it stacks rather than crowds on a phone */
+@media(max-width:600px){.jhead-actions{margin-left:0;width:100%}}
 /* project money row — bid -> margin -> collected reads as one sentence, with the ratios drawn
    rather than written. Work complete is pulled to the right and separated by a rule: it is the
    only figure on the row that is a human's judgement rather than something the books produced. */
@@ -685,21 +700,23 @@ main.wrap{flex:1;max-width:none;margin:0;padding:40px 48px}
 .mstep.done .mstep-label{color:var(--muted)}
 .mstep.now .mstep-bar{background:var(--navy)}
 .mstep.now .mstep-label{color:var(--navy);font-weight:700}
-/* section tiles — one row, scrolls sideways on narrow screens.
-   Sits flat on the page: no card fill, no border, no shadow. Seven boxed tiles in a row read as
-   seven competing cards; unstyled they read as what they are, a row of links. The surface only
-   appears on hover, where it signals the target. */
-.tile-grid{display:flex;gap:2px;margin-top:14px}
-.tile{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;background:none;border:1px solid transparent;
-  border-radius:var(--r);padding:7px 9px;text-decoration:none;color:var(--muted);
+/* section links — one compact strip between the phase track and the money.
+   Sits flat on the page: no card fill, no border, no shadow. Nine boxed tiles in a row read as
+   nine competing cards; unstyled they read as what they are, a row of links. The surface only
+   appears on hover, where it signals the target.
+   Icon above label made each one a stacked block ~50px tall — a whole band of the page spent on
+   navigation. Icon *beside* label halves that, and content-width links wrap instead of stretching
+   to fill, so the strip stops pretending it is a grid of destinations of equal weight. */
+.tile-grid{display:flex;flex-wrap:wrap;gap:1px;margin:18px 0 2px}
+.tile{display:inline-flex;align-items:center;gap:5px;background:none;border:1px solid transparent;
+  border-radius:var(--r-sm);padding:4px 6px;text-decoration:none;color:var(--muted);
   box-shadow:none;transition:background var(--t),color var(--t),border-color var(--t)}
 .tile:hover{background:var(--hover);border-color:var(--line);color:var(--ink);box-shadow:none;transform:none}
 .tile.off{opacity:.4;cursor:default}
 .tile.off:hover{background:none;border-color:transparent;color:var(--muted)}
-.tile-icon{color:var(--navy);display:flex}
-.tile-icon svg{fill:currentColor;width:16px;height:16px}
-.tile-name{font-weight:600;font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-@media(max-width:720px){.tile-grid{overflow-x:auto}.tile{min-width:96px}}
+.tile-icon{color:var(--navy);display:flex;flex:none}
+.tile-icon svg{fill:currentColor;width:14px;height:14px}
+.tile-name{font-weight:600;font-size:11px;letter-spacing:.1px;white-space:nowrap}
 /* compact metric value for money-length numbers; flat = no card chrome inside a panel */
 .metric .v.sm{font-size:19px}
 .metric.flat{background:transparent;border:0;box-shadow:none;padding:8px 0;border-radius:0}
